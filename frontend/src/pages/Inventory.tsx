@@ -7,6 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
 import { apiFetch, newRequestKey } from '../lib/api';
+import { ConfirmDialog, useToast } from '../components/ui';
 import {
   Boxes,
   TrendingUp,
@@ -127,6 +128,8 @@ export default function Inventory() {
   });
   const [saleSubmitting, setSaleSubmitting] = useState(false);
   const saleKeyRef = useRef<string | null>(null);
+  const [pendingSaleDelete, setPendingSaleDelete] = useState<number | null>(null);
+  const toast = useToast();
   const [saleError, setSaleError] = useState<string | null>(null);
 
   // Form State for Opening Stock / Adjustment
@@ -336,18 +339,29 @@ export default function Inventory() {
   };
 
   // Delete a Mandi Sale (reverts stock)
-  const handleDeleteSale = async (id: number) => {
-    if (!window.confirm(language === 'mr' ? 'ही विक्री नोंद रद्द करायची का? यामुळे साठा परत जमा होईल.' : 'Cancel this sale record? The sold quantity will be restored to available stock.')) {
-      return;
-    }
+  const handleDeleteSale = (id: number) => {
+    setPendingSaleDelete(id);
+  };
+
+  const confirmDeleteSale = async () => {
+    const id = pendingSaleDelete;
+    if (id === null) return;
     try {
       const res = await apiFetch(`/mandi-sales/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
+        setPendingSaleDelete(null);
         await fetchData();
+        toast.success(
+          language === 'mr'
+            ? 'विक्री नोंद रद्द झाली. साठा परत जमा झाला.'
+            : 'Sale cancelled. The quantity is back in stock.'
+        );
+      } else {
+        toast.error(data.error || 'Could not cancel the sale.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not cancel the sale.');
     }
   };
 
@@ -1384,6 +1398,22 @@ export default function Inventory() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingSaleDelete !== null}
+        tone="danger"
+        title={language === 'mr' ? 'विक्री नोंद रद्द करायची?' : 'Cancel this sale?'}
+        message={
+          language === 'mr'
+            ? 'ही विक्री नोंद काढून टाकली जाईल आणि विकलेला माल पुन्हा साठ्यात जमा होईल.'
+            : 'The sale record will be removed and the quantity sold will go back into available stock.'
+        }
+        confirmLabel={language === 'mr' ? 'होय, रद्द करा' : 'Yes, cancel it'}
+        cancelLabel={language === 'mr' ? 'नको' : 'Keep it'}
+        onConfirm={confirmDeleteSale}
+        onCancel={() => setPendingSaleDelete(null)}
+      />
+
     </div>
   );
 }

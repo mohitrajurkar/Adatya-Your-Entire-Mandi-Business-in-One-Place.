@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { ConfirmDialog, useToast } from '../components/ui';
 import { formatCurrency } from '../lib/utils';
 import {
   Building2,
@@ -39,6 +40,8 @@ export default function AdminBusinesses() {
   const [loadingData, setLoadingData] = useState(false);
   const [activeTab, setActiveTab] = useState<'purchases' | 'farmers' | 'sales' | 'inventory' | 'profile'>('purchases');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: number; name: string } | null>(null);
+  const toast = useToast();
   const [deleteError, setDeleteError] = useState('');
 
   const loadData = async () => {
@@ -81,9 +84,15 @@ export default function AdminBusinesses() {
     }
   };
 
-  const handleDeleteBusiness = async (id: number, e: React.MouseEvent) => {
+  const handleDeleteBusiness = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to permanently delete this business account?')) return;
+    const business = businesses.find(b => b.id === id);
+    setPendingDelete({ id, name: business?.businessName || business?.name || `#${id}` });
+  };
+
+  const confirmDeleteBusiness = async () => {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
     setDeletingId(id);
     setDeleteError('');
     try {
@@ -96,6 +105,8 @@ export default function AdminBusinesses() {
         if (selectedBusiness?.id === id) {
           setSelectedBusiness(null);
         }
+        setPendingDelete(null);
+        toast.success(`Removed ${pendingDelete.name}.`);
       } else {
         setDeleteError(data.error || 'Failed to delete business.');
       }
@@ -654,6 +665,19 @@ export default function AdminBusinesses() {
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        tone="danger"
+        title="Remove this business account?"
+        message={`The account for ${pendingDelete?.name ?? ''} will be removed and its owner will no longer be able to sign in. This cannot be undone.`}
+        requireTyped="DELETE"
+        confirmLabel="Remove account"
+        busy={deletingId !== null}
+        onConfirm={confirmDeleteBusiness}
+        onCancel={() => setPendingDelete(null)}
+      />
+
     </div>
   );
 }

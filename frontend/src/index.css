@@ -1,6 +1,82 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
+/* ==========================================================================
+   Design tokens
+   ==========================================================================
+   Every colour, radius and shadow in the application resolves to one of
+   these. Previously there were none: Tailwind ran with no configuration and
+   each component picked its own utility classes, so "the green" was
+   emerald-600, emerald-700, emerald-800 and #04251a depending on the file.
+
+   Palette roles, deliberately only three:
+     brand    emerald. Actions, active navigation, the sidebar.
+     neutral  slate. Surfaces, text, borders.
+     status   amber / rose / green, reserved for payment and stock state so
+              a colour always means the same thing.
+
+   Gold is intentionally absent here. It survives on the printed invoice
+   header, where it signals a formal document, and nowhere in the interface.
+   ========================================================================== */
+@theme {
+  /* --- Brand ------------------------------------------------------------ */
+  --color-brand-50:  oklch(0.979 0.021 166.113);
+  --color-brand-100: oklch(0.950 0.052 163.051);
+  --color-brand-200: oklch(0.905 0.093 164.150);
+  --color-brand-300: oklch(0.845 0.143 164.978);
+  --color-brand-400: oklch(0.765 0.177 163.223);
+  --color-brand-500: oklch(0.696 0.170 162.480);
+  --color-brand-600: oklch(0.596 0.145 163.225);
+  --color-brand-700: oklch(0.508 0.118 165.612);
+  --color-brand-800: oklch(0.432 0.095 166.913);
+  --color-brand-900: oklch(0.378 0.077 168.940);
+  --color-brand-950: oklch(0.262 0.051 172.552);
+
+  /* The sidebar surface. Deep enough for white text at AA. */
+  --color-sidebar:        oklch(0.232 0.044 171.000);
+  --color-sidebar-hover:  oklch(0.290 0.052 170.000);
+  --color-sidebar-active: oklch(0.355 0.068 167.000);
+
+  /* --- Surfaces --------------------------------------------------------- */
+  --color-surface:        oklch(1 0 0);
+  --color-surface-muted:  oklch(0.984 0.003 247.858);
+  --color-surface-sunken: oklch(0.968 0.007 247.896);
+  --color-page:           oklch(0.977 0.004 240.000);
+
+  /* --- Text ------------------------------------------------------------- */
+  --color-ink:          oklch(0.208 0.042 265.755);
+  --color-ink-muted:    oklch(0.446 0.043 257.281);
+  --color-ink-subtle:   oklch(0.554 0.046 257.417);
+  --color-ink-inverted: oklch(1 0 0);
+
+  /* --- Borders ---------------------------------------------------------- */
+  --color-line:        oklch(0.929 0.013 255.508);
+  --color-line-strong: oklch(0.869 0.022 252.894);
+
+  /* --- Status ----------------------------------------------------------- */
+  --color-paid-fg:    oklch(0.508 0.118 165.612);
+  --color-paid-bg:    oklch(0.950 0.052 163.051);
+  --color-partial-fg: oklch(0.554 0.135 66.000);
+  --color-partial-bg: oklch(0.962 0.059 95.617);
+  --color-due-fg:     oklch(0.514 0.222 16.935);
+  --color-due-bg:     oklch(0.941 0.030 12.580);
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans:  'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+
+  --text-2xs: 0.6875rem;
+
+  /* --- Radii ------------------------------------------------------------ */
+  --radius-control: 0.5rem;
+  --radius-card:    0.75rem;
+
+  /* --- Elevation -------------------------------------------------------- */
+  --shadow-card:  0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --shadow-raised: 0 4px 12px -2px rgb(15 23 42 / 0.10), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 20px 48px -12px rgb(15 23 42 / 0.26);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -12,70 +88,91 @@
   html, body {
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
   }
 
-  /* Serif headings use Lora */
+  /* The serif is for the printed bill header only, never for data. Figures
+     set in a display serif read as marketing rather than as a ledger. */
   .font-serif {
-    font-family: 'Lora', Georgia, serif;
+    font-family: var(--font-serif);
   }
 
-  /* Prevent iOS Safari auto-zoom on inputs while keeping crisp text on desktop */
+  /* Figures line up in columns, which is the whole point of a ledger. */
+  .tabular,
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* Prevent iOS Safari zooming the page when a field is focused, while
+     keeping text at a sensible size on larger screens. */
   input, select, textarea {
     font-size: 16px;
   }
   @media (min-width: 640px) {
     input, select, textarea {
-      font-size: 0.75rem;
+      font-size: 0.875rem;
     }
   }
 
-  /* Smooth, accessible focus rings globally */
   :focus-visible {
-    outline: 2px solid #059669;
+    outline: 2px solid var(--color-brand-600);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 4px;
   }
 
-  /* Scrollbar styling for sidebar and content areas */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--color-line-strong);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--color-ink-subtle);
   }
+}
 
-  /* Smooth number transitions in stat cards */
-  @keyframes count-up {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .stat-value { animation: count-up 0.35s ease-out both; }
-
-  /* Shimmer skeleton loader */
-  @keyframes shimmer {
-    0%   { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
+@layer utilities {
+  /* Loading placeholder. The animation is dropped for anyone who has asked
+     their system to reduce motion. */
   .skeleton {
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-sunken) 25%,
+      var(--color-line) 50%,
+      var(--color-surface-sunken) 75%
+    );
     background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
-    border-radius: 8px;
+    animation: adatya-shimmer 1.4s linear infinite;
+    border-radius: var(--radius-control);
   }
 
-  /* Micro bounce on tap/active for buttons */
-  button:active:not(:disabled),
-  a:active {
-    transform: scale(0.97);
-    transition: transform 0.1s;
+  @keyframes adatya-shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+      background: var(--color-surface-sunken);
+    }
+  }
+}
+
+/* The previous stylesheet scaled every button and link on :active, on top of
+   the scale already applied by the button component, so taps double-bounced.
+   Press feedback now lives in the component alone. */
+
+@media print {
+  .no-print {
+    display: none !important;
   }
 }

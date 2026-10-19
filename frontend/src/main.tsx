@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Inventory from './pages/Inventory';
 import AdminBusinesses from './pages/AdminBusinesses';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './components/ui';
 import { LanguageProvider } from './context/LanguageContext';
 import { isAuthenticated, getStoredUser } from './lib/api';
 import './index.css';
@@ -51,6 +52,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LanguageProvider>
       <ThemeProvider>
+        <ToastProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -69,6 +71,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/invoice/:id" element={<AuthGuard><Invoice /></AuthGuard>} />
           </Routes>
         </BrowserRouter>
+        </ToastProvider>
       </ThemeProvider>
     </LanguageProvider>
   </StrictMode>,

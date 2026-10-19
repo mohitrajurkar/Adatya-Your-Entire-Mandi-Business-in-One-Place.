@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, Trash2, Check, Image as ImageIcon, UserCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { useToast } from './ui';
 
 interface SignaturePadProps {
   initialSignature?: string | null;
@@ -19,13 +20,14 @@ export default function SignaturePad({
   const [currentSignature, setCurrentSignature] = useState<string | null>(initialSignature || null);
   const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const toast = useToast();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (PNG, JPG, or WEBP)');
+      toast.error('Please choose an image file (PNG, JPG or WEBP).');
       return;
     }
 
