@@ -1,6 +1,8 @@
 package com.adatya.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,7 +13,7 @@ public class Farmer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(nullable = false)
@@ -21,8 +23,8 @@ public class Farmer {
 
     private String mobile;
 
-    @Column(name = "outstanding_balance")
-    private Double outstandingBalance = 0.0;
+    @Column(name = "outstanding_balance", nullable = false, precision=14, scale=2)
+    private BigDecimal outstandingBalance = BigDecimal.ZERO;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -44,8 +46,8 @@ public class Farmer {
     public String getMobile() { return mobile; }
     public void setMobile(String mobile) { this.mobile = mobile; }
 
-    public Double getOutstandingBalance() { return outstandingBalance; }
-    public void setOutstandingBalance(Double outstandingBalance) { this.outstandingBalance = outstandingBalance; }
+    public BigDecimal getOutstandingBalance() { return outstandingBalance; }
+    public void setOutstandingBalance(BigDecimal outstandingBalance) { this.outstandingBalance = outstandingBalance; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

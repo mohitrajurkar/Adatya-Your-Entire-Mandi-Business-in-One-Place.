@@ -1,6 +1,8 @@
 package com.adatya.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,7 +13,7 @@ public class MandiSale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "sale_number", nullable = false)
@@ -35,26 +37,29 @@ public class MandiSale {
     @Column(name = "vehicle_number")
     private String vehicleNumber;
 
+    @Column(nullable = false)
     private Integer bags = 0;
 
-    @Column(name = "weight_quintals", nullable = false)
-    private Double weightQuintals;
+    @Column(name = "weight_quintals", nullable = false, precision=12, scale=3)
+    private BigDecimal weightQuintals;
 
-    @Column(name = "sale_rate", nullable = false)
-    private Double saleRate;
+    @Column(name = "sale_rate", nullable = false, precision=14, scale=2)
+    private BigDecimal saleRate;
 
-    @Column(nullable = false)
-    private Double subtotal;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal subtotal;
 
-    private Double hamali = 0.0;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal hamali = BigDecimal.ZERO;
 
-    private Double transport = 0.0;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal transport = BigDecimal.ZERO;
 
-    @Column(name = "mandi_cess")
-    private Double mandiCess = 0.0;
+    @Column(name = "mandi_cess", nullable = false, precision=14, scale=2)
+    private BigDecimal mandiCess = BigDecimal.ZERO;
 
-    @Column(name = "net_amount", nullable = false)
-    private Double netAmount;
+    @Column(name = "net_amount", nullable = false, precision=14, scale=2)
+    private BigDecimal netAmount;
 
     @Column(name = "payment_status", nullable = false)
     private String paymentStatus = "Paid"; // 'Paid', 'Partial', 'Pending'
@@ -100,26 +105,26 @@ public class MandiSale {
     public Integer getBags() { return bags; }
     public void setBags(Integer bags) { this.bags = bags; }
 
-    public Double getWeightQuintals() { return weightQuintals; }
-    public void setWeightQuintals(Double weightQuintals) { this.weightQuintals = weightQuintals; }
+    public BigDecimal getWeightQuintals() { return weightQuintals; }
+    public void setWeightQuintals(BigDecimal weightQuintals) { this.weightQuintals = weightQuintals; }
 
-    public Double getSaleRate() { return saleRate; }
-    public void setSaleRate(Double saleRate) { this.saleRate = saleRate; }
+    public BigDecimal getSaleRate() { return saleRate; }
+    public void setSaleRate(BigDecimal saleRate) { this.saleRate = saleRate; }
 
-    public Double getSubtotal() { return subtotal; }
-    public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
 
-    public Double getHamali() { return hamali; }
-    public void setHamali(Double hamali) { this.hamali = hamali; }
+    public BigDecimal getHamali() { return hamali; }
+    public void setHamali(BigDecimal hamali) { this.hamali = hamali; }
 
-    public Double getTransport() { return transport; }
-    public void setTransport(Double transport) { this.transport = transport; }
+    public BigDecimal getTransport() { return transport; }
+    public void setTransport(BigDecimal transport) { this.transport = transport; }
 
-    public Double getMandiCess() { return mandiCess; }
-    public void setMandiCess(Double mandiCess) { this.mandiCess = mandiCess; }
+    public BigDecimal getMandiCess() { return mandiCess; }
+    public void setMandiCess(BigDecimal mandiCess) { this.mandiCess = mandiCess; }
 
-    public Double getNetAmount() { return netAmount; }
-    public void setNetAmount(Double netAmount) { this.netAmount = netAmount; }
+    public BigDecimal getNetAmount() { return netAmount; }
+    public void setNetAmount(BigDecimal netAmount) { this.netAmount = netAmount; }
 
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }

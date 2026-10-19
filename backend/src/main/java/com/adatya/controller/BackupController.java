@@ -1,5 +1,6 @@
 package com.adatya.controller;
 
+import com.adatya.domain.Money;
 import com.adatya.model.*;
 import com.adatya.repository.*;
 import com.adatya.security.CurrentUser;
@@ -173,7 +174,7 @@ public class BackupController {
             entity.setId(null);
             entity.setUserId(userId);
             if (entity.getName() == null || entity.getName().isBlank()) continue;
-            if (entity.getDefaultRate() == null) entity.setDefaultRate(0.0);
+            if (entity.getDefaultRate() == null) entity.setDefaultRate(Money.ZERO_MONEY);
             Commodity saved = commodityRepository.save(entity);
             if (oldId != null) commodityIds.put(oldId, saved.getId());
         }
@@ -185,7 +186,7 @@ public class BackupController {
             entity.setId(null);
             entity.setUserId(userId);
             if (entity.getName() == null || entity.getName().isBlank()) continue;
-            if (entity.getOutstandingBalance() == null) entity.setOutstandingBalance(0.0);
+            if (entity.getOutstandingBalance() == null) entity.setOutstandingBalance(Money.ZERO_MONEY);
             Farmer saved = farmerRepository.save(entity);
             if (oldId != null) farmerIds.put(oldId, saved.getId());
         }
@@ -262,7 +263,7 @@ public class BackupController {
         List<Map<String, Object>> profileRows = rows(tables, "businessProfile");
         if (!profileRows.isEmpty()) {
             BusinessProfile incoming = objectMapper.convertValue(profileRows.get(0), BusinessProfile.class);
-            BusinessProfile existing = profileRepository.findByUserId(userId).orElseGet(BusinessProfile::new);
+            BusinessProfile existing = profileRepository.findByUserIdAndArchivedFalse(userId).orElseGet(BusinessProfile::new);
             existing.setUserId(userId);
             if (incoming.getBusinessName() != null) existing.setBusinessName(incoming.getBusinessName());
             if (incoming.getProprietorName() != null) existing.setProprietorName(incoming.getProprietorName());
@@ -293,7 +294,7 @@ public class BackupController {
     /** Builds the export document for one tenant. */
     private Map<String, Object> buildSnapshot(Long userId) {
         Map<String, Object> tables = new LinkedHashMap<>();
-        tables.put("businessProfile", profileRepository.findAllByUserId(userId));
+        tables.put("businessProfile", profileRepository.findAllByUserIdAndArchivedFalse(userId));
         tables.put("commodities", commodityRepository.findAllByUserId(userId));
         tables.put("farmers", farmerRepository.findAllByUserId(userId));
         tables.put("purchases", purchaseRepository.findAllByUserIdOrderByCreatedAtDesc(userId));

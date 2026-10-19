@@ -238,7 +238,7 @@ public class ProfileController {
      * Returns this trader's profile row, creating an empty one on first use.
      */
     private BusinessProfile loadOrCreateProfile(Long userId) {
-        return profileRepository.findByUserId(userId).orElseGet(() -> {
+        return profileRepository.findByUserIdAndArchivedFalse(userId).orElseGet(() -> {
             BusinessProfile fresh = new BusinessProfile();
             fresh.setUserId(userId);
             userRepository.findById(userId).ifPresent(user -> {

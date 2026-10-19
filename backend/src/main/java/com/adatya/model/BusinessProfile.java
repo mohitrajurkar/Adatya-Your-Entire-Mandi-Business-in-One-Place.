@@ -11,7 +11,7 @@ public class BusinessProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "business_name", nullable = false)
@@ -46,6 +46,13 @@ public class BusinessProfile {
     private String signatureName = "";
 
     private String tagline = "Agricultural Procurement & Mandi Commission Ledger";
+
+    /**
+     * Set on profile rows left over from the era when every trader shared one
+     * profile. Archived rows are kept for reference and never shown.
+     */
+    @Column(nullable = false)
+    private boolean archived = false;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -93,6 +100,9 @@ public class BusinessProfile {
 
     public String getTagline() { return tagline; }
     public void setTagline(String tagline) { this.tagline = tagline; }
+
+    public boolean isArchived() { return archived; }
+    public void setArchived(boolean archived) { this.archived = archived; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

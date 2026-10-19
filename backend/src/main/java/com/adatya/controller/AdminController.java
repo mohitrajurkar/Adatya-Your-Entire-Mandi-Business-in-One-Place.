@@ -1,5 +1,6 @@
 package com.adatya.controller;
 
+import com.adatya.domain.Money;
 import com.adatya.model.*;
 import com.adatya.repository.*;
 import com.adatya.security.AuthenticatedUser;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -68,23 +70,23 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> getPlatformOverview() {
         List<Purchase> allPurchases = purchaseRepository.findAll();
 
-        double totalProcurementValue = allPurchases.stream()
-                .mapToDouble(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0.0)
-                .sum();
-        double totalAdvancePaid = allPurchases.stream()
-                .mapToDouble(p -> p.getAdvancePaid() != null ? p.getAdvancePaid() : 0.0)
-                .sum();
-        double totalRemainingDue = allPurchases.stream()
-                .mapToDouble(p -> p.getRemainingAmount() != null ? p.getRemainingAmount() : 0.0)
-                .sum();
+        BigDecimal totalProcurementValue = allPurchases.stream()
+                .map(p -> Money.scaleMoney(p.getTotalAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalAdvancePaid = allPurchases.stream()
+                .map(p -> Money.scaleMoney(p.getAdvancePaid()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalRemainingDue = allPurchases.stream()
+                .map(p -> Money.scaleMoney(p.getRemainingAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double totalSalesRevenue = mandiSaleRepository.findAll().stream()
-                .mapToDouble(s -> s.getNetAmount() != null ? s.getNetAmount() : 0.0)
-                .sum();
+        BigDecimal totalSalesRevenue = mandiSaleRepository.findAll().stream()
+                .map(s -> Money.scaleMoney(s.getNetAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double totalPurchasedQuintals = purchaseItemRepository.findAll().stream()
-                .mapToDouble(i -> i.getQuantity() != null ? i.getQuantity() : 0.0)
-                .sum();
+        BigDecimal totalPurchasedQuintals = purchaseItemRepository.findAll().stream()
+                .map(i -> Money.scaleQuantity(i.getQuantity()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Map<String, Object> overview = new HashMap<>();
         overview.put("totalBusinesses", userRepository.count());
@@ -115,10 +117,10 @@ public class AdminController {
         for (User u : userRepository.findAll()) {
             Long businessId = u.getId();
 
-            double procurementAmount = purchaseRepository
+            BigDecimal procurementAmount = purchaseRepository
                     .findAllByUserIdOrderByCreatedAtDesc(businessId).stream()
-                    .mapToDouble(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0.0)
-                    .sum();
+                    .map(p -> Money.scaleMoney(p.getTotalAmount()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             Map<String, Object> map = new HashMap<>();
             map.put("id", businessId);

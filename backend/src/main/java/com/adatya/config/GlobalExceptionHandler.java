@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -42,6 +43,14 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Please check the values you entered");
         return body(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnreadableBody(HttpMessageNotReadableException e) {
+        // A malformed or wrongly typed request body is the caller's mistake,
+        // not a server fault, so it must not surface as a 500.
+        log.warn("Rejected an unreadable request body: {}", e.getMostSpecificCause().getMessage());
+        return body(HttpStatus.BAD_REQUEST, "Some values could not be read. Please check the form and try again.");
     }
 
     @ExceptionHandler(Exception.class)

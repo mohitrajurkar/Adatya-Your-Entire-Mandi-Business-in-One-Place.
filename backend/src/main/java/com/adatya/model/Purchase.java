@@ -1,6 +1,8 @@
 package com.adatya.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,7 +13,7 @@ public class Purchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "purchase_number", nullable = false)
@@ -23,14 +25,14 @@ public class Purchase {
     @Column(name = "farmer_id", nullable = false)
     private Long farmerId;
 
-    @Column(name = "total_amount", nullable = false)
-    private Double totalAmount;
+    @Column(name = "total_amount", nullable = false, precision=14, scale=2)
+    private BigDecimal totalAmount;
 
-    @Column(name = "advance_paid", nullable = false)
-    private Double advancePaid;
+    @Column(name = "advance_paid", nullable = false, precision=14, scale=2)
+    private BigDecimal advancePaid;
 
-    @Column(name = "remaining_amount", nullable = false)
-    private Double remainingAmount;
+    @Column(name = "remaining_amount", nullable = false, precision=14, scale=2)
+    private BigDecimal remainingAmount;
 
     @Column(nullable = false)
     private String status; // 'Paid', 'Partial', 'Pending'
@@ -55,14 +57,14 @@ public class Purchase {
     public Long getFarmerId() { return farmerId; }
     public void setFarmerId(Long farmerId) { this.farmerId = farmerId; }
 
-    public Double getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
-    public Double getAdvancePaid() { return advancePaid; }
-    public void setAdvancePaid(Double advancePaid) { this.advancePaid = advancePaid; }
+    public BigDecimal getAdvancePaid() { return advancePaid; }
+    public void setAdvancePaid(BigDecimal advancePaid) { this.advancePaid = advancePaid; }
 
-    public Double getRemainingAmount() { return remainingAmount; }
-    public void setRemainingAmount(Double remainingAmount) { this.remainingAmount = remainingAmount; }
+    public BigDecimal getRemainingAmount() { return remainingAmount; }
+    public void setRemainingAmount(BigDecimal remainingAmount) { this.remainingAmount = remainingAmount; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

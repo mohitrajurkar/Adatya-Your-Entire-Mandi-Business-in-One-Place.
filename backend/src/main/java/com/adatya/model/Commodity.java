@@ -2,6 +2,8 @@ package com.adatya.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "commodities")
 public class Commodity {
@@ -10,23 +12,23 @@ public class Commodity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "default_rate", nullable = false)
-    private Double defaultRate;
+    @Column(name = "default_rate", nullable = false, precision=14, scale=2)
+    private BigDecimal defaultRate;
 
     public Commodity() {}
 
-    public Commodity(String name, Double defaultRate) {
+    public Commodity(String name, BigDecimal defaultRate) {
         this.name = name;
         this.defaultRate = defaultRate;
     }
 
-    public Commodity(Long userId, String name, Double defaultRate) {
+    public Commodity(Long userId, String name, BigDecimal defaultRate) {
         this.userId = userId;
         this.name = name;
         this.defaultRate = defaultRate;
@@ -41,6 +43,6 @@ public class Commodity {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public Double getDefaultRate() { return defaultRate; }
-    public void setDefaultRate(Double defaultRate) { this.defaultRate = defaultRate; }
+    public BigDecimal getDefaultRate() { return defaultRate; }
+    public void setDefaultRate(BigDecimal defaultRate) { this.defaultRate = defaultRate; }
 }

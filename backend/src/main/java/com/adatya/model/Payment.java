@@ -1,6 +1,8 @@
 package com.adatya.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,14 +13,14 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "purchase_id", nullable = false)
     private Long purchaseId;
 
-    @Column(nullable = false)
-    private Double amount;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal amount;
 
     @Column(name = "payment_mode", nullable = false)
     private String paymentMode; // 'Cash', 'UPI', 'Bank Transfer', etc.
@@ -40,8 +42,8 @@ public class Payment {
     public Long getPurchaseId() { return purchaseId; }
     public void setPurchaseId(Long purchaseId) { this.purchaseId = purchaseId; }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
     public String getPaymentMode() { return paymentMode; }
     public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }

@@ -2,6 +2,8 @@ package com.adatya.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "purchase_items")
 public class PurchaseItem {
@@ -10,7 +12,7 @@ public class PurchaseItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "purchase_id", nullable = false)
@@ -19,14 +21,14 @@ public class PurchaseItem {
     @Column(name = "commodity_id", nullable = false)
     private Long commodityId;
 
-    @Column(nullable = false)
-    private Double quantity;
+    @Column(nullable = false, precision=12, scale=3)
+    private BigDecimal quantity;
 
-    @Column(nullable = false)
-    private Double rate;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal rate;
 
-    @Column(nullable = false)
-    private Double amount;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal amount;
 
     public PurchaseItem() {}
 
@@ -42,12 +44,12 @@ public class PurchaseItem {
     public Long getCommodityId() { return commodityId; }
     public void setCommodityId(Long commodityId) { this.commodityId = commodityId; }
 
-    public Double getQuantity() { return quantity; }
-    public void setQuantity(Double quantity) { this.quantity = quantity; }
+    public BigDecimal getQuantity() { return quantity; }
+    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
 
-    public Double getRate() { return rate; }
-    public void setRate(Double rate) { this.rate = rate; }
+    public BigDecimal getRate() { return rate; }
+    public void setRate(BigDecimal rate) { this.rate = rate; }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 }

@@ -1,6 +1,8 @@
 package com.adatya.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,7 +13,7 @@ public class StockAdjustment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "commodity_id", nullable = false)
@@ -20,12 +22,14 @@ public class StockAdjustment {
     @Column(nullable = false)
     private String type; // 'opening', 'inward', 'outward', 'adjustment'
 
+    @Column(nullable = false)
     private Integer bags = 0;
 
-    @Column(name = "weight_quintals", nullable = false)
-    private Double weightQuintals;
+    @Column(name = "weight_quintals", nullable = false, precision=12, scale=3)
+    private BigDecimal weightQuintals;
 
-    private Double rate = 0.0;
+    @Column(nullable = false, precision=14, scale=2)
+    private BigDecimal rate = BigDecimal.ZERO;
 
     @Column(nullable = false)
     private String reason;
@@ -53,11 +57,11 @@ public class StockAdjustment {
     public Integer getBags() { return bags; }
     public void setBags(Integer bags) { this.bags = bags; }
 
-    public Double getWeightQuintals() { return weightQuintals; }
-    public void setWeightQuintals(Double weightQuintals) { this.weightQuintals = weightQuintals; }
+    public BigDecimal getWeightQuintals() { return weightQuintals; }
+    public void setWeightQuintals(BigDecimal weightQuintals) { this.weightQuintals = weightQuintals; }
 
-    public Double getRate() { return rate; }
-    public void setRate(Double rate) { this.rate = rate; }
+    public BigDecimal getRate() { return rate; }
+    public void setRate(BigDecimal rate) { this.rate = rate; }
 
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
