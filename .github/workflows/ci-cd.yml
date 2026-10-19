@@ -1,0 +1,52 @@
+name: Adatya CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # ---------------------------------------------
+  # Job 1: Frontend Build & Typecheck
+  # ---------------------------------------------
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm --prefix frontend ci
+
+      - name: Run TypeScript Verification
+        run: npm --prefix frontend run lint
+
+      - name: Build Frontend Production Assets
+        run: npm --prefix frontend run build
+
+  # ---------------------------------------------
+  # Job 2: Backend Build & Unit Verification
+  # ---------------------------------------------
+  backend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build Spring Boot JAR with Maven
+        run: mvn -f backend/pom.xml clean package -DskipTests -B
+

@@ -1,0 +1,17 @@
+{
+  "name": "adatya-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "mvn -f backend/pom.xml spring-boot:run",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "mvn -f backend/pom.xml clean package -DskipTests",
+    "start:backend": "java -jar backend/target/adatya-backend-1.0.0.jar",
+    "preview:frontend": "npm --prefix frontend run preview",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "lint": "npm run lint:frontend"
+  }
+}

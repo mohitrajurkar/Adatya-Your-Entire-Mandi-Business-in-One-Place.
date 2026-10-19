@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#042718"/>
+  <path d="M256 70 L380 430 H320 L290 330 H222 L192 430 H132 Z" fill="#D4AF37" stroke="#F6E05E" stroke-width="8"/>
+  <path d="M256 160 L280 280 H232 Z" fill="#042718"/>
+  <!-- Central Wheat ear -->
+  <path d="M256 120 V380" stroke="#F6E05E" stroke-width="10" stroke-linecap="round"/>
+  <ellipse cx="240" cy="180" rx="14" ry="22" transform="rotate(-30 240 180)" fill="#F6E05E"/>
+  <ellipse cx="272" cy="180" rx="14" ry="22" transform="rotate(30 272 180)" fill="#F6E05E"/>
+  <ellipse cx="236" cy="230" rx="14" ry="22" transform="rotate(-30 236 230)" fill="#F6E05E"/>
+  <ellipse cx="276" cy="230" rx="14" ry="22" transform="rotate(30 276 230)" fill="#F6E05E"/>
+  <ellipse cx="236" cy="280" rx="14" ry="22" transform="rotate(-30 236 280)" fill="#F6E05E"/>
+  <ellipse cx="276" cy="280" rx="14" ry="22" transform="rotate(30 276 280)" fill="#F6E05E"/>
+  <!-- Scale Pan Left -->
+  <path d="M160 250 L130 330 H190 Z" fill="#D4AF37" opacity="0.9"/>
+  <line x1="160" y1="210" x2="160" y2="250" stroke="#F6E05E" stroke-width="6"/>
+  <!-- Scale Pan Right -->
+  <path d="M352 250 L322 330 H382 Z" fill="#D4AF37" opacity="0.9"/>
+  <line x1="352" y1="210" x2="352" y2="250" stroke="#F6E05E" stroke-width="6"/>
+</svg>

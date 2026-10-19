@@ -1,0 +1,6 @@
+{
+  "name": "Bodhale Purchaser - Agricultural Commodity & Invoicing Management",
+  "description": "Full-stack agricultural commodity procurement and invoicing management application for mandi crop traders, tracking farmer purchases, weights, payments, and balances.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

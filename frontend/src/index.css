@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:wght@600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  html, body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Serif headings use Lora */
+  .font-serif {
+    font-family: 'Lora', Georgia, serif;
+  }
+
+  /* Prevent iOS Safari auto-zoom on inputs while keeping crisp text on desktop */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Smooth, accessible focus rings globally */
+  :focus-visible {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Scrollbar styling for sidebar and content areas */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Smooth number transitions in stat cards */
+  @keyframes count-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stat-value { animation: count-up 0.35s ease-out both; }
+
+  /* Shimmer skeleton loader */
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+  }
+
+  /* Micro bounce on tap/active for buttons */
+  button:active:not(:disabled),
+  a:active {
+    transform: scale(0.97);
+    transition: transform 0.1s;
+  }
+}
