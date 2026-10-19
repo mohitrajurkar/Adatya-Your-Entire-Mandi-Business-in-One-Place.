@@ -25,6 +25,11 @@ frontend/.env.production
 !frontend/.env.example
 !frontend/.env.production.example
 
+# Database dumps (contain password hashes and business data)
+backups/
+*.sql.gz
+*.dump
+
 # Logs & OS
 *.log
 .DS_Store
