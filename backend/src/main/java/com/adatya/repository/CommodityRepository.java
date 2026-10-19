@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface CommodityRepository extends JpaRepository<Commodity, Long> {
     List<Commodity> findAllByUserId(Long userId);
+    void deleteAllByUserId(Long userId);
     List<Commodity> findAllByUserIdOrUserIdIsNull(Long userId);
     Optional<Commodity> findByNameAndUserId(String name, Long userId);
     long countByUserId(Long userId);

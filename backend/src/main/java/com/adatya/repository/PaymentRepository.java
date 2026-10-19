@@ -10,6 +10,7 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findAllByPurchaseId(Long purchaseId);
     List<Payment> findAllByUserId(Long userId);
+    void deleteAllByUserId(Long userId);
     List<Payment> findAllByUserIdOrUserIdIsNull(Long userId);
     long countByUserId(Long userId);
     void deleteAllByPurchaseId(Long purchaseId);

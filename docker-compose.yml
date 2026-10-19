@@ -27,8 +27,12 @@ services:
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       HIBERNATE_DDL_AUTO: ${HIBERNATE_DDL_AUTO:-update}
-      DEFAULT_ADMIN_MOBILE: ${DEFAULT_ADMIN_MOBILE:-9356893989}
-      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:?Set DEFAULT_ADMIN_PASSWORD in .env}
+      # Required: the backend refuses to start without a signing secret.
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -base64 48)}
+      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-720}
+      # Optional one-time admin seed. Leave both unset after first startup.
+      DEFAULT_ADMIN_MOBILE: ${DEFAULT_ADMIN_MOBILE:-}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
     depends_on:
       database:

@@ -1,9 +1,8 @@
 package com.adatya.controller;
 
-import com.adatya.config.UserContextHelper;
+import com.adatya.security.CurrentUser;
 import com.adatya.model.Farmer;
 import com.adatya.repository.FarmerRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,22 +14,22 @@ import java.util.Optional;
 public class FarmerController {
 
     private final FarmerRepository farmerRepository;
-    private final UserContextHelper userContextHelper;
+    private final CurrentUser currentUser;
 
-    public FarmerController(FarmerRepository farmerRepository, UserContextHelper userContextHelper) {
+    public FarmerController(FarmerRepository farmerRepository, CurrentUser currentUser) {
         this.farmerRepository = farmerRepository;
-        this.userContextHelper = userContextHelper;
+        this.currentUser = currentUser;
     }
 
     @GetMapping
-    public ResponseEntity<List<Farmer>> getAllFarmers(HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<List<Farmer>> getAllFarmers() {
+        Long userId = currentUser.id();
         return ResponseEntity.ok(farmerRepository.findAllByUserId(userId));
     }
 
     @PostMapping
-    public ResponseEntity<Farmer> createFarmer(@RequestBody Farmer farmer, HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<Farmer> createFarmer(@RequestBody Farmer farmer) {
+        Long userId = currentUser.id();
         farmer.setUserId(userId);
         if (farmer.getOutstandingBalance() == null) {
             farmer.setOutstandingBalance(0.0);
@@ -40,8 +39,8 @@ public class FarmerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Farmer> updateFarmer(@PathVariable Long id, @RequestBody Farmer payload, HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<Farmer> updateFarmer(@PathVariable Long id, @RequestBody Farmer payload) {
+        Long userId = currentUser.id();
         Optional<Farmer> farmerOpt = farmerRepository.findByIdAndUserId(id, userId);
         if (farmerOpt.isEmpty()) {
             return ResponseEntity.notFound().build();

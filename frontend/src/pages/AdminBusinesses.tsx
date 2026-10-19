@@ -26,8 +26,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function AdminBusinesses() {
   const [overview, setOverview] = useState<any>(null);
@@ -45,8 +45,8 @@ export default function AdminBusinesses() {
     setLoading(true);
     try {
       const [overviewRes, businessesRes] = await Promise.all([
-        fetch(`${API_URL}/admin/overview`),
-        fetch(`${API_URL}/admin/businesses`)
+        apiFetch(`/admin/overview`),
+        apiFetch(`/admin/businesses`)
       ]);
       if (overviewRes.ok) {
         setOverview(await overviewRes.json());
@@ -70,7 +70,7 @@ export default function AdminBusinesses() {
     setLoadingData(true);
     setActiveTab('purchases');
     try {
-      const res = await fetch(`${API_URL}/admin/businesses/${business.id}/data`);
+      const res = await apiFetch(`/admin/businesses/${business.id}/data`);
       if (res.ok) {
         setBusinessFullData(await res.json());
       }
@@ -87,7 +87,7 @@ export default function AdminBusinesses() {
     setDeletingId(id);
     setDeleteError('');
     try {
-      const res = await fetch(`${API_URL}/admin/businesses/${id}`, {
+      const res = await apiFetch(`/admin/businesses/${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -131,7 +131,7 @@ export default function AdminBusinesses() {
               सर्व नोंदणीकृत व्यवसाय आणि व्यापारी डेटा
             </h1>
             <p className="text-slate-300 text-sm max-w-2xl">
-              Logged in as Master Administrator (<span className="text-emerald-400 font-mono font-bold">9356893989</span>). Monitor all business accounts, farmer ledgers, and transactions platform-wide.
+              Signed in as platform administrator. Monitor all business accounts, farmer ledgers, and transactions platform-wide.
             </p>
           </div>
 
@@ -285,7 +285,7 @@ export default function AdminBusinesses() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm font-medium">
                   {filteredBusinesses.map(b => {
-                    const isMaster = b.mobile === '9356893989' || b.role === 'SUPER_ADMIN';
+                    const isMaster = b.isSuperAdmin === true || b.role === 'SUPER_ADMIN';
                     return (
                       <tr
                         key={b.id}
@@ -387,7 +387,7 @@ export default function AdminBusinesses() {
                   <div>
                     <h2 className="text-xl font-bold flex items-center gap-2">
                       {selectedBusiness.businessName}
-                      {selectedBusiness.mobile === '9356893989' && (
+                      {selectedBusiness.role === 'SUPER_ADMIN' && (
                         <span className="text-[10px] font-black uppercase bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
                           Master Admin
                         </span>

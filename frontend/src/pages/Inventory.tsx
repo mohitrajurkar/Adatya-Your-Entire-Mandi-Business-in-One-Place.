@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
+import { apiFetch } from '../lib/api';
 import {
   Boxes,
   TrendingUp,
@@ -30,7 +31,6 @@ import {
   Sparkles
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface StockCommodity {
   id: number;
@@ -145,8 +145,8 @@ export default function Inventory() {
     setLoading(true);
     try {
       const [stockRes, salesRes] = await Promise.all([
-        fetch(`${API_URL}/inventory/stock`),
-        fetch(`${API_URL}/mandi-sales`)
+        apiFetch(`/inventory/stock`),
+        apiFetch(`/mandi-sales`)
       ]);
       const stockData = await stockRes.json();
       const salesData = await salesRes.json();
@@ -248,7 +248,7 @@ export default function Inventory() {
 
     setSaleSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/mandi-sales`, {
+      const res = await apiFetch(`/mandi-sales`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(saleForm),
@@ -293,7 +293,7 @@ export default function Inventory() {
 
     setAdjSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/stock-adjustments`, {
+      const res = await apiFetch(`/stock-adjustments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(adjForm),
@@ -327,7 +327,7 @@ export default function Inventory() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/mandi-sales/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/mandi-sales/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         await fetchData();

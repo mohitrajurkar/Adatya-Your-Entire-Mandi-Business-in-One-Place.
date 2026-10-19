@@ -19,8 +19,8 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import WhatsAppShareModal from '../components/WhatsAppShareModal';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Purchases() {
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -32,7 +32,7 @@ export default function Purchases() {
 
   useEffect(() => {
     fetchPurchases();
-    fetch(`${API_URL}/profile`)
+    apiFetch(`/profile`)
       .then(res => res.json())
       .then(setProfile)
       .catch(console.error);
@@ -40,7 +40,7 @@ export default function Purchases() {
 
   const fetchPurchases = async () => {
     try {
-      const res = await fetch(`${API_URL}/purchases`);
+      const res = await apiFetch(`/purchases`);
       const data = await res.json();
       if (Array.isArray(data)) setPurchases(data);
     } catch (e) {
@@ -51,7 +51,7 @@ export default function Purchases() {
   const handleDirectWhatsApp = async (purchase: any) => {
     try {
       setSharingPurchaseId(purchase.id);
-      const res = await fetch(`${API_URL}/purchases/${purchase.id}`);
+      const res = await apiFetch(`/purchases/${purchase.id}`);
       const fullData = await res.json();
 
       const userJson = localStorage.getItem('user');
@@ -92,7 +92,7 @@ export default function Purchases() {
   const handleOpenWhatsApp = async (purchase: any) => {
     try {
       // Fetch full purchase details with items for accurate WhatsApp message
-      const res = await fetch(`${API_URL}/purchases/${purchase.id}`);
+      const res = await apiFetch(`/purchases/${purchase.id}`);
       const fullData = await res.json();
       setSelectedForWhatsApp(fullData);
     } catch (e) {

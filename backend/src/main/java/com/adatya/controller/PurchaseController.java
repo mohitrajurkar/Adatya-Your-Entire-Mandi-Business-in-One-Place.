@@ -1,9 +1,8 @@
 package com.adatya.controller;
 
-import com.adatya.config.UserContextHelper;
+import com.adatya.security.CurrentUser;
 import com.adatya.model.*;
 import com.adatya.repository.*;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,7 @@ public class PurchaseController {
     private final FarmerRepository farmerRepository;
     private final CommodityRepository commodityRepository;
     private final BusinessProfileRepository profileRepository;
-    private final UserContextHelper userContextHelper;
+    private final CurrentUser currentUser;
 
     public PurchaseController(PurchaseRepository purchaseRepository,
                               PurchaseItemRepository purchaseItemRepository,
@@ -29,19 +28,19 @@ public class PurchaseController {
                               FarmerRepository farmerRepository,
                               CommodityRepository commodityRepository,
                               BusinessProfileRepository profileRepository,
-                              UserContextHelper userContextHelper) {
+                              CurrentUser currentUser) {
         this.purchaseRepository = purchaseRepository;
         this.purchaseItemRepository = purchaseItemRepository;
         this.paymentRepository = paymentRepository;
         this.farmerRepository = farmerRepository;
         this.commodityRepository = commodityRepository;
         this.profileRepository = profileRepository;
-        this.userContextHelper = userContextHelper;
+        this.currentUser = currentUser;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllPurchases(HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<List<Map<String, Object>>> getAllPurchases() {
+        Long userId = currentUser.id();
         List<Purchase> purchases = purchaseRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         
         Map<Long, Farmer> farmerMap = new HashMap<>();
@@ -79,101 +78,96 @@ public class PurchaseController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<?> createPurchase(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-        try {
-            Long userId = userContextHelper.resolveUserId(request);
-            Long farmerId = Long.valueOf(body.get("farmerId").toString());
-            String date = (String) body.get("date");
-            String purchaseNumber = (String) body.get("purchaseNumber");
-            Double totalAmount = Double.valueOf(body.get("totalAmount").toString());
-            Double advancePaid = Double.valueOf(body.getOrDefault("advancePaid", 0.0).toString());
-            String paymentMode = (String) body.getOrDefault("paymentMode", "Cash");
+    public ResponseEntity<?> createPurchase(@RequestBody Map<String, Object> body) {
+        Long userId = currentUser.id();
+        Long farmerId = Long.valueOf(body.get("farmerId").toString());
+        String date = (String) body.get("date");
+        String purchaseNumber = (String) body.get("purchaseNumber");
+        Double totalAmount = Double.valueOf(body.get("totalAmount").toString());
+        Double advancePaid = Double.valueOf(body.getOrDefault("advancePaid", 0.0).toString());
+        String paymentMode = (String) body.getOrDefault("paymentMode", "Cash");
 
-            Double remainingAmount = totalAmount - advancePaid;
-            String status = remainingAmount <= 0.001 ? "Paid" : (Math.abs(remainingAmount - totalAmount) < 0.001 ? "Pending" : "Partial");
+        Double remainingAmount = totalAmount - advancePaid;
+        String status = remainingAmount <= 0.001 ? "Paid" : (Math.abs(remainingAmount - totalAmount) < 0.001 ? "Pending" : "Partial");
 
-            Purchase purchase = new Purchase();
-            purchase.setUserId(userId);
-            purchase.setFarmerId(farmerId);
-            purchase.setDate(date);
-            purchase.setPurchaseNumber(purchaseNumber);
-            purchase.setTotalAmount(totalAmount);
-            purchase.setAdvancePaid(advancePaid);
-            purchase.setRemainingAmount(remainingAmount);
-            purchase.setStatus(status);
-            purchase.setCreatedAt(LocalDateTime.now());
+        Purchase purchase = new Purchase();
+        purchase.setUserId(userId);
+        purchase.setFarmerId(farmerId);
+        purchase.setDate(date);
+        purchase.setPurchaseNumber(purchaseNumber);
+        purchase.setTotalAmount(totalAmount);
+        purchase.setAdvancePaid(advancePaid);
+        purchase.setRemainingAmount(remainingAmount);
+        purchase.setStatus(status);
+        purchase.setCreatedAt(LocalDateTime.now());
 
-            Purchase savedPurchase = purchaseRepository.save(purchase);
+        Purchase savedPurchase = purchaseRepository.save(purchase);
 
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
-            if (items != null) {
-                for (Map<String, Object> itemData : items) {
-                    Object commIdObj = itemData.get("commodityId");
-                    String customName = (String) itemData.get("customCommodityName");
-                    Double quantity = Double.valueOf(itemData.get("quantity").toString());
-                    Double rate = Double.valueOf(itemData.get("rate").toString());
-                    Double amount = Double.valueOf(itemData.get("amount").toString());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
+        if (items != null) {
+            for (Map<String, Object> itemData : items) {
+                Object commIdObj = itemData.get("commodityId");
+                String customName = (String) itemData.get("customCommodityName");
+                Double quantity = Double.valueOf(itemData.get("quantity").toString());
+                Double rate = Double.valueOf(itemData.get("rate").toString());
+                Double amount = Double.valueOf(itemData.get("amount").toString());
 
-                    Long finalCommodityId = null;
-                    if (commIdObj != null && !"other".equals(commIdObj.toString())) {
-                        try {
-                            finalCommodityId = Long.valueOf(commIdObj.toString());
-                        } catch (NumberFormatException ignored) {}
-                    }
-
-                    if (finalCommodityId == null || customName != null) {
-                        String nameToSearch = (customName != null && !customName.trim().isEmpty()) ? customName.trim() : "Other Grain";
-                        Optional<Commodity> existingCom = commodityRepository.findByNameAndUserId(nameToSearch, userId);
-                        if (existingCom.isPresent()) {
-                            finalCommodityId = existingCom.get().getId();
-                        } else {
-                            Commodity newCom = new Commodity(userId, nameToSearch, rate);
-                            Commodity savedCom = commodityRepository.save(newCom);
-                            finalCommodityId = savedCom.getId();
-                        }
-                    }
-
-                    PurchaseItem pItem = new PurchaseItem();
-                    pItem.setUserId(userId);
-                    pItem.setPurchaseId(savedPurchase.getId());
-                    pItem.setCommodityId(finalCommodityId);
-                    pItem.setQuantity(quantity);
-                    pItem.setRate(rate);
-                    pItem.setAmount(amount);
-                    purchaseItemRepository.save(pItem);
+                Long finalCommodityId = null;
+                if (commIdObj != null && !"other".equals(commIdObj.toString())) {
+                    try {
+                        finalCommodityId = Long.valueOf(commIdObj.toString());
+                    } catch (NumberFormatException ignored) {}
                 }
+
+                if (finalCommodityId == null || customName != null) {
+                    String nameToSearch = (customName != null && !customName.trim().isEmpty()) ? customName.trim() : "Other Grain";
+                    Optional<Commodity> existingCom = commodityRepository.findByNameAndUserId(nameToSearch, userId);
+                    if (existingCom.isPresent()) {
+                        finalCommodityId = existingCom.get().getId();
+                    } else {
+                        Commodity newCom = new Commodity(userId, nameToSearch, rate);
+                        Commodity savedCom = commodityRepository.save(newCom);
+                        finalCommodityId = savedCom.getId();
+                    }
+                }
+
+                PurchaseItem pItem = new PurchaseItem();
+                pItem.setUserId(userId);
+                pItem.setPurchaseId(savedPurchase.getId());
+                pItem.setCommodityId(finalCommodityId);
+                pItem.setQuantity(quantity);
+                pItem.setRate(rate);
+                pItem.setAmount(amount);
+                purchaseItemRepository.save(pItem);
             }
-
-            // Update farmer balance
-            farmerRepository.findByIdAndUserId(farmerId, userId).ifPresent(farmer -> {
-                double currentBal = farmer.getOutstandingBalance() != null ? farmer.getOutstandingBalance() : 0.0;
-                farmer.setOutstandingBalance(currentBal + remainingAmount);
-                farmerRepository.save(farmer);
-            });
-
-            // If advance was paid, record payment
-            if (advancePaid > 0) {
-                Payment payment = new Payment();
-                payment.setUserId(userId);
-                payment.setPurchaseId(savedPurchase.getId());
-                payment.setAmount(advancePaid);
-                payment.setPaymentMode(paymentMode != null ? paymentMode : "Cash");
-                payment.setPaymentDate(date);
-                payment.setCreatedAt(LocalDateTime.now());
-                paymentRepository.save(payment);
-            }
-
-            return ResponseEntity.ok(savedPurchase);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to create purchase: " + e.getMessage()));
         }
+
+        // Update farmer balance
+        farmerRepository.findByIdAndUserId(farmerId, userId).ifPresent(farmer -> {
+            double currentBal = farmer.getOutstandingBalance() != null ? farmer.getOutstandingBalance() : 0.0;
+            farmer.setOutstandingBalance(currentBal + remainingAmount);
+            farmerRepository.save(farmer);
+        });
+
+        // If advance was paid, record payment
+        if (advancePaid > 0) {
+            Payment payment = new Payment();
+            payment.setUserId(userId);
+            payment.setPurchaseId(savedPurchase.getId());
+            payment.setAmount(advancePaid);
+            payment.setPaymentMode(paymentMode != null ? paymentMode : "Cash");
+            payment.setPaymentDate(date);
+            payment.setCreatedAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+        }
+
+        return ResponseEntity.ok(savedPurchase);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPurchaseById(@PathVariable Long id, HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<?> getPurchaseById(@PathVariable Long id) {
+        Long userId = currentUser.id();
         Optional<Purchase> pOpt = purchaseRepository.findByIdAndUserId(id, userId);
         if (pOpt.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Purchase not found"));
@@ -222,8 +216,8 @@ public class PurchaseController {
 
     @PostMapping("/{id}/payments")
     @Transactional
-    public ResponseEntity<?> addPayment(@PathVariable Long id, @RequestBody Map<String, Object> body, HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<?> addPayment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Long userId = currentUser.id();
         Optional<Purchase> pOpt = purchaseRepository.findByIdAndUserId(id, userId);
         if (pOpt.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Purchase not found"));
@@ -264,8 +258,8 @@ public class PurchaseController {
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> deletePurchase(@PathVariable Long id, HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<?> deletePurchase(@PathVariable Long id) {
+        Long userId = currentUser.id();
         Optional<Purchase> pOpt = purchaseRepository.findByIdAndUserId(id, userId);
         if (pOpt.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Purchase not found"));

@@ -26,8 +26,8 @@ import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Invoice() {
   const { id } = useParams();
@@ -56,14 +56,14 @@ export default function Invoice() {
   } = useTheme();
 
   const fetchInvoice = () => {
-    fetch(`${API_URL}/purchases/${id}`)
+    apiFetch(`/purchases/${id}`)
       .then(res => res.json())
       .then(purchaseData => {
         setData(purchaseData);
         if (purchaseData.profile) {
           setProfile(purchaseData.profile);
         } else {
-          fetch(`${API_URL}/profile`)
+          apiFetch(`/profile`)
             .then(r => r.json())
             .then(setProfile)
             .catch(console.error);
@@ -109,7 +109,7 @@ export default function Invoice() {
     setIsSubmittingPayment(true);
     setPaymentStatusMessage(null);
     try {
-      const res = await fetch(`${API_URL}/purchases/${id}/payments`, {
+      const res = await apiFetch(`/purchases/${id}/payments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

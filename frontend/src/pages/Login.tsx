@@ -3,8 +3,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Phone, Eye, EyeOff, ShieldCheck, ArrowRight, Wheat, Loader2, User, UserPlus, LogIn, Building2 } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { publicPost, setSession } from '../lib/api';
 
 export default function Login() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
@@ -30,21 +29,18 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile: loginMobile.trim(), password: loginPassword })
+      const { ok, data } = await publicPost('/auth/login', {
+        mobile: loginMobile.trim(),
+        password: loginPassword
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (ok && data?.success && data.token && data.user) {
+        setSession(data.token, data.user);
         window.location.href = '/';
         return;
       }
 
-      setError(data.error || 'Invalid credentials. Please verify and try again.');
+      setError(data?.error || 'Invalid credentials. Please verify and try again.');
     } catch (err) {
       setError('Connection error. Please try again.');
     } finally {
@@ -70,49 +66,38 @@ export default function Login() {
       return;
     }
 
-    if (regPassword.length < 4) {
-      setError('Password must be at least 4 characters');
+    if (regPassword.length < 8) {
+      setError('Password must be at least 8 characters and include a letter and a number');
       setLoading(false);
       return;
     }
 
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessName: regBusinessName.trim(),
-          name: regName.trim() || regBusinessName.trim(),
-          apmcLocation: 'APMC Mandi Yard',
-          mobile: regMobile.trim(),
-          password: regPassword,
-          role: 'Admin'
-        })
+      // "role" is no longer sent: the server assigns it. It used to be accepted
+      // from this payload, which allowed self-promotion to SUPER_ADMIN.
+      const { ok, data } = await publicPost('/auth/register', {
+        businessName: regBusinessName.trim(),
+        name: regName.trim() || regBusinessName.trim(),
+        apmcLocation: 'APMC Mandi Yard',
+        mobile: regMobile.trim(),
+        password: regPassword
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success && data.user) {
+      if (ok && data?.success && data.token && data.user) {
         setSuccessMessage('Broker account created! Logging you into Adatya...');
-        localStorage.setItem('user', JSON.stringify(data.user));
+        setSession(data.token, data.user);
         setTimeout(() => {
           window.location.href = '/';
         }, 600);
         return;
       }
 
-      setError(data.error || 'Failed to create account. Mobile may already be registered.');
+      setError(data?.error || 'Failed to create account. Mobile may already be registered.');
     } catch (err) {
-      // Fallback local registration
-      const newUser = {
-        name: regName.trim() || regBusinessName.trim(),
-        businessName: regBusinessName.trim(),
-        apmcLocation: 'APMC Mandi Yard',
-        mobile: regMobile.trim(),
-        role: 'Admin'
-      };
-      localStorage.setItem('user', JSON.stringify(newUser));
-      window.location.href = '/';
+      // There is no offline fallback any more. Registration previously wrote a
+      // fabricated user into local storage and let the person in with no
+      // server-side account at all.
+      setError('Could not reach the server. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }

@@ -1,11 +1,10 @@
 package com.adatya.controller;
 
-import com.adatya.config.UserContextHelper;
+import com.adatya.security.CurrentUser;
 import com.adatya.model.Farmer;
 import com.adatya.model.Purchase;
 import com.adatya.repository.FarmerRepository;
 import com.adatya.repository.PurchaseRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,19 +18,19 @@ public class DashboardController {
 
     private final PurchaseRepository purchaseRepository;
     private final FarmerRepository farmerRepository;
-    private final UserContextHelper userContextHelper;
+    private final CurrentUser currentUser;
 
     public DashboardController(PurchaseRepository purchaseRepository,
                                FarmerRepository farmerRepository,
-                               UserContextHelper userContextHelper) {
+                               CurrentUser currentUser) {
         this.purchaseRepository = purchaseRepository;
         this.farmerRepository = farmerRepository;
-        this.userContextHelper = userContextHelper;
+        this.currentUser = currentUser;
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getDashboardData(HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<Map<String, Object>> getDashboardData() {
+        Long userId = currentUser.id();
 
         List<Purchase> allPurchases = purchaseRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
         long activeFarmers = farmerRepository.countByUserId(userId);

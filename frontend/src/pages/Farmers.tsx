@@ -6,8 +6,8 @@ import { formatCurrency } from '../lib/utils';
 import { Plus, Search, MapPin, Phone, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Farmers() {
   const [farmers, setFarmers] = useState<any[]>([]);
@@ -21,7 +21,7 @@ export default function Farmers() {
 
   const fetchFarmers = async () => {
     try {
-      const res = await fetch(`${API_URL}/farmers`);
+      const res = await apiFetch(`/farmers`);
       const data = await res.json();
       if (Array.isArray(data)) setFarmers(data);
     } catch (e) {
@@ -32,7 +32,7 @@ export default function Farmers() {
   const handleAddFarmer = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch(`${API_URL}/farmers`, {
+      await apiFetch(`/farmers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newFarmer)

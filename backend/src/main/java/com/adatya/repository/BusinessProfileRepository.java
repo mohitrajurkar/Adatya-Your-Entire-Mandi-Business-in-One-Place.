@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface BusinessProfileRepository extends JpaRepository<BusinessProfile, Long> {
     Optional<BusinessProfile> findByUserId(Long userId);
     List<BusinessProfile> findAllByUserId(Long userId);
+    void deleteAllByUserId(Long userId);
 }

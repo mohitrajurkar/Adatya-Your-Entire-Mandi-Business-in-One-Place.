@@ -23,8 +23,8 @@ import { useLanguage } from '../context/LanguageContext';
 import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { DEFAULT_LOGO } from '../config/logos';
+import { apiFetch, clearSession } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -34,8 +34,7 @@ export default function DashboardLayout() {
   const [businessProfileData, setBusinessProfileData] = useState<{ businessName?: string; address?: string } | null>(null);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    sessionStorage.clear();
+    clearSession();
     window.dispatchEvent(new Event('storage'));
     window.location.href = '/login';
   };
@@ -58,7 +57,7 @@ export default function DashboardLayout() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/profile`)
+    apiFetch(`/profile`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -74,7 +73,9 @@ export default function DashboardLayout() {
     if (userJson) user = JSON.parse(userJson);
   } catch {}
 
-  const isSuperAdmin = user?.mobile === '9356893989' || user?.role === 'SUPER_ADMIN';
+  // Role only. A specific mobile number was hard-coded here as privileged;
+  // the server is the authority and now returns a normalized role.
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: language === 'mr' ? 'डॅशबोर्ड' : 'Dashboard' },

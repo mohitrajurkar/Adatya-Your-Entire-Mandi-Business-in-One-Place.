@@ -1,9 +1,8 @@
 package com.adatya.controller;
 
-import com.adatya.config.UserContextHelper;
+import com.adatya.security.CurrentUser;
 import com.adatya.model.*;
 import com.adatya.repository.*;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,23 +18,23 @@ public class InventoryController {
     private final PurchaseItemRepository purchaseItemRepository;
     private final MandiSaleRepository mandiSaleRepository;
     private final StockAdjustmentRepository stockAdjustmentRepository;
-    private final UserContextHelper userContextHelper;
+    private final CurrentUser currentUser;
 
     public InventoryController(CommodityRepository commodityRepository,
                                PurchaseItemRepository purchaseItemRepository,
                                MandiSaleRepository mandiSaleRepository,
                                StockAdjustmentRepository stockAdjustmentRepository,
-                               UserContextHelper userContextHelper) {
+                               CurrentUser currentUser) {
         this.commodityRepository = commodityRepository;
         this.purchaseItemRepository = purchaseItemRepository;
         this.mandiSaleRepository = mandiSaleRepository;
         this.stockAdjustmentRepository = stockAdjustmentRepository;
-        this.userContextHelper = userContextHelper;
+        this.currentUser = currentUser;
     }
 
     @GetMapping("/stock")
-    public ResponseEntity<Map<String, Object>> getStock(HttpServletRequest request) {
-        Long userId = userContextHelper.resolveUserId(request);
+    public ResponseEntity<Map<String, Object>> getStock() {
+        Long userId = currentUser.id();
 
         List<Commodity> allCommodities = commodityRepository.findAllByUserId(userId);
         if (allCommodities.isEmpty()) {

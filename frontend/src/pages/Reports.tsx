@@ -4,15 +4,15 @@ import { formatCurrency } from '../lib/utils';
 import { FileText, Download, TrendingUp, Users } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { motion } from 'motion/react';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Reports() {
   const [stats, setStats] = useState<any>(null);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/dashboard`)
+    apiFetch(`/dashboard`)
       .then(res => res.json())
       .then(setStats)
       .catch(console.error);
@@ -21,7 +21,7 @@ export default function Reports() {
   const handleExportAll = async () => {
     try {
       setExporting(true);
-      const res = await fetch(`${API_URL}/backup/export`);
+      const res = await apiFetch(`/backup/export`);
       if (!res.ok) throw new Error('Export failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);

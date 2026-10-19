@@ -24,8 +24,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import WhatsAppShareModal from '../components/WhatsAppShareModal';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Dashboard() {
   const { language, t } = useLanguage();
@@ -35,17 +35,17 @@ export default function Dashboard() {
   const [inventoryStock, setInventoryStock] = useState<{ stock: any[]; summary: any } | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/dashboard`)
+    apiFetch(`/dashboard`)
       .then(res => res.json())
       .then(setStats)
       .catch(console.error);
 
-    fetch(`${API_URL}/profile`)
+    apiFetch(`/profile`)
       .then(res => res.json())
       .then(setProfile)
       .catch(console.error);
 
-    fetch(`${API_URL}/inventory/stock`)
+    apiFetch(`/inventory/stock`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   const handleOpenWhatsApp = async (purchase: any) => {
     try {
-      const res = await fetch(`${API_URL}/purchases/${purchase.id}`);
+      const res = await apiFetch(`/purchases/${purchase.id}`);
       const full = await res.json();
       setSelectedForWhatsApp(full);
     } catch {
@@ -101,7 +101,7 @@ export default function Dashboard() {
   const activeBusinessName = user?.businessName || profile?.businessName || 'Adatya Desk';
   const activeLocation = user?.apmcLocation || profile?.address || 'APMC Mandi Yard';
   const activeProprietor = user?.name || profile?.proprietorName || 'Broker';
-  const isSuperAdmin = user?.mobile === '9356893989' || user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   return (
     <div className="space-y-6 pb-16">

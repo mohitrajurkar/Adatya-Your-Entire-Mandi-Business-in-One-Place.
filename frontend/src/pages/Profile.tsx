@@ -21,8 +21,8 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch, clearSession } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Profile() {
   const { currentTheme } = useTheme();
@@ -41,8 +41,7 @@ export default function Profile() {
   const [deleteError, setDeleteError] = useState('');
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    sessionStorage.clear();
+    clearSession();
     window.dispatchEvent(new Event('storage'));
     navigate('/login', { replace: true });
     setTimeout(() => {
@@ -51,10 +50,6 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    const userStr = localStorage.getItem('user');
-    let localUser: any = null;
-    try { if (userStr) localUser = JSON.parse(userStr); } catch {}
-
     if (!deletePassword) {
       setDeleteError('Please enter your current password to confirm deletion.');
       return;
@@ -67,10 +62,11 @@ export default function Profile() {
     setDeletingAccount(true);
     setDeleteError('');
     try {
-      const res = await fetch(`${API_URL}/account/delete`, {
+      const res = await apiFetch(`/account/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: localUser?.id, password: deletePassword })
+        // No userId is sent: the server deletes the account the token belongs to.
+        body: JSON.stringify({ password: deletePassword })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -99,6 +95,7 @@ export default function Profile() {
     gstin: '',
     upiId: '',
     tagline: 'Your ledger, your control.',
+    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
@@ -110,7 +107,7 @@ export default function Profile() {
       if (userStr) localUser = JSON.parse(userStr);
     } catch {}
 
-    fetch(`${API_URL}/profile`)
+    apiFetch(`/profile`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -139,8 +136,13 @@ export default function Profile() {
     setErrorMessage(null);
 
     if (profileData.newPassword) {
-      if (profileData.newPassword.length < 4) {
-        setErrorMessage('New password must be at least 4 characters');
+      if (!profileData.currentPassword) {
+        setErrorMessage('Enter your current password to set a new one');
+        setSaving(false);
+        return;
+      }
+      if (profileData.newPassword.length < 8) {
+        setErrorMessage('New password must be at least 8 characters and include a letter and a number');
         setSaving(false);
         return;
       }
@@ -158,11 +160,11 @@ export default function Profile() {
         if (userStr) localUser = JSON.parse(userStr);
       } catch {}
 
-      const res = await fetch(`${API_URL}/user/profile`, {
+      const res = await apiFetch(`/user/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // No userId: the server updates the account the token belongs to.
         body: JSON.stringify({
-          userId: localUser?.id,
           mobile: profileData.mobile1,
           name: profileData.proprietorName,
           businessName: profileData.businessName,
@@ -172,6 +174,7 @@ export default function Profile() {
           gstin: profileData.gstin,
           upiId: profileData.upiId,
           newPassword: profileData.newPassword || undefined,
+          currentPassword: profileData.currentPassword || undefined,
         })
       });
 
@@ -183,12 +186,11 @@ export default function Profile() {
           localUser.businessName = profileData.businessName;
           localUser.name = profileData.proprietorName;
           localUser.apmcLocation = profileData.address;
-          localUser.mobile = profileData.mobile1;
           localStorage.setItem('user', JSON.stringify(localUser));
         }
 
         setSuccessMessage('Profile and business details updated successfully!');
-        setProfileData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+        setProfileData(prev => ({ ...prev, newPassword: '', confirmPassword: '', currentPassword: '' }));
         setTimeout(() => setSuccessMessage(null), 3500);
       } else {
         setErrorMessage(resData.error || 'Failed to update profile');
@@ -444,6 +446,20 @@ export default function Profile() {
           </CardHeader>
           <CardContent className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                  Current Password (सध्याचा पासवर्ड)
+                </label>
+                <Input
+                  type="password"
+                  value={profileData.currentPassword}
+                  onChange={(e) => setProfileData({ ...profileData, currentPassword: e.target.value })}
+                  placeholder="Required only when changing your password"
+                  autoComplete="current-password"
+                  className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
+                />
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                   New Password (नवीन पासवर्ड)
@@ -453,7 +469,7 @@ export default function Profile() {
                     type={showPassword ? 'text' : 'password'}
                     value={profileData.newPassword}
                     onChange={(e) => setProfileData({ ...profileData, newPassword: e.target.value })}
-                    placeholder="Min 4 characters"
+                    placeholder="Min 8 chars, letter + number"
                     className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300 pr-9"
                   />
                   <button

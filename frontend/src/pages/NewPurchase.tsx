@@ -8,8 +8,8 @@ import { Plus, Trash2, ArrowLeft, Wheat, User, Calendar, Tag, UserPlus, X, Loade
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function NewPurchase() {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ export default function NewPurchase() {
     if (!quickFarmer.name.trim()) return;
     setSavingQuickFarmer(true);
     try {
-      const res = await fetch(`${API_URL}/farmers`, {
+      const res = await apiFetch(`/farmers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(quickFarmer)
@@ -62,8 +62,8 @@ export default function NewPurchase() {
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/farmers`).then(res => res.json()).then(data => { if (Array.isArray(data)) setFarmers(data); });
-    fetch(`${API_URL}/commodities`).then(res => res.json()).then(data => { if (Array.isArray(data)) setCommodities(data); });
+    apiFetch(`/farmers`).then(res => res.json()).then(data => { if (Array.isArray(data)) setFarmers(data); });
+    apiFetch(`/commodities`).then(res => res.json()).then(data => { if (Array.isArray(data)) setCommodities(data); });
   }, []);
 
   const handleItemChange = (index: number, field: string, value: any) => {
@@ -131,7 +131,7 @@ export default function NewPurchase() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/purchases`, {
+      const res = await apiFetch(`/purchases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     List<Purchase> findAllByOrderByCreatedAtDesc();
     List<Purchase> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    void deleteAllByUserId(Long userId);
     List<Purchase> findAllByUserIdOrUserIdIsNullOrderByCreatedAtDesc(Long userId);
     Optional<Purchase> findByPurchaseNumber(String purchaseNumber);
     Optional<Purchase> findByPurchaseNumberAndUserId(String purchaseNumber, Long userId);

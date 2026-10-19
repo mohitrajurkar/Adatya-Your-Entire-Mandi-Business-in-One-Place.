@@ -15,13 +15,16 @@ import Inventory from './pages/Inventory';
 import AdminBusinesses from './pages/AdminBusinesses';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { isAuthenticated } from './lib/api';
 import './index.css';
 
 function AuthGuard({ children }: { children: ReactNode }) {
-  const user = localStorage.getItem('user');
+  // Requires an actual access token. A cached "user" object alone used to be
+  // enough, which anyone could fabricate in browser devtools. The token is
+  // still verified server-side on every request.
   const location = useLocation();
 
-  if (!user) {
+  if (!isAuthenticated()) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface MandiSaleRepository extends JpaRepository<MandiSale, Long> {
     List<MandiSale> findAllByOrderByCreatedAtDesc();
     List<MandiSale> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    void deleteAllByUserId(Long userId);
     List<MandiSale> findAllByUserIdOrUserIdIsNullOrderByCreatedAtDesc(Long userId);
     long countByUserId(Long userId);
     Optional<MandiSale> findByIdAndUserId(Long id, Long userId);

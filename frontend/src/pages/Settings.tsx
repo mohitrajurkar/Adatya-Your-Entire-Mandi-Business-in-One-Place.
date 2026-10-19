@@ -25,8 +25,8 @@ import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { Link } from 'react-router-dom';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { OFFICIAL_LOGO_SRC, OFFICIAL_LOGO_DETAILS } from '../config/logos';
+import { apiFetch } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function Settings() {
   const [loading, setLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function Settings() {
   const [backupMsg, setBackupMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const fetchBackupStats = () => {
-    fetch(`${API_URL}/backup/stats`)
+    apiFetch(`/backup/stats`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setBackupStats(data);
@@ -75,7 +75,7 @@ export default function Settings() {
     try {
       setBackupLoading(true);
       setBackupMsg(null);
-      const res = await fetch(`${API_URL}/backup/export`);
+      const res = await apiFetch(`/backup/export`);
       if (!res.ok) throw new Error('Backup download failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -114,10 +114,11 @@ export default function Settings() {
       const text = await pendingFile.text();
       const json = JSON.parse(text);
 
-      const res = await fetch(`${API_URL}/backup/import`, {
+      const res = await apiFetch(`/backup/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(json)
+        // The server requires this phrase before it will replace live records.
+        body: JSON.stringify({ ...json, confirm: 'RESTORE' })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -135,7 +136,7 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/profile`)
+    apiFetch(`/profile`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -176,7 +177,7 @@ export default function Settings() {
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`${API_URL}/profile`, {
+      const res = await apiFetch(`/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -613,8 +614,8 @@ export default function Settings() {
                 <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.mandiSales || 0}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">डेटाबेस साईज</div>
-                <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.fileSizeKb || 0} KB</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">पेमेंट नोंदी</div>
+                <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.payments || 0}</div>
               </div>
             </div>
           )}
