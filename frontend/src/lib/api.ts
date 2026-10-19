@@ -123,3 +123,21 @@ export async function publicPost<T = any>(path: string, body: unknown): Promise<
   const data = await response.json().catch(() => null);
   return { ok: response.ok, data: data as T };
 }
+
+/**
+ * A key identifying one submission attempt.
+ *
+ * Hold on to it across retries of the same form so the server recognises a
+ * retry rather than booking a second purchase, payment or sale, and discard
+ * it once the submission succeeds.
+ */
+export function newRequestKey(): string {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+  } catch {
+    /* fall through to the manual generator below */
+  }
+  return `req-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}

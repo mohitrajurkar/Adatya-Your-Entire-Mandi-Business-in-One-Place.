@@ -15,4 +15,6 @@ public interface MandiSaleRepository extends JpaRepository<MandiSale, Long> {
     List<MandiSale> findAllByUserIdOrUserIdIsNullOrderByCreatedAtDesc(Long userId);
     long countByUserId(Long userId);
     Optional<MandiSale> findByIdAndUserId(Long id, Long userId);
+    /** Looks up a record by the idempotency key its client supplied. */
+    Optional<MandiSale> findByUserIdAndClientRequestId(Long userId, String clientRequestId);
 }

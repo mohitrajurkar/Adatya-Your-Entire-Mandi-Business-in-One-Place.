@@ -70,6 +70,14 @@ public class MandiSale {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    /**
+     * Idempotency key for one client submission. When the same key arrives
+     * again the original record is returned instead of a second one being
+     * created, which is what a double tap on a slow connection produces.
+     */
+    @Column(name = "client_request_id", length = 100)
+    private String clientRequestId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -134,6 +142,9 @@ public class MandiSale {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getClientRequestId() { return clientRequestId; }
+    public void setClientRequestId(String clientRequestId) { this.clientRequestId = clientRequestId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, numberToWordsINR } from '../lib/utils';
 import { generateBillPdfDoc, shareBillPdfToWhatsApp } from '../lib/pdfGenerator';
@@ -26,7 +26,7 @@ import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { apiFetch } from '../lib/api';
+import { apiFetch, newRequestKey } from '../lib/api';
 
 
 export default function Invoice() {
@@ -40,6 +40,7 @@ export default function Invoice() {
   const [paymentMode, setPaymentMode] = useState('Cash');
   const [paymentStatusMessage, setPaymentStatusMessage] = useState<string | null>(null);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const paymentKeyRef = useRef<string | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfToast, setPdfToast] = useState<string | null>(null);
 
@@ -106,6 +107,10 @@ export default function Invoice() {
       setPaymentStatusMessage('Please enter a valid payment amount');
       return;
     }
+    if (!paymentKeyRef.current) {
+      paymentKeyRef.current = newRequestKey();
+    }
+
     setIsSubmittingPayment(true);
     setPaymentStatusMessage(null);
     try {
@@ -115,10 +120,12 @@ export default function Invoice() {
         body: JSON.stringify({
           amount: paymentAmount,
           paymentMode,
-          paymentDate: format(new Date(), 'yyyy-MM-dd')
+          paymentDate: format(new Date(), 'yyyy-MM-dd'),
+          clientRequestId: paymentKeyRef.current
         })
       });
       if (res.ok) {
+        paymentKeyRef.current = null;
         setShowPaymentModal(false);
         fetchInvoice();
       } else {

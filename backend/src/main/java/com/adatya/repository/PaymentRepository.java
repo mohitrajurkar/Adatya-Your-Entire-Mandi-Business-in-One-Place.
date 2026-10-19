@@ -5,11 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findAllByPurchaseId(Long purchaseId);
     List<Payment> findAllByUserId(Long userId);
+    /** Looks up a record by the idempotency key its client supplied. */
+    Optional<Payment> findByUserIdAndClientRequestId(Long userId, String clientRequestId);
     void deleteAllByUserId(Long userId);
     List<Payment> findAllByUserIdOrUserIdIsNull(Long userId);
     long countByUserId(Long userId);

@@ -49,6 +49,18 @@ public class MandiSaleService {
 
     @Transactional
     public MandiSale createSale(Long userId, CreateSale request) {
+        // A retried submission returns the sale already recorded, rather than
+        // selling the same stock twice.
+        String requestKey = request.clientRequestId() == null || request.clientRequestId().isBlank()
+                ? null : request.clientRequestId().trim();
+        if (requestKey != null) {
+            Optional<MandiSale> alreadyRecorded =
+                    mandiSaleRepository.findByUserIdAndClientRequestId(userId, requestKey);
+            if (alreadyRecorded.isPresent()) {
+                return alreadyRecorded.get();
+            }
+        }
+
         Commodity commodity = ownedCommodity(userId, request.commodityId());
 
         BigDecimal weight = Money.scaleQuantity(request.weightQuintals());
@@ -102,11 +114,21 @@ public class MandiSaleService {
         sale.setPaymentMode(request.paymentMode() == null || request.paymentMode().isBlank()
                 ? "Cash" : request.paymentMode());
         sale.setNotes(request.notes());
+        sale.setClientRequestId(requestKey);
         sale.setCreatedAt(LocalDateTime.now());
 
         try {
             return mandiSaleRepository.saveAndFlush(sale);
         } catch (DataIntegrityViolationException e) {
+            // Either a concurrent retry won the idempotency key, or the sale
+            // number collided. Resolve to the winner, else take a fresh number.
+            if (requestKey != null) {
+                Optional<MandiSale> winner =
+                        mandiSaleRepository.findByUserIdAndClientRequestId(userId, requestKey);
+                if (winner.isPresent()) {
+                    return winner.get();
+                }
+            }
             sale.setSaleNumber(nextSaleNumber(userId));
             return mandiSaleRepository.saveAndFlush(sale);
         }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -8,7 +8,7 @@ import { Plus, Trash2, ArrowLeft, Wheat, User, Calendar, Tag, UserPlus, X, Loade
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
-import { apiFetch } from '../lib/api';
+import { apiFetch, newRequestKey } from '../lib/api';
 
 
 export default function NewPurchase() {
@@ -31,6 +31,7 @@ export default function NewPurchase() {
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const requestKeyRef = useRef<string | null>(null);
 
   // Quick Inline Farmer Creation Modal
   const [isNewFarmerModalOpen, setIsNewFarmerModalOpen] = useState(false);
@@ -129,6 +130,12 @@ export default function NewPurchase() {
       }
     }
 
+    // Kept across retries of this same bill, so a double tap after a slow
+    // response returns the original rather than booking a second purchase.
+    if (!requestKeyRef.current) {
+      requestKeyRef.current = newRequestKey();
+    }
+
     setSubmitting(true);
     try {
       const res = await apiFetch(`/purchases`, {
@@ -136,18 +143,18 @@ export default function NewPurchase() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          totalAmount,
+          clientRequestId: requestKeyRef.current,
           items: items.map(it => ({
             commodityId: it.commodityId,
             customCommodityName: it.commodityId === 'other' ? it.customCommodityName?.trim() : undefined,
             quantity: Number(it.quantity),
-            rate: Number(it.rate),
-            amount: Number(it.amount)
+            rate: Number(it.rate)
           }))
         })
       });
       if (res.ok) {
         const data = await res.json();
+        requestKeyRef.current = null;
         navigate(`/invoice/${data.id}`);
       } else {
         setErrorMsg(language === 'mr' ? 'खरेदी नोंदवण्यात त्रुटी आली. कृपया तपासा.' : 'Failed to save purchase. Please check entered values.');

@@ -59,6 +59,19 @@ public class PurchaseService {
 
     @Transactional
     public Purchase createPurchase(Long userId, CreatePurchase request) {
+        // A retry of a submission already accepted returns the original bill.
+        // Checked before anything else so a retry does no work at all.
+        String requestKey = normaliseKey(request.clientRequestId());
+        if (requestKey != null) {
+            Optional<Purchase> alreadyBooked =
+                    purchaseRepository.findByUserIdAndClientRequestId(userId, requestKey);
+            if (alreadyBooked.isPresent()) {
+                log.info("Purchase request {} already booked for account {}; returning the original",
+                        requestKey, userId);
+                return alreadyBooked.get();
+            }
+        }
+
         Farmer farmer = farmerRepository.findByIdAndUserId(request.farmerId(), userId)
                 .orElseThrow(() -> new IllegalArgumentException("Farmer not found"));
 
@@ -128,13 +141,22 @@ public class PurchaseService {
         purchase.setAdvancePaid(advance);
         purchase.setRemainingAmount(remaining);
         purchase.setStatus(statusFor(total, remaining));
+        purchase.setClientRequestId(requestKey);
         purchase.setCreatedAt(LocalDateTime.now());
 
         Purchase saved;
         try {
             saved = purchaseRepository.saveAndFlush(purchase);
         } catch (DataIntegrityViolationException e) {
-            // Lost the race against a concurrent identical submit.
+            // Lost the race against a concurrent identical submit: whichever
+            // uniqueness rule fired, resolve to the record that won.
+            if (requestKey != null) {
+                Optional<Purchase> winner =
+                        purchaseRepository.findByUserIdAndClientRequestId(userId, requestKey);
+                if (winner.isPresent()) {
+                    return winner.get();
+                }
+            }
             return purchaseRepository.findByPurchaseNumberAndUserId(billNumber, userId)
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Bill number " + billNumber + " is already used"));
@@ -162,6 +184,17 @@ public class PurchaseService {
 
     @Transactional
     public Payment addPayment(Long userId, Long purchaseId, AddPayment request) {
+        String requestKey = normaliseKey(request.clientRequestId());
+        if (requestKey != null) {
+            Optional<Payment> alreadyRecorded =
+                    paymentRepository.findByUserIdAndClientRequestId(userId, requestKey);
+            if (alreadyRecorded.isPresent()) {
+                log.info("Payment request {} already recorded for account {}; returning the original",
+                        requestKey, userId);
+                return alreadyRecorded.get();
+            }
+        }
+
         Purchase purchase = purchaseRepository.findByIdAndUserId(purchaseId, userId)
                 .orElseThrow(() -> new PurchaseNotFoundException());
 
@@ -184,9 +217,12 @@ public class PurchaseService {
         String paymentDate = request.paymentDate() != null && !request.paymentDate().isBlank()
                 ? request.paymentDate() : purchase.getDate();
 
-        // Guard against a double tap on a slow connection.
+        // Fallback for callers that send no key. It cannot distinguish a retry
+        // from two identical payments a trader genuinely made, so it applies
+        // only when there is no explicit key to go on.
         LocalDateTime cutoff = LocalDateTime.now().minusSeconds(DUPLICATE_PAYMENT_WINDOW_SECONDS);
-        boolean duplicate = paymentRepository.findAllByPurchaseId(purchaseId).stream()
+        boolean duplicate = requestKey == null
+                && paymentRepository.findAllByPurchaseId(purchaseId).stream()
                 .anyMatch(p -> Money.eq(Money.scaleMoney(p.getAmount()), amount)
                             && Objects.equals(p.getPaymentDate(), paymentDate)
                             && p.getCreatedAt() != null
@@ -202,6 +238,7 @@ public class PurchaseService {
         payment.setAmount(amount);
         payment.setPaymentMode(defaultMode(request.paymentMode()));
         payment.setPaymentDate(paymentDate);
+        payment.setClientRequestId(requestKey);
         payment.setCreatedAt(LocalDateTime.now());
         Payment saved = paymentRepository.save(payment);
 
@@ -269,6 +306,11 @@ public class PurchaseService {
         return commodityRepository.findByNameAndUserId(name, userId)
                 .orElseGet(() -> commodityRepository.save(
                         new Commodity(userId, name, Money.scaleMoney(line.rate()))));
+    }
+
+    /** Blank keys are treated as absent. */
+    private String normaliseKey(String raw) {
+        return raw == null || raw.isBlank() ? null : raw.trim();
     }
 
     /** Null for the "other" sentinel or anything non-numeric. */

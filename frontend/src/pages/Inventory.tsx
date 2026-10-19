@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -6,7 +6,7 @@ import { formatCurrency } from '../lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
-import { apiFetch } from '../lib/api';
+import { apiFetch, newRequestKey } from '../lib/api';
 import {
   Boxes,
   TrendingUp,
@@ -126,6 +126,7 @@ export default function Inventory() {
     notes: '',
   });
   const [saleSubmitting, setSaleSubmitting] = useState(false);
+  const saleKeyRef = useRef<string | null>(null);
   const [saleError, setSaleError] = useState<string | null>(null);
 
   // Form State for Opening Stock / Adjustment
@@ -242,14 +243,20 @@ export default function Inventory() {
       return;
     }
 
-    // Check available stock warning
+    // Stock is enforced by the server, so this is told as a fact rather than
+    // offered as "proceed anyway" -- that prompt used to let the sale through
+    // and drive inventory negative, and would now simply be rejected.
     if (selectedSaleCommodity && w > selectedSaleCommodity.availableQuintals) {
-      const confirmExceed = window.confirm(
+      setSaleError(
         language === 'mr'
-          ? `चेतावणी: उपलब्ध साठा ${selectedSaleCommodity.availableQuintals} क्विंटल आहे, परंतु तुम्ही ${w} क्विंटल विक्री नोंदवत आहात. पुढे जायचे का?`
-          : `Warning: Available stock is ${selectedSaleCommodity.availableQuintals} Qtl, but you are recording ${w} Qtl. Proceed anyway?`
+          ? `उपलब्ध साठा फक्त ${selectedSaleCommodity.availableQuintals} क्विंटल आहे. ${w} क्विंटल विक्री नोंदवता येणार नाही.`
+          : `Only ${selectedSaleCommodity.availableQuintals} Qtl is in stock, so a sale of ${w} Qtl cannot be recorded.`
       );
-      if (!confirmExceed) return;
+      return;
+    }
+
+    if (!saleKeyRef.current) {
+      saleKeyRef.current = newRequestKey();
     }
 
     setSaleSubmitting(true);
@@ -257,10 +264,11 @@ export default function Inventory() {
       const res = await apiFetch(`/mandi-sales`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(saleForm),
+        body: JSON.stringify({ ...saleForm, clientRequestId: saleKeyRef.current }),
       });
       const data = await res.json();
       if (data.success) {
+        saleKeyRef.current = null;
         setIsSaleModalOpen(false);
         // Refresh inventory and sales
         await fetchData();
