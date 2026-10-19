@@ -15,7 +15,7 @@ import Inventory from './pages/Inventory';
 import AdminBusinesses from './pages/AdminBusinesses';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { isAuthenticated } from './lib/api';
+import { isAuthenticated, getStoredUser } from './lib/api';
 import './index.css';
 
 function AuthGuard({ children }: { children: ReactNode }) {
@@ -31,6 +31,22 @@ function AuthGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Keeps the admin portal out of an ordinary trader's way.
+ *
+ * This is presentation only: the server returns 403 for /api/admin/** to
+ * anyone without the SUPER_ADMIN role, and that remains the real control.
+ * Without this guard the page still rendered its shell with empty figures,
+ * which looks broken rather than off-limits.
+ */
+function SuperAdminGuard({ children }: { children: ReactNode }) {
+  if (getStoredUser()?.role !== 'SUPER_ADMIN') {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LanguageProvider>
@@ -40,7 +56,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<AuthGuard><DashboardLayout /></AuthGuard>}>
               <Route index element={<Dashboard />} />
-              <Route path="admin" element={<AdminBusinesses />} />
+              <Route path="admin" element={<SuperAdminGuard><AdminBusinesses /></SuperAdminGuard>} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="farmers" element={<Farmers />} />
               <Route path="purchases" element={<Purchases />} />
