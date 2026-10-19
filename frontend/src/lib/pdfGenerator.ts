@@ -53,18 +53,18 @@ export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileD
   const margin = 14;
   const contentWidth = pageWidth - margin * 2;
 
-  const bName = profile?.businessName || 'Bodhale Purchaser';
-  const propName = profile?.proprietorName || 'Maroti V Bodhale';
-  const address = profile?.address || 'Mardi, Maregaon, Wani, Yavatmal - 445304';
-  const mobile1 = profile?.mobile1 || '8805978780';
-  const mobile2 = profile?.mobile2 || '9604655124';
-  const license = profile?.mandiLicense || 'APMC/MRG/2024-88';
+  const bName = profile?.businessName || '';
+  const propName = profile?.proprietorName || '';
+  const address = profile?.address || '';
+  const mobile1 = profile?.mobile1 || '';
+  const mobile2 = profile?.mobile2 || '';
+  const license = profile?.mandiLicense || '';
   const gstin = profile?.gstin || '';
   const tagline = profile?.tagline || 'Your ledger, your control.';
 
   const fName = data.farmer?.name || data.farmerName || 'Farmer';
   const fMobile = data.farmer?.mobile || data.farmerMobile || '-';
-  const fVillage = data.farmer?.village || data.farmerVillage || 'Mardi';
+  const fVillage = data.farmer?.village || data.farmerVillage || '';
 
   // 1. Outer Border Frame (Double border)
   doc.setDrawColor(4, 39, 24); // Deep Emerald
@@ -93,14 +93,25 @@ export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileD
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(220, 220, 220);
-  doc.text(`Prop: ${propName} | Lic No: ${license}`, margin + 6, margin + 24);
-  doc.text(`APMC Yard: ${address}`, margin + 6, margin + 29);
+  const propLine = [
+    propName ? `Prop: ${propName}` : '',
+    license ? `Lic No: ${license}` : '',
+  ].filter(Boolean).join(' | ');
+  if (propLine) {
+    doc.text(propLine, margin + 6, margin + 24);
+  }
+  if (address) {
+    doc.text(`APMC Yard: ${address}`, margin + 6, margin + 29);
+  }
 
   // Contact Info on right
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(245, 222, 120);
-  doc.text(`Mob: ${mobile1}${mobile2 ? ` / ${mobile2}` : ''}`, pageWidth - margin - 6, margin + 12, { align: 'right' });
+  if (mobile1 || mobile2) {
+    const mobiles = [mobile1, mobile2].filter(Boolean).join(' / ');
+    doc.text(`Mob: ${mobiles}`, pageWidth - margin - 6, margin + 12, { align: 'right' });
+  }
   if (gstin) {
     doc.setTextColor(220, 220, 220);
     doc.setFont('helvetica', 'normal');

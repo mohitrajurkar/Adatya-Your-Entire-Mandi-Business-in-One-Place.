@@ -34,7 +34,7 @@ export default function WhatsAppShareModal({
   const [shareSuccess, setShareSuccess] = useState<string | null>(null);
 
   const farmerName = data.farmer?.name || data.farmerName || 'Farmer';
-  const farmerVillage = data.farmer?.village || data.farmerVillage || 'Mardi';
+  const farmerVillage = data.farmer?.village || data.farmerVillage || '';
 
   const handleSharePdf = async () => {
     setIsSharing(true);

@@ -38,22 +38,17 @@ export default function DashboardLayout() {
     window.dispatchEvent(new Event('storage'));
     window.location.href = '/login';
   };
-  const [brandLogo, setBrandLogo] = useState<string>(() => {
-    const saved = localStorage.getItem('adatya_logo');
-    if (!saved || saved.includes('.jpg')) {
-      localStorage.setItem('adatya_logo', DEFAULT_LOGO);
-      return DEFAULT_LOGO;
-    }
-    return saved;
-  });
+  // The logo is a bundled asset, not user data, so it is used directly rather
+  // than cached in local storage. The old cache held the broken
+  // '/src/assets/...' dev path and would have kept serving it after this fix.
+  const brandLogo = DEFAULT_LOGO;
 
   useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem('adatya_logo');
-      setBrandLogo(saved && !saved.includes('.jpg') ? saved : DEFAULT_LOGO);
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    try {
+      localStorage.removeItem('adatya_logo');
+    } catch {
+      /* storage unavailable; nothing to clean up */
+    }
   }, []);
 
   useEffect(() => {

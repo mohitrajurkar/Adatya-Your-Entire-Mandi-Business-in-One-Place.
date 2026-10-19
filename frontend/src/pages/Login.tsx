@@ -198,7 +198,7 @@ export default function Login() {
                     required
                     value={loginMobile}
                     onChange={(e) => setLoginMobile(e.target.value)}
-                    placeholder="e.g. 8805978780 or admin"
+                    placeholder="10-digit mobile number"
                     className="h-11 bg-slate-50 border-slate-300 font-medium"
                   />
                 </div>

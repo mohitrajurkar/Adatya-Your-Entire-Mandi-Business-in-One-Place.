@@ -12,7 +12,7 @@ interface SignaturePadProps {
 
 export default function SignaturePad({
   initialSignature,
-  initialName = 'M. V. Bodhale',
+  initialName = '',
   onSave
 }: SignaturePadProps) {
   const [signatureName, setSignatureName] = useState(initialName || '');
@@ -76,7 +76,7 @@ export default function SignaturePad({
               setSignatureName(e.target.value);
               setIsSaved(false);
             }}
-            placeholder="e.g. M. V. Bodhale / Maroti V Bodhale"
+            placeholder="Name as it should appear on the signature"
             className="h-11 font-medium bg-white"
           />
           <p className="text-[11px] text-slate-500">

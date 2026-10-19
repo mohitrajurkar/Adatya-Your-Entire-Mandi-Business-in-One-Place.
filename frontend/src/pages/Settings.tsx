@@ -44,14 +44,14 @@ export default function Settings() {
   } = useTheme();
 
   const [formData, setFormData] = useState({
-    businessName: 'Bodhale Purchaser',
-    proprietorName: 'Maroti V Bodhale',
-    address: 'Mardi, Maregaon, Wani, Yavatmal - 445304',
-    mobile1: '8805978780',
-    mobile2: '9604655124',
+    businessName: '',
+    proprietorName: '',
+    address: '',
+    mobile1: '',
+    mobile2: '',
     signatureData: null as string | null,
     signatureType: 'upload',
-    signatureName: 'M. V. Bodhale',
+    signatureName: '',
   });
 
   const [backupStats, setBackupStats] = useState<any>(null);
@@ -142,14 +142,14 @@ export default function Settings() {
         if (data && !data.error) {
           setFormData(prev => ({
             ...prev,
-            businessName: data.businessName || 'Bodhale Purchaser',
-            proprietorName: data.proprietorName || 'Maroti V Bodhale',
-            address: data.address || 'Mardi, Maregaon, Wani, Yavatmal - 445304',
-            mobile1: data.mobile1 || '8805978780',
-            mobile2: data.mobile2 || '9604655124',
+            businessName: data.businessName || '',
+            proprietorName: data.proprietorName || '',
+            address: data.address || '',
+            mobile1: data.mobile1 || '',
+            mobile2: data.mobile2 || '',
             signatureData: data.signatureData || null,
             signatureType: 'upload',
-            signatureName: data.signatureName || 'M. V. Bodhale',
+            signatureName: data.signatureName || '',
           }));
         }
       })
@@ -481,7 +481,7 @@ export default function Settings() {
                 <Input
                   value={formData.businessName}
                   onChange={e => handleInputChange('businessName', e.target.value)}
-                  placeholder="Bodhale Purchaser"
+                  placeholder="e.g. Shree Ganesh Agro Traders"
                   required
                 />
               </div>
@@ -493,7 +493,7 @@ export default function Settings() {
                 <Input
                   value={formData.proprietorName}
                   onChange={e => handleInputChange('proprietorName', e.target.value)}
-                  placeholder="Maroti V Bodhale"
+                  placeholder="e.g. Ramesh Patil"
                   required
                 />
               </div>
@@ -506,7 +506,7 @@ export default function Settings() {
               <Input
                 value={formData.address}
                 onChange={e => handleInputChange('address', e.target.value)}
-                placeholder="Mardi, Maregaon, Wani, Yavatmal - 445304"
+                placeholder="e.g. APMC Yard, Latur - 413512"
                 required
               />
             </div>
@@ -519,7 +519,7 @@ export default function Settings() {
                 <Input
                   value={formData.mobile1}
                   onChange={e => handleInputChange('mobile1', e.target.value)}
-                  placeholder="8805978780"
+                  placeholder="10-digit mobile number"
                   required
                 />
               </div>
@@ -530,7 +530,7 @@ export default function Settings() {
                 <Input
                   value={formData.mobile2}
                   onChange={e => handleInputChange('mobile2', e.target.value)}
-                  placeholder="9604655124"
+                  placeholder="Alternate mobile (optional)"
                 />
               </div>
             </div>

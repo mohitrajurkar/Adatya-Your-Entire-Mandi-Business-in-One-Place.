@@ -55,11 +55,11 @@ export function numberToWordsINR(num: number | null | undefined): string {
 }
 
 export function generateWhatsAppBillMessage(data: any, profile?: any): string {
-  const business = profile?.businessName || 'Bodhale Purchaser';
-  const proprietor = profile?.proprietorName || 'Maroti V Bodhale';
-  const address = profile?.address || 'Mardi, Maregaon, Wani, Yavatmal';
-  const phone = profile?.mobile1 || '8805978780';
-  const farmerName = data?.farmer?.name || 'Respected Farmer';
+  const business = profile?.businessName || '';
+  const proprietor = profile?.proprietorName || '';
+  const address = profile?.address || '';
+  const phone = profile?.mobile1 || '';
+  const farmerName = data?.farmer?.name || 'Farmer';
   const farmerVillage = data?.farmer?.village ? ` (${data.farmer.village})` : '';
   const invoiceNum = data?.purchaseNumber || 'INV-000';
   const dateFormatted = data?.date ? new Date(data.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';

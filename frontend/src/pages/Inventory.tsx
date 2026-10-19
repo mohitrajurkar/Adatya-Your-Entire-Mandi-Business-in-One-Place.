@@ -94,6 +94,7 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [stockList, setStockList] = useState<StockCommodity[]>([]);
   const [summary, setSummary] = useState<StockSummary | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<any>(null);
   const [salesList, setSalesList] = useState<MandiSale[]>([]);
   const [activeTab, setActiveTab] = useState<'stock' | 'sales'>('stock');
 
@@ -144,12 +145,17 @@ export default function Inventory() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [stockRes, salesRes] = await Promise.all([
+      const [stockRes, salesRes, profileRes] = await Promise.all([
         apiFetch(`/inventory/stock`),
-        apiFetch(`/mandi-sales`)
+        apiFetch(`/mandi-sales`),
+        apiFetch(`/profile`)
       ]);
       const stockData = await stockRes.json();
       const salesData = await salesRes.json();
+      const profileData = await profileRes.json().catch(() => null);
+      if (profileData && !profileData.error) {
+        setBusinessProfile(profileData);
+      }
 
       if (stockData.success) {
         setStockList(stockData.stock || []);
@@ -1275,10 +1281,11 @@ export default function Inventory() {
                   />
                   <div>
                     <h3 className="font-serif font-black text-lg text-slate-950 uppercase">
-                      Bodhale Purchaser
+                      {businessProfile?.businessName || ''}
                     </h3>
                     <p className="text-[10px] text-slate-600 font-semibold">
-                      Authorised Mandi Commission Agent · APMC Yard
+                      {businessProfile?.address
+                        || 'Authorised Mandi Commission Agent'}
                     </p>
                   </div>
                 </div>

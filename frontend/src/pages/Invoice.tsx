@@ -139,12 +139,12 @@ export default function Invoice() {
   } catch {}
 
   const activeBusiness = {
-    businessName: user?.businessName || profile?.businessName || 'Bodhale Purchaser',
-    proprietorName: user?.name || profile?.proprietorName || 'Maroti V Bodhale',
-    address: user?.apmcLocation || profile?.address || 'Mardi, Maregaon, Wani, Yavatmal - 445304',
-    mobile1: profile?.mobile1 || user?.mobile || '8805978780',
-    mobile2: profile?.mobile2 || '9604655124',
-    mandiLicense: profile?.mandiLicense || 'APMC/MRG/2024-88',
+    businessName: user?.businessName || profile?.businessName || '',
+    proprietorName: user?.name || profile?.proprietorName || '',
+    address: user?.apmcLocation || profile?.address || '',
+    mobile1: profile?.mobile1 || user?.mobile || '',
+    mobile2: profile?.mobile2 || '',
+    mandiLicense: profile?.mandiLicense || '',
     gstin: profile?.gstin || '',
     upiId: profile?.upiId || '',
     signatureData: profile?.signatureData || null,
@@ -557,7 +557,7 @@ export default function Invoice() {
                   </div>
                   <div className="text-xs text-slate-700 flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    Village: <strong className="text-slate-900">{data.farmer?.village || 'Mardi'}</strong>
+                    Village: <strong className="text-slate-900">{data.farmer?.village || '—'}</strong>
                   </div>
                   {data.farmer?.mobile && (
                     <div className="text-xs text-slate-700 flex items-center gap-1">

@@ -61,13 +61,13 @@ export default function Purchases() {
       } catch {}
 
       const activeBusiness = {
-        businessName: user?.businessName || profile?.businessName || 'Bodhale Purchaser',
-        proprietorName: user?.name || profile?.proprietorName || 'Maroti V Bodhale',
+        businessName: user?.businessName || profile?.businessName || '',
+        proprietorName: user?.name || profile?.proprietorName || '',
         address: user?.apmcLocation || profile?.address || 'APMC Mandi Yard',
-        mobile1: profile?.mobile1 || user?.mobile || '8805978780',
-        mobile2: profile?.mobile2 || '9604655124',
-        mandiLicense: profile?.mandiLicense || 'APMC/MRG/2024-88',
-        signatureName: profile?.signatureName || user?.name || 'M. V. Bodhale',
+        mobile1: profile?.mobile1 || user?.mobile || '',
+        mobile2: profile?.mobile2 || '',
+        mandiLicense: profile?.mandiLicense || '',
+        signatureName: profile?.signatureName || user?.name || '',
         tagline: profile?.tagline || 'Your ledger, your control.'
       };
 

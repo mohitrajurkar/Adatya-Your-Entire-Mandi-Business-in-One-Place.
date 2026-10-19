@@ -283,7 +283,7 @@ export default function Profile() {
                   required
                   value={profileData.businessName}
                   onChange={(e) => setProfileData({ ...profileData, businessName: e.target.value })}
-                  placeholder="उदा. श्री गणेश अ‍ॅग्रो ट्रेडर्स / Bodhale Purchaser"
+                  placeholder="उदा. श्री गणेश अ‍ॅग्रो ट्रेडर्स"
                   className="h-10 text-xs font-bold bg-slate-50 border-slate-300"
                 />
               </div>
@@ -353,7 +353,7 @@ export default function Profile() {
                   type="text"
                   value={profileData.mandiLicense}
                   onChange={(e) => setProfileData({ ...profileData, mandiLicense: e.target.value })}
-                  placeholder="उदा. APMC/MRG/2024-88"
+                  placeholder="उदा. APMC/XXX/2026-00"
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -397,7 +397,7 @@ export default function Profile() {
                   maxLength={10}
                   value={profileData.mobile1}
                   onChange={(e) => setProfileData({ ...profileData, mobile1: e.target.value.replace(/\D/g, '') })}
-                  placeholder="8805978780"
+                  placeholder="10-अंकी मोबाईल क्रमांक"
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -411,7 +411,7 @@ export default function Profile() {
                   maxLength={10}
                   value={profileData.mobile2}
                   onChange={(e) => setProfileData({ ...profileData, mobile2: e.target.value.replace(/\D/g, '') })}
-                  placeholder="9604655124"
+                  placeholder="पर्यायी मोबाईल (ऐच्छिक)"
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -425,7 +425,7 @@ export default function Profile() {
                   type="text"
                   value={profileData.upiId}
                   onChange={(e) => setProfileData({ ...profileData, upiId: e.target.value })}
-                  placeholder="8805978780@upi"
+                  placeholder="yourname@upi"
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
