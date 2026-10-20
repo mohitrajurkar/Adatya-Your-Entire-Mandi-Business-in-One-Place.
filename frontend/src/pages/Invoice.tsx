@@ -44,7 +44,7 @@ export default function Invoice() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfToast, setPdfToast] = useState<string | null>(null);
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const {
     currentTheme,
@@ -210,15 +210,11 @@ export default function Invoice() {
 
       if (result.method === 'native-share') {
         setPdfToast(
-          language === 'mr'
-            ? '📄 पावती PDF व्हॉट्सॲपवर पाठवली!'
-            : '📄 Bill PDF shared directly on WhatsApp!'
+          t('bill_pdf_shared_directly_on_whatsapp')
         );
       } else {
         setPdfToast(
-          language === 'mr'
-            ? '📄 पावती PDF डाउनलोड झाली व व्हॉट्सॲप चॅट उघडले! कृपया फाईल पाठवा.'
-            : '📄 Bill PDF downloaded & WhatsApp opened! Attach PDF to send.'
+          t('bill_pdf_downloaded_whatsapp_opened_attach_p_2')
         );
       }
       setTimeout(() => setPdfToast(null), 5000);
@@ -377,8 +373,8 @@ export default function Invoice() {
             >
               <MessageSquare className="h-4 w-4" />
               {isGeneratingPdf
-                ? (language === 'mr' ? 'PDF तयार होत आहे...' : 'Generating PDF...')
-                : (language === 'mr' ? 'व्हॉट्सॲपवर PDF पाठवा' : 'Send PDF on WhatsApp')}
+                ? (t('generating_pdf'))
+                : (t('send_pdf_on_whatsapp'))}
             </Button>
 
             {/* Pay Balance Button */}

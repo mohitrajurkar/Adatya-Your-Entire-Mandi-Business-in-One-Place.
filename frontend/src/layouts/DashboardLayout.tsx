@@ -19,7 +19,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage, LANGUAGES } from '../context/LanguageContext';
 import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { DEFAULT_LOGO } from '../config/logos';
@@ -29,7 +29,7 @@ import { apiFetch, clearSession } from '../lib/api';
 export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentTheme, isThemeModalOpen, setIsThemeModalOpen } = useTheme();
-  const { language, toggleLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [businessProfileData, setBusinessProfileData] = useState<{ businessName?: string; address?: string } | null>(null);
 
@@ -73,18 +73,18 @@ export default function DashboardLayout() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const navItems = [
-    { to: '/', icon: LayoutDashboard, label: language === 'mr' ? 'डॅशबोर्ड' : 'Dashboard' },
-    ...(isSuperAdmin ? [{ to: '/admin', icon: ShieldCheck, label: language === 'mr' ? '👑 सर्व व्यवसाय (Super Admin)' : '👑 Super Admin Portal' }] : []),
-    { to: '/inventory', icon: Boxes, label: language === 'mr' ? 'धान्य साठा (स्टॉक)' : 'Grain Stock & Sales' },
-    { to: '/purchases', icon: ShoppingCart, label: language === 'mr' ? 'खरेदी नोंदी' : 'Purchases' },
-    { to: '/farmers', icon: Users, label: language === 'mr' ? 'शेतकरी यादी' : 'Farmers' },
-    { to: '/reports', icon: FileText, label: language === 'mr' ? 'अहवाल' : 'Reports' },
-    { to: '/profile', icon: User, label: language === 'mr' ? 'प्रोफाइल' : 'Profile' },
-    { to: '/settings', icon: Settings, label: language === 'mr' ? 'सेटिंग्ज' : 'Settings' },
+    { to: '/', icon: LayoutDashboard, label: t('dashboard') },
+    ...(isSuperAdmin ? [{ to: '/admin', icon: ShieldCheck, label: t('super_admin_portal') }] : []),
+    { to: '/inventory', icon: Boxes, label: t('grain_stock_sales') },
+    { to: '/purchases', icon: ShoppingCart, label: t('purchases') },
+    { to: '/farmers', icon: Users, label: t('farmers') },
+    { to: '/reports', icon: FileText, label: t('reports') },
+    { to: '/profile', icon: User, label: t('profile') },
+    { to: '/settings', icon: Settings, label: t('settings') },
   ];
 
   const location = useLocation();
-  const currentPathName = navItems.find(item => item.to === location.pathname)?.label || (language === 'mr' ? 'डॅशबोर्ड' : 'Dashboard');
+  const currentPathName = navItems.find(item => item.to === location.pathname)?.label || (t('dashboard'));
 
   const activeBusinessName = user?.businessName || businessProfileData?.businessName || 'Adatya Trader';
   const activeLocation = user?.apmcLocation || businessProfileData?.address || 'APMC Mandi Yard';
@@ -146,7 +146,7 @@ export default function DashboardLayout() {
         {/* Navigation Links */}
         <nav className="flex-1 py-5 px-3 space-y-1.5 overflow-y-auto">
           <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-400/80 font-bold mb-1">
-            {language === 'mr' ? 'आडत व्यवहार' : 'Broker Navigation'}
+            {t('broker_navigation')}
           </div>
           {navItems.map((item) => (
             <NavLink
@@ -199,7 +199,7 @@ export default function DashboardLayout() {
             className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-xs font-bold text-rose-300 hover:bg-rose-950/40 hover:text-rose-200 transition-colors border border-rose-500/20"
           >
             <LogOut className="h-4 w-4 shrink-0 text-rose-400" />
-            {language === 'mr' ? 'सत्र बंद करा (Logout)' : 'Logout Session'}
+            {t('logout_session')}
           </button>
         </div>
       </aside>
@@ -230,15 +230,28 @@ export default function DashboardLayout() {
             {/* Mobile PWA Install Button (Android & iOS) */}
             <PWAInstallButton />
 
-            {/* Bilingual Marathi / English Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-xl border border-slate-300 hover:border-emerald-600 bg-emerald-50/60 hover:bg-emerald-100/70 text-xs font-bold text-emerald-950 transition-all shadow-2xs"
-              title="मराठी / English भाषा बदला (Switch Language)"
-            >
-              <Languages className="w-3.5 h-3.5 text-emerald-700" />
-              <span>{language === 'mr' ? 'मराठी' : 'EN'}</span>
-            </button>
+            {/* Marathi / Hindi / English. A real choice rather than a
+                two-way toggle, now that three languages are supported. */}
+            <div className="flex items-center gap-1 rounded-control border border-line bg-surface p-0.5">
+              <Languages className="ml-1 h-3.5 w-3.5 shrink-0 text-brand-700" aria-hidden="true" />
+              {LANGUAGES.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setLanguage(option.id)}
+                  aria-pressed={language === option.id}
+                  aria-label={`Switch to ${option.englishLabel}`}
+                  className={
+                    'rounded px-2 py-1 text-2xs font-semibold transition-colors ' +
+                    (language === option.id
+                      ? 'bg-brand-700 text-ink-inverted'
+                      : 'text-ink-muted hover:bg-surface-muted hover:text-ink')
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
 
             {/* UI Theme Switcher Button */}
             <button
@@ -303,7 +316,7 @@ export default function DashboardLayout() {
                 <>
                   <LayoutDashboard className={`w-5 h-5 ${isActive ? 'text-emerald-800 stroke-[2.5]' : 'text-slate-500'}`} />
                   <span className="text-[10px] mt-0.5 tracking-tight">
-                    {language === 'mr' ? 'डॅशबोर्ड' : 'Home'}
+                    {t('home')}
                   </span>
                 </>
               )}
@@ -322,7 +335,7 @@ export default function DashboardLayout() {
                 <>
                   <Boxes className={`w-5 h-5 ${isActive ? 'text-emerald-800 stroke-[2.5]' : 'text-slate-500'}`} />
                   <span className="text-[10px] mt-0.5 tracking-tight">
-                    {language === 'mr' ? 'धान्य साठा' : 'Stock'}
+                    {t('stock')}
                   </span>
                 </>
               )}
@@ -332,13 +345,13 @@ export default function DashboardLayout() {
             <Link
               to="/purchases/new"
               className="flex flex-col items-center justify-center -mt-6 group"
-              title={language === 'mr' ? 'नवीन खरेदी पावती बनवा' : 'New Purchase Slip'}
+              title={t('new_purchase_slip')}
             >
               <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-emerald-950 via-emerald-900 to-emerald-800 text-amber-300 p-0.5 shadow-lg border-2 border-amber-400/80 flex items-center justify-center active:scale-95 transition-transform">
                 <Plus className="w-6 h-6 stroke-[3]" />
               </div>
               <span className="text-[10px] font-black text-emerald-950 mt-1 uppercase tracking-wider">
-                {language === 'mr' ? 'नवीन पावती' : 'New Bill'}
+                {t('new_bill')}
               </span>
             </Link>
 
@@ -355,7 +368,7 @@ export default function DashboardLayout() {
                 <>
                   <ShoppingCart className={`w-5 h-5 ${isActive ? 'text-emerald-800 stroke-[2.5]' : 'text-slate-500'}`} />
                   <span className="text-[10px] mt-0.5 tracking-tight">
-                    {language === 'mr' ? 'खरेदी' : 'Purchases'}
+                    {t('purchases_2')}
                   </span>
                 </>
               )}
@@ -374,7 +387,7 @@ export default function DashboardLayout() {
                 <>
                   <Users className={`w-5 h-5 ${isActive ? 'text-emerald-800 stroke-[2.5]' : 'text-slate-500'}`} />
                   <span className="text-[10px] mt-0.5 tracking-tight">
-                    {language === 'mr' ? 'शेतकरी' : 'Farmers'}
+                    {t('farmers_2')}
                   </span>
                 </>
               )}
@@ -390,12 +403,10 @@ export default function DashboardLayout() {
                 <LogOut className="w-6 h-6 stroke-[2.5]" />
               </div>
               <h3 className="text-base font-bold text-center text-slate-900">
-                {language === 'mr' ? 'सत्र बंद (Logout) करायचे आहे का?' : 'Confirm Logout?'}
+                {t('confirm_logout')}
               </h3>
               <p className="text-xs text-center text-slate-500 mt-1.5">
-                {language === 'mr'
-                  ? 'तुम्ही सुरक्षितपणे सिस्टीममधून बाहेर पडाल. पुन्हा लॉग इन करण्यासाठी मोबाईल नंबर व पासवर्ड आवश्यक असेल.'
-                  : 'You will be securely signed out of your Adatya account. You can log back in anytime with your mobile number.'}
+                {t('you_will_be_securely_signed_out_of_your_adat')}
               </p>
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
@@ -403,7 +414,7 @@ export default function DashboardLayout() {
                   onClick={() => setIsLogoutConfirmOpen(false)}
                   className="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors"
                 >
-                  {language === 'mr' ? 'रद्द करा (Cancel)' : 'Cancel'}
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -411,7 +422,7 @@ export default function DashboardLayout() {
                   className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-1.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  {language === 'mr' ? 'हो, लॉगआउट करा' : 'Yes, Log Out'}
+                  {t('yes_log_out')}
                 </button>
               </div>
             </div>

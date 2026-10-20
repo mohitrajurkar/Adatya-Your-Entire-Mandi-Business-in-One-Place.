@@ -1,114 +1,107 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { en } from '../locales/en';
+import { mr } from '../locales/mr';
+import { hi } from '../locales/hi';
+import type { TranslationKey } from '../locales/keys';
 
-export type Language = 'mr' | 'en';
+/**
+ * Translation for English, Marathi and Hindi.
+ *
+ * Previously there were two languages, roughly fifty keys, and almost no use
+ * of the lookup: text lived inline as `language === 'mr' ? '…' : '…'` in 179
+ * places across 17 files, with another 379 lines of Marathi hard-coded in
+ * JSX. Adding a third language meant editing every one of them by hand.
+ *
+ * Both sides of those ternaries have been extracted into locales/{en,mr,hi},
+ * keyed and typed, so `t()` is checked at build time and a missing string is
+ * a compile error rather than a silent fall back to the wrong language.
+ *
+ * One language is shown at a time. The interface used to print both at once
+ * ("गोदाम धान्य साठा (Live Grain Stock Balance)"), which doubled the length
+ * of every label and was worst on a phone.
+ */
 
-export interface Translations {
-  [key: string]: {
-    mr: string;
-    en: string;
-  };
-}
+export type Language = 'en' | 'mr' | 'hi';
 
-export const translations: Translations = {
-  // Navigation
-  dashboard: { mr: 'डॅशबोर्ड', en: 'Dashboard' },
-  purchases: { mr: 'खरेदी नोंदी', en: 'Purchases' },
-  farmers: { mr: 'शेतकरी यादी', en: 'Farmers' },
-  reports: { mr: 'अहवाल', en: 'Reports' },
-  profile: { mr: 'प्रोफाइल', en: 'Profile' },
-  settings: { mr: 'सेटिंग्ज', en: 'Settings' },
-  logout: { mr: 'लॉगआउट', en: 'Logout' },
+export const LANGUAGES: { id: Language; label: string; englishLabel: string }[] = [
+  { id: 'mr', label: 'मराठी', englishLabel: 'Marathi' },
+  { id: 'hi', label: 'हिंदी', englishLabel: 'Hindi' },
+  { id: 'en', label: 'English', englishLabel: 'English' },
+];
 
-  // Dashboard Stats & Actions
-  newPurchaseSlip: { mr: 'नवीन खरेदी पावती', en: 'New Purchase Slip' },
-  editProfile: { mr: 'प्रोफाइल संपादित करा', en: 'Edit Profile' },
-  allBills: { mr: 'सर्व पावत्या', en: 'All Bills' },
-  totalPurchased: { mr: 'एकूण खरेदी', en: 'Total Purchased' },
-  amountPaid: { mr: 'अदा केलेली रक्कम', en: 'Amount Paid' },
-  pendingBalance: { mr: 'शिल्लक बाकी', en: 'Pending Balance' },
-  farmersRegistered: { mr: 'नोंदणीकृत शेतकरी', en: 'Farmers Registered' },
-  procurementValueTrends: { mr: 'खरेदी उलाढाल आलेख', en: 'Procurement Trends' },
-  recentPurchases: { mr: 'ताजी खरेदी', en: 'Recent Purchases' },
-  viewAll: { mr: 'सर्व पहा', en: 'View All' },
-  liveDesk: { mr: 'थेट आडत डेस्क', en: 'Live Mandi Desk' },
-  welcome: { mr: 'स्वागत आहे', en: 'Welcome' },
+const DICTIONARIES: Record<Language, Record<TranslationKey, string>> = { en, mr, hi };
 
-  // Bill & Voucher
-  invoiceBill: { mr: 'खरेदी पावती', en: 'INVOICE BILL' },
-  invoiceNo: { mr: 'पावती क्र.', en: 'Invoice No' },
-  date: { mr: 'तारीख', en: 'Date' },
-  farmerName: { mr: 'शेतकरी नाव', en: 'Farmer Name' },
-  village: { mr: 'गाव', en: 'Village' },
-  mobile: { mr: 'मोबाईल', en: 'Mobile' },
-  commodity: { mr: 'शेतमाल / धान्य', en: 'Commodity / Crop' },
-  quantity: { mr: 'वजन / प्रमाण (क्विं.)', en: 'Quantity (Qtl)' },
-  rate: { mr: 'दर प्रति क्विंटल (₹)', en: 'Rate / Qtl (₹)' },
-  amount: { mr: 'एकूण रक्कम (₹)', en: 'Total Amount (₹)' },
-  grossTotal: { mr: 'एकूण खरेदी रक्कम', en: 'Gross Total' },
-  advancePaid: { mr: 'दिलेली उचल / रक्कम', en: 'Advance Paid' },
-  remainingAmount: { mr: 'शिल्लक बाकी', en: 'Remaining Balance' },
-  amountInWords: { mr: 'अक्षरी रक्कम', en: 'Amount in Words' },
-  printBill: { mr: 'पावती छापा', en: 'Print Bill' },
-  sharePdfOnWhatsApp: { mr: 'व्हॉट्सॲपवर PDF पाठवा', en: 'Send PDF on WhatsApp' },
-  payBalance: { mr: 'शिल्लक जमा करा', en: 'Pay Balance' },
-  authorizedSignatory: { mr: 'अधिकृत स्वाक्षरी', en: 'Authorized Signatory' },
-
-  // Commodity Dropdown & Custom
-  selectCommodity: { mr: 'धान्य निवडा...', en: 'Select Commodity...' },
-  otherGrain: { mr: '🌾 इतर धान्य (Custom धान्य नाव टाका)...', en: '🌾 Other Grain (Enter Custom Name)...' },
-  enterGrainName: { mr: 'धान्याचे नाव टाका (उदा. हरभरा, उडीद, मका)', en: 'Enter Grain Name (e.g. Gram, Urad, Maize)' },
-
-  // Status
-  paid: { mr: 'अदा', en: 'Paid' },
-  partial: { mr: 'अंशतः अदा', en: 'Partial' },
-  pending: { mr: 'बाकी', en: 'Pending' },
-
-  // Common
-  save: { mr: 'जतन करा', en: 'Save' },
-  saving: { mr: 'जतन करत आहे...', en: 'Saving...' },
-  cancel: { mr: 'रद्द करा', en: 'Cancel' },
-  search: { mr: 'शोधा...', en: 'Search...' },
-  actions: { mr: 'कृती', en: 'Actions' },
-  view: { mr: 'पहा', en: 'View' },
-  add: { mr: 'जोडा', en: 'Add' },
-};
+const STORAGE_KEY = 'adatya_lang';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
+  /** Cycles through the available languages, for the compact header control. */
   toggleLanguage: () => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
+  /** Picks the right string when a value is supplied per language. */
+  pick: (values: Partial<Record<Language, string>>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('adatya_lang');
-    return saved === 'en' ? 'en' : 'mr'; // Marathi by default for authentic Mandi experience
-  });
-
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('adatya_lang', lang);
-  };
-
-  const toggleLanguage = () => {
-    setLanguage(language === 'mr' ? 'en' : 'mr');
-  };
-
-  const t = (key: string): string => {
-    if (translations[key]) {
-      return translations[key][language] || translations[key].en || key;
+function readStored(): Language {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'en' || saved === 'mr' || saved === 'hi') {
+      return saved;
     }
-    return key;
-  };
+  } catch {
+    /* storage unavailable */
+  }
+  // Marathi by default: this is a Maharashtra mandi product.
+  return 'mr';
+}
 
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(readStored);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+    } catch {
+      /* storage unavailable; the choice simply will not persist */
+    }
+  }, []);
+
+  const toggleLanguage = useCallback(() => {
+    setLanguageState(current => {
+      const order: Language[] = ['mr', 'hi', 'en'];
+      const next = order[(order.indexOf(current) + 1) % order.length];
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  const value = useMemo<LanguageContextType>(() => {
+    const dictionary = DICTIONARIES[language];
+    return {
+      language,
+      setLanguage,
+      toggleLanguage,
+      // en is the fallback, so an untranslated string is readable rather than
+      // showing a raw key to a trader.
+      t: (key: TranslationKey) => dictionary[key] ?? en[key] ?? key,
+      pick: (values: Partial<Record<Language, string>>) =>
+        values[language] ?? values.en ?? values.mr ?? '',
+    };
+  }, [language, setLanguage, toggleLanguage]);
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {

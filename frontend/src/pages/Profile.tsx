@@ -26,7 +26,7 @@ import { apiFetch, clearSession } from '../lib/api';
 
 export default function Profile() {
   const { currentTheme } = useTheme();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -534,7 +534,7 @@ export default function Profile() {
             className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs h-9 px-5 rounded-xl shadow-xs flex items-center gap-2 shrink-0 transition-transform active:scale-95"
           >
             <LogOut className="w-4 h-4 stroke-[2.5]" />
-            {language === 'mr' ? 'सत्र बंद करा (Logout)' : 'Sign Out / Logout'}
+            {t('sign_out_logout')}
           </Button>
         </CardContent>
       </Card>
@@ -561,7 +561,7 @@ export default function Profile() {
             className="border-red-400 text-red-700 hover:bg-red-100 font-bold text-xs h-9 px-5 rounded-xl flex items-center gap-2 shrink-0 transition-transform active:scale-95"
           >
             <Trash2 className="w-4 h-4" />
-            {language === 'mr' ? 'खाते हटवा' : 'Delete My Account'}
+            {t('delete_my_account')}
           </Button>
         </CardContent>
       </Card>
@@ -574,22 +574,20 @@ export default function Profile() {
               <LogOut className="w-6 h-6 stroke-[2.5]" />
             </div>
             <h3 className="text-base font-bold text-center text-slate-900">
-              {language === 'mr' ? 'सत्र बंद (Logout) करायचे आहे का?' : 'Confirm Logout?'}
+              {t('confirm_logout')}
             </h3>
             <p className="text-xs text-center text-slate-500 mt-1.5 leading-relaxed">
-              {language === 'mr'
-                ? 'तुम्ही सुरक्षितपणे सिस्टीममधून बाहेर पडाल. पुन्हा लॉग इन करण्यासाठी मोबाईल नंबर व पासवर्ड आवश्यक असेल.'
-                : 'You will be securely signed out of your Adatya account on this device. You can log back in anytime.'}
+              {t('you_will_be_securely_signed_out_of_your_adat_2')}
             </p>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <button type="button" onClick={() => setIsLogoutModalOpen(false)}
                 className="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors">
-                {language === 'mr' ? 'रद्द करा (Cancel)' : 'Cancel'}
+                {t('cancel')}
               </button>
               <button type="button" onClick={handleLogout}
                 className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-1.5">
                 <LogOut className="w-3.5 h-3.5" />
-                {language === 'mr' ? 'हो, लॉगआउट करा' : 'Yes, Log Out'}
+                {t('yes_log_out')}
               </button>
             </div>
           </div>
@@ -604,7 +602,7 @@ export default function Profile() {
               <AlertTriangle className="w-7 h-7 stroke-[2.5]" />
             </div>
             <h3 className="text-base font-black text-center text-red-800">
-              {language === 'mr' ? 'खाते कायमचे हटवायचे आहे का?' : 'Permanently Delete Account?'}
+              {t('permanently_delete_account')}
             </h3>
             <p className="text-xs text-center text-slate-600 mt-2 leading-relaxed">
               This will <strong className="text-red-700">permanently erase</strong> all your farmers, purchases, mandi sales, inventory, and account data from the database. <strong>This cannot be undone.</strong>

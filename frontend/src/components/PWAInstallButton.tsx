@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill' }> = ({ variant = 'header' }) => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [showIOSGuide, setShowIOSGuide] = useState(false);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   // If already installed and launched from phone home screen, hide prompt
   if (isInstalled) {
@@ -19,10 +19,10 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
       <button
         onClick={install}
         className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md border border-amber-300 hover:from-amber-400 hover:to-amber-500 active:scale-95 transition-all"
-        title={language === 'mr' ? 'अँड्रॉइड ॲप इन्स्टॉल करा' : 'Install Mobile App'}
+        title={t('install_mobile_app')}
       >
         <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-        <span className="hidden sm:inline">{language === 'mr' ? 'ॲप इन्स्टॉल' : 'Install App'}</span>
+        <span className="hidden sm:inline">{t('install_app')}</span>
       </button>
     );
   }
@@ -37,7 +37,7 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
           title="Install on iPhone / iPad"
         >
           <Smartphone className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">{language === 'mr' ? 'iPhone ॲप' : 'iOS App'}</span>
+          <span className="hidden sm:inline">{t('ios_app')}</span>
         </button>
 
         {showIOSGuide && (
@@ -56,7 +56,7 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
                 </div>
                 <div>
                   <h3 className="font-serif font-black text-base text-slate-900">
-                    {language === 'mr' ? 'iPhone वर ॲप जोडा' : 'Install on iPhone / iPad'}
+                    {t('install_on_iphone_ipad')}
                   </h3>
                   <p className="text-[11px] text-slate-500">
                     Add Adatya to your Apple Home Screen
@@ -103,7 +103,7 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
                 onClick={() => setShowIOSGuide(false)}
                 className="mt-5 w-full py-2.5 bg-emerald-950 hover:bg-emerald-900 text-amber-300 font-bold text-xs rounded-xl shadow-md transition-colors"
               >
-                {language === 'mr' ? 'समजले (Got it)' : 'Done'}
+                {t('done')}
               </button>
             </div>
           </div>

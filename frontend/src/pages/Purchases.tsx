@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -23,6 +24,7 @@ import { apiFetch } from '../lib/api';
 
 
 export default function Purchases() {
+  const { t } = useLanguage();
   const [purchases, setPurchases] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -205,7 +207,7 @@ export default function Purchases() {
           <div className="block md:hidden divide-y divide-slate-100">
             {filteredPurchases.length === 0 ? (
               <div className="p-8 text-center text-slate-400 text-xs">
-                कोणतीही पावती सापडली नाही (No purchase entries found)
+                {t('no_purchases_found')}
               </div>
             ) : (
               filteredPurchases.map(purchase => (
@@ -241,7 +243,7 @@ export default function Purchases() {
                     </div>
                     {purchase.farmerVillage && (
                       <div className="text-xs text-slate-500">
-                        गाव: {purchase.farmerVillage}
+                        {t('village_label')}: {purchase.farmerVillage}
                       </div>
                     )}
                   </div>
@@ -249,15 +251,15 @@ export default function Purchases() {
                   {/* 3-Col Metric Snapshot */}
                   <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
                     <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">एकूण रक्कम</div>
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('total_amount_label')}</div>
                       <div className="text-xs font-black text-slate-900 mt-0.5">{formatCurrency(purchase.totalAmount)}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">अगाऊ (Advance)</div>
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('advance_label')}</div>
                       <div className="text-xs font-black text-emerald-700 mt-0.5">{formatCurrency(purchase.advancePaid)}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">बाकी (Due)</div>
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('due_label')}</div>
                       <div className={`text-xs font-black mt-0.5 ${purchase.remainingAmount > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
                         {formatCurrency(purchase.remainingAmount)}
                       </div>
@@ -288,7 +290,7 @@ export default function Purchases() {
                         type="button"
                         className="w-full py-2 rounded-xl text-slate-800 hover:bg-slate-100 text-xs font-bold flex items-center justify-center gap-1 border border-slate-300 bg-white shadow-2xs"
                       >
-                        <Eye className="h-3.5 w-3.5" /> पावती पहा
+                        <Eye className="h-3.5 w-3.5" /> {t('view_bill')}
                       </button>
                     </Link>
                   </div>

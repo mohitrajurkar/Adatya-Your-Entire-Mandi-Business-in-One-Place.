@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext';
 import React, { useEffect, useState, FormEvent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -10,6 +11,7 @@ import { apiFetch } from '../lib/api';
 
 
 export default function Farmers() {
+  const { t } = useLanguage();
   const [farmers, setFarmers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -112,7 +114,7 @@ export default function Farmers() {
           <div className="block md:hidden divide-y divide-slate-100">
             {filteredFarmers.length === 0 ? (
               <div className="p-8 text-center text-slate-400 text-xs">
-                कोणताही शेतकरी सापडला नाही (No farmers found)
+                {t('no_farmers_found')}
               </div>
             ) : (
               filteredFarmers.map(farmer => (
@@ -130,7 +132,7 @@ export default function Farmers() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">शिल्लक बाकी</div>
+                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('outstanding_balance')}</div>
                       <span className={`inline-block font-bold text-xs px-2 py-0.5 rounded-lg mt-0.5 ${
                         farmer.outstandingBalance > 0
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -151,11 +153,11 @@ export default function Farmers() {
                         <span>{farmer.mobile}</span>
                       </a>
                     ) : (
-                      <span className="text-[11px] text-slate-400">मोबाईल उपलब्ध नाही</span>
+                      <span className="text-[11px] text-slate-400">{t('no_mobile_on_record')}</span>
                     )}
 
                     <Button variant="outline" size="sm" className="h-8 text-xs font-bold border-slate-200 text-slate-700">
-                      हिशोब वही (Ledger)
+                      {t('ledger')}
                     </Button>
                   </div>
                 </div>

@@ -20,7 +20,7 @@ export default function WhatsAppShareModal({
 }: WhatsAppShareModalProps) {
   if (!isOpen || !data) return null;
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const rawMobile = data.farmer?.mobile || data.farmerMobile || '';
   const cleanPhoneDigits = rawMobile.replace(/\D/g, '');
   const initialPhone = cleanPhoneDigits.length === 10
@@ -50,15 +50,11 @@ export default function WhatsAppShareModal({
 
       if (result.method === 'native-share') {
         setShareSuccess(
-          language === 'mr'
-            ? 'पावती PDF व्हॉट्सॲपवर पाठवण्यासाठी तयार!'
-            : 'Bill PDF ready to share on WhatsApp!'
+          t('bill_pdf_ready_to_share_on_whatsapp')
         );
       } else {
         setShareSuccess(
-          language === 'mr'
-            ? '📄 पावती PDF डाउनलोड झाली व व्हॉट्सॲप चॅट उघडले!'
-            : '📄 Bill PDF downloaded & WhatsApp opened! Attach PDF to send.'
+          t('bill_pdf_downloaded_whatsapp_opened_attach_p')
         );
       }
 
@@ -76,9 +72,7 @@ export default function WhatsAppShareModal({
       const doc = generateBillPdfDoc(data, profile);
       doc.save(`Adatya_Bill_${data.purchaseNumber}.pdf`);
       setShareSuccess(
-        language === 'mr'
-          ? '📄 पावती PDF डाऊनलोड झाली!'
-          : '📄 Bill PDF downloaded successfully!'
+        t('bill_pdf_downloaded_successfully')
       );
     } catch (err) {
       console.error('Download PDF error:', err);
@@ -96,10 +90,10 @@ export default function WhatsAppShareModal({
             </div>
             <div>
               <h3 className="font-serif font-black text-base leading-tight text-amber-300">
-                {language === 'mr' ? 'पावती PDF व्हॉट्सॲपवर पाठवा' : 'Share Bill PDF on WhatsApp'}
+                {t('share_bill_pdf_on_whatsapp')}
               </h3>
               <p className="text-xs text-emerald-200">
-                {language === 'mr' ? 'केवळ अधिकृत PDF दस्तऐवज शेअर होईल' : 'Shares official PDF document directly (No text)'}
+                {t('shares_official_pdf_document_directly_no_tex')}
               </p>
             </div>
           </div>
@@ -125,7 +119,7 @@ export default function WhatsAppShareModal({
                     Adatya_Bill_{data.purchaseNumber}.pdf
                   </h4>
                   <p className="text-xs text-slate-500">
-                    {language === 'mr' ? 'अधिकृत डिजिटल पावती PDF' : 'Official Mandi Purchase Voucher'}
+                    {t('official_mandi_purchase_voucher')}
                   </p>
                 </div>
               </div>
@@ -150,7 +144,7 @@ export default function WhatsAppShareModal({
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
               <Smartphone className="w-3.5 h-3.5 text-emerald-700" />
-              {language === 'mr' ? 'शेतकऱ्याचा मोबाईल नंबर' : 'Farmer WhatsApp Number'}
+              {t('farmer_whatsapp_number')}
             </label>
             <div className="flex rounded-xl border border-slate-300 focus-within:ring-2 focus-within:ring-emerald-600 overflow-hidden bg-white shadow-2xs">
               <span className="bg-slate-100 text-slate-700 px-3 py-2 text-xs font-bold border-r border-slate-300 flex items-center">
@@ -192,7 +186,7 @@ export default function WhatsAppShareModal({
             className="text-xs font-semibold border-slate-300 hover:bg-white"
           >
             <Download className="w-3.5 h-3.5 mr-1 text-slate-600" />
-            {language === 'mr' ? 'PDF डाउनलोड' : 'Download PDF'}
+            {t('download_pdf')}
           </Button>
 
           <Button
@@ -204,12 +198,12 @@ export default function WhatsAppShareModal({
             {isSharing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {language === 'mr' ? 'PDF तयार होत आहे...' : 'Sharing PDF...'}
+                {t('sharing_pdf')}
               </>
             ) : (
               <>
                 <MessageSquare className="w-4 h-4 fill-white" />
-                {language === 'mr' ? 'व्हॉट्सॲपवर PDF पाठवा' : 'Share PDF on WhatsApp'}
+                {t('share_pdf_on_whatsapp')}
               </>
             )}
           </Button>

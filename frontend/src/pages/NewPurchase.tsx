@@ -109,7 +109,7 @@ export default function NewPurchase() {
     setErrorMsg(null);
 
     if (!formData.farmerId) {
-      setErrorMsg(language === 'mr' ? 'कृपया शेतकरी निवडा' : 'Please select a farmer');
+      setErrorMsg(t('please_select_a_farmer'));
       return;
     }
 
@@ -157,11 +157,11 @@ export default function NewPurchase() {
         requestKeyRef.current = null;
         navigate(`/invoice/${data.id}`);
       } else {
-        setErrorMsg(language === 'mr' ? 'खरेदी नोंदवण्यात त्रुटी आली. कृपया तपासा.' : 'Failed to save purchase. Please check entered values.');
+        setErrorMsg(t('failed_to_save_purchase_please_check_entered'));
       }
     } catch (error) {
       console.error(error);
-      setErrorMsg(language === 'mr' ? 'सर्व्हर जोडणी त्रुटी.' : 'Network error while saving purchase.');
+      setErrorMsg(t('network_error_while_saving_purchase'));
     } finally {
       setSubmitting(false);
     }
@@ -172,14 +172,14 @@ export default function NewPurchase() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-tight text-slate-950">
-            {language === 'mr' ? 'नवीन खरेदी पावती नोंदवा' : 'New Purchase Voucher'}
+            {t('new_purchase_voucher')}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            {language === 'mr' ? 'शेतकऱ्याकडून शेतमाल खरेदीची नवीन पावती बनवा' : 'Record a new commodity purchase voucher from a farmer'}
+            {t('record_a_new_commodity_purchase_voucher_from')}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => navigate('/purchases')} className="text-slate-600 hover:text-slate-900 self-start">
-          <ArrowLeft className="w-4 h-4 mr-1.5" /> {language === 'mr' ? 'खरेदी यादीकडे' : 'Back to Purchases'}
+          <ArrowLeft className="w-4 h-4 mr-1.5" /> {t('back_to_purchases')}
         </Button>
       </div>
 
@@ -195,13 +195,13 @@ export default function NewPurchase() {
           <CardHeader className="py-4 px-6 border-b border-slate-100 bg-slate-50/60">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-700" />
-              {language === 'mr' ? 'पावती तपशील (Basic Details)' : 'Basic Voucher Details'}
+              {t('basic_voucher_details')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                {language === 'mr' ? 'पावती क्र. (Invoice No)' : 'Invoice Number'}
+                {t('invoice_number')}
               </label>
               <Input
                 required
@@ -212,7 +212,7 @@ export default function NewPurchase() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                {language === 'mr' ? 'तारीख (Date)' : 'Date'}
+                {t('date')}
               </label>
               <Input
                 type="date"
@@ -226,7 +226,7 @@ export default function NewPurchase() {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-slate-500" />
-                  {language === 'mr' ? 'शेतकरी निवडा (Select Farmer)' : 'Select Farmer'} <span className="text-rose-500">*</span>
+                  {t('select_farmer')} <span className="text-rose-500">*</span>
                 </label>
                 <button
                   type="button"
@@ -234,7 +234,7 @@ export default function NewPurchase() {
                   className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-300"
                 >
                   <UserPlus className="w-3 h-3" />
-                  {language === 'mr' ? '+ नवीन जोडा' : '+ New Farmer'}
+                  {t('new_farmer')}
                 </button>
               </div>
               <select
@@ -244,7 +244,7 @@ export default function NewPurchase() {
                 onChange={e => setFormData({...formData, farmerId: e.target.value})}
               >
                 <option value="" disabled>
-                  {language === 'mr' ? '-- शेतकरी निवडा --' : '-- Choose Farmer --'}
+                  {t('choose_farmer')}
                 </option>
                 {farmers.map(f => (
                   <option key={f.id} value={f.id}>
@@ -261,13 +261,13 @@ export default function NewPurchase() {
           <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between bg-slate-50/60">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Wheat className="w-4 h-4 text-emerald-700" />
-              {language === 'mr' ? 'शेतमाल / धान्य नोंदी (Commodities)' : 'Commodities / Crop Items'}
+              {t('commodities_crop_items')}
             </CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={addItem}
               disabled={hasIncompleteItem}
               title={hasIncompleteItem ? 'Complete the current item row (commodity + quantity) before adding another' : ''}
               className="h-8 text-xs font-bold border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed">
-              <Plus className="h-3.5 w-3.5 mr-1 text-emerald-700" /> {language === 'mr' ? 'आणखी धान्य जोडा' : 'Add Item'}
+              <Plus className="h-3.5 w-3.5 mr-1 text-emerald-700" /> {t('add_item')}
             </Button>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
@@ -294,12 +294,12 @@ export default function NewPurchase() {
                         value={item.commodityId}
                         onChange={e => handleItemChange(index, 'commodityId', e.target.value)}
                       >
-                        <option value="" disabled>{t('selectCommodity')}</option>
+                        <option value="" disabled>{t('select_commodity_placeholder')}</option>
                         {commodities.map(c => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                         <option value="other" className="font-bold text-emerald-800 bg-emerald-50">
-                          {t('otherGrain')}
+                          {t('other_grain_option')}
                         </option>
                       </select>
                     </div>
@@ -307,7 +307,7 @@ export default function NewPurchase() {
                     {/* Quantity */}
                     <div className="w-full md:w-32 space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                        {language === 'mr' ? 'वजन (क्विं.)' : 'Qty (Qtl)'}
+                        {t('qty_qtl')}
                       </label>
                       <Input
                         type="number"
@@ -324,7 +324,7 @@ export default function NewPurchase() {
                     {/* Rate — disabled until commodity + qty filled */}
                     <div className="w-full md:w-32 space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                        {language === 'mr' ? 'दर (₹/क्विं.)' : 'Rate (₹/Qtl)'}
+                        {t('rate_qtl_2')}
                       </label>
                       <Input
                         type="number"
@@ -347,7 +347,7 @@ export default function NewPurchase() {
                     {/* Total Amount — computed read-only display */}
                     <div className="w-full md:w-36 space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                        {language === 'mr' ? 'रक्कम (Amount)' : 'Amount (₹)'}
+                        {t('amount')}
                       </label>
                       <Input
                         readOnly
@@ -387,15 +387,13 @@ export default function NewPurchase() {
                     >
                       <label className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                         <Wheat className="w-3.5 h-3.5 text-emerald-700" />
-                        {language === 'mr'
-                          ? 'इतर धान्याचे नाव टाका (उदा. हरभरा, उडीद, मका, ज्वारी, तीळ, धने, इत्यादी):'
-                          : 'Enter Custom Grain Name (e.g. Gram, Urad, Maize, Sorghum, Sesame):'}
+                        {t('enter_custom_grain_name_e_g_gram_urad_maize_')}
                         <span className="text-rose-500">*</span>
                       </label>
                       <Input
                         type="text"
                         required
-                        placeholder={language === 'mr' ? 'उदा. हरभरा / मका' : 'e.g. Chickpeas / Maize'}
+                        placeholder={t('e_g_chickpeas_maize')}
                         value={item.customCommodityName || ''}
                         onChange={e => handleItemChange(index, 'customCommodityName', e.target.value)}
                         className="h-9 text-xs font-bold bg-white border-emerald-400 focus:border-emerald-700"
@@ -415,7 +413,7 @@ export default function NewPurchase() {
             <div className="flex flex-col items-end space-y-4 w-full">
               <div className="flex justify-between items-center w-full max-w-sm text-sm">
                 <span className="text-slate-700 font-bold">
-                  {language === 'mr' ? 'एकूण खरेदी रक्कम (Gross Total):' : 'Gross Total:'}
+                  {t('gross_total')}
                 </span>
                 <span className="font-black text-xl text-slate-950 font-serif">
                   {formatCurrency(totalAmount)}
@@ -424,7 +422,7 @@ export default function NewPurchase() {
 
               <div className="flex justify-between items-center w-full max-w-sm text-sm">
                 <span className="text-slate-700 font-bold">
-                  {language === 'mr' ? 'दिलेली उचल / रक्कम (Advance Paid):' : 'Advance Paid:'}
+                  {t('advance_paid')}
                 </span>
                 <Input 
                   type="number"
@@ -439,7 +437,7 @@ export default function NewPurchase() {
 
               <div className="flex justify-between items-center w-full max-w-sm text-sm border-t border-emerald-200 pt-2">
                 <span className="text-rose-800 font-bold">
-                  {language === 'mr' ? 'शिल्लक बाकी (Remaining Balance):' : 'Remaining Due:'}
+                  {t('remaining_due')}
                 </span>
                 <span className="font-black text-lg text-rose-700">
                   {formatCurrency(remainingAmount)}
@@ -448,17 +446,17 @@ export default function NewPurchase() {
 
               <div className="flex justify-between items-center w-full max-w-sm text-sm pt-1">
                 <span className="text-slate-700 font-bold">
-                  {language === 'mr' ? 'पेमेंट प्रकार (Payment Mode):' : 'Payment Mode:'}
+                  {t('payment_mode_2')}
                 </span>
                 <select 
                   className="flex h-9.5 w-40 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold"
                   value={formData.paymentMode}
                   onChange={e => setFormData({...formData, paymentMode: e.target.value})}
                 >
-                  <option value="Cash">{language === 'mr' ? 'रोख (Cash)' : 'Cash'}</option>
-                  <option value="UPI / Online">{language === 'mr' ? 'UPI / ऑनलाइन' : 'UPI / Online'}</option>
-                  <option value="Bank Transfer">{language === 'mr' ? 'बँक ट्रान्सफर' : 'Bank Transfer'}</option>
-                  <option value="Cheque">{language === 'mr' ? 'धनादेश (Cheque)' : 'Cheque'}</option>
+                  <option value="Cash">{t('cash')}</option>
+                  <option value="UPI / Online">{t('upi_online')}</option>
+                  <option value="Bank Transfer">{t('bank_transfer')}</option>
+                  <option value="Cheque">{t('cheque')}</option>
                 </select>
               </div>
             </div>
@@ -473,7 +471,7 @@ export default function NewPurchase() {
             onClick={() => navigate('/purchases')}
             className="border-slate-300 text-xs font-semibold h-10 px-5"
           >
-            {language === 'mr' ? 'रद्द करा' : 'Cancel'}
+            {t('cancel_2')}
           </Button>
           <Button
             type="submit"
@@ -482,8 +480,8 @@ export default function NewPurchase() {
             className="bg-slate-950 hover:bg-slate-900 text-white font-bold text-xs h-10 px-6 shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting
-              ? (language === 'mr' ? 'पावती तयार होत आहे...' : 'Generating Bill...')
-              : (language === 'mr' ? 'पावती जतन करा व पहा' : 'Save & View Bill')}
+              ? (t('generating_bill'))
+              : (t('save_view_bill'))}
           </Button>
         </div>
 
@@ -504,10 +502,10 @@ export default function NewPurchase() {
           >
             {submitting ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> {language === 'mr' ? 'जतन करत आहे...' : 'Saving...'}
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('saving')}
               </>
             ) : (
-              <>{language === 'mr' ? 'पावती जतन करा' : 'Save Voucher'}</>
+              <>{t('save_voucher')}</>
             )}
           </Button>
         </div>
@@ -523,7 +521,7 @@ export default function NewPurchase() {
                   <UserPlus className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900">
-                  {language === 'mr' ? 'नवीन शेतकरी नोंदणी' : 'Quick Register Farmer'}
+                  {t('quick_register_farmer')}
                 </h3>
               </div>
               <button
@@ -538,7 +536,7 @@ export default function NewPurchase() {
             <form onSubmit={handleQuickCreateFarmer} className="space-y-3.5">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase">
-                  {language === 'mr' ? 'शेतकऱ्याचे पूर्ण नाव' : 'Farmer Name'} <span className="text-rose-500">*</span>
+                  {t('farmer_name')} <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   required
@@ -551,7 +549,7 @@ export default function NewPurchase() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase">
-                  {language === 'mr' ? 'गाव (Village)' : 'Village'}
+                  {t('village')}
                 </label>
                 <Input
                   placeholder="उदा. चालबर्डी / Chalberdi"
@@ -563,7 +561,7 @@ export default function NewPurchase() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase">
-                  {language === 'mr' ? '१० अंकी मोबाईल नंबर' : '10-Digit Mobile'}
+                  {t('k_10_digit_mobile')}
                 </label>
                 <Input
                   type="tel"
@@ -582,14 +580,14 @@ export default function NewPurchase() {
                   onClick={() => setIsNewFarmerModalOpen(false)}
                   className="text-xs font-bold h-10 rounded-xl"
                 >
-                  {language === 'mr' ? 'रद्द करा' : 'Cancel'}
+                  {t('cancel_2')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={savingQuickFarmer}
                   className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs h-10 rounded-xl shadow-xs"
                 >
-                  {savingQuickFarmer ? 'नोंदणी करत आहे...' : (language === 'mr' ? 'नोंदवा व निवडा' : 'Register & Select')}
+                  {savingQuickFarmer ? 'नोंदणी करत आहे...' : (t('register_select'))}
                 </Button>
               </div>
             </form>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { formatCurrency } from '../lib/utils';
 import { FileText, Download, TrendingUp, Users } from 'lucide-react';
@@ -8,6 +9,7 @@ import { apiFetch } from '../lib/api';
 
 
 export default function Reports() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<any>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -53,10 +55,10 @@ export default function Reports() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-tight text-slate-900">
-            व्यवसाय अहवाल (Business Reports)
+            {t('business_reports')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            व्यापार, शेतकरी हिशोब आणि आर्थिक ताळेबंद अहवाल
+            {t('business_reports_sub')}
           </p>
         </div>
         <Button
@@ -65,7 +67,7 @@ export default function Reports() {
           onClick={handleExportAll}
           className="bg-white border-slate-300 text-xs font-bold h-10 px-4 self-start sm:self-auto shadow-2xs"
         >
-          <Download className="mr-2 h-4 w-4" /> {exporting ? 'डाऊनलोड होत आहे...' : 'Export All Data'}
+          <Download className="mr-2 h-4 w-4" /> {exporting ? t('downloading') : t('export_all_data')}
         </Button>
       </div>
 

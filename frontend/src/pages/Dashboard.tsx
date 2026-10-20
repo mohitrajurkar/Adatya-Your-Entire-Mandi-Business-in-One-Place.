@@ -141,32 +141,32 @@ export default function Dashboard() {
             <Link to="/admin">
               <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black shadow-lg text-xs px-4 h-10 border border-amber-300">
                 <ShieldCheck className="w-4 h-4 mr-1.5" />
-                {language === 'mr' ? '👑 सर्व व्यवसाय (Super Admin)' : '👑 Super Admin Portal'}
+                {t('super_admin_portal')}
               </Button>
             </Link>
           )}
           <Link to="/inventory">
             <Button className="bg-emerald-800 hover:bg-emerald-700 text-amber-200 border border-amber-400/40 font-bold shadow-md text-xs px-3.5 h-10">
               <Boxes className="w-4 h-4 mr-1.5" />
-              {language === 'mr' ? 'धान्य साठा व विक्री' : 'Grain Stock & Sales'}
+              {t('grain_stock_sales_2')}
             </Button>
           </Link>
           <Link to="/purchases/new">
             <Button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-md text-xs px-4 h-10">
               <Plus className="w-4 h-4 mr-1.5 stroke-[3]" />
-              {language === 'mr' ? 'नवीन खरेदी पावती' : 'New Purchase Slip'}
+              {t('new_purchase_slip_2')}
             </Button>
           </Link>
           <Link to="/profile">
             <Button variant="outline" className="border-slate-700 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3.5 h-10">
               <User className="w-4 h-4 mr-1.5" />
-              {language === 'mr' ? 'प्रोफाइल' : 'Profile'}
+              {t('profile')}
             </Button>
           </Link>
           <Link to="/purchases">
             <Button variant="outline" className="border-slate-700 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3.5 h-10">
               <Eye className="w-4 h-4 mr-1.5" />
-              {language === 'mr' ? 'सर्व पावत्या' : 'All Bills'}
+              {t('all_bills')}
             </Button>
           </Link>
         </div>
@@ -178,7 +178,7 @@ export default function Dashboard() {
           <Card className="hover:shadow-md transition-shadow border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 sm:p-5 pb-1 sm:pb-2">
               <CardTitle className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
-                {language === 'mr' ? 'एकूण खरेदी' : 'Total Purchased'}
+                {t('total_purchased')}
               </CardTitle>
               <div className="p-1.5 sm:p-2 bg-slate-100 rounded-lg text-slate-800 shrink-0">
                 <Banknote className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -187,7 +187,7 @@ export default function Dashboard() {
             <CardContent className="p-3.5 sm:p-5 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-black text-slate-950 font-serif leading-tight">{formatCurrency(totalProcured)}</div>
               <p className="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium truncate">
-                {stats.totalPurchases} {language === 'mr' ? 'पावत्या' : 'vouchers'}
+                {stats.totalPurchases} {t('vouchers')}
               </p>
             </CardContent>
           </Card>
@@ -197,7 +197,7 @@ export default function Dashboard() {
           <Card className="hover:shadow-md transition-shadow border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 sm:p-5 pb-1 sm:pb-2">
               <CardTitle className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
-                {language === 'mr' ? 'अदा रक्कम' : 'Amount Paid'}
+                {t('amount_paid')}
               </CardTitle>
               <div className="p-1.5 sm:p-2 bg-emerald-50 rounded-lg text-emerald-700 shrink-0">
                 <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -206,7 +206,7 @@ export default function Dashboard() {
             <CardContent className="p-3.5 sm:p-5 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-black text-emerald-700 font-serif leading-tight">{formatCurrency(totalPaid)}</div>
               <p className="text-[10px] sm:text-xs text-emerald-600 mt-1 font-medium truncate">
-                {language === 'mr' ? 'शेतकऱ्यांना अदा' : 'Disbursed'}
+                {t('disbursed')}
               </p>
             </CardContent>
           </Card>
@@ -216,7 +216,7 @@ export default function Dashboard() {
           <Card className="hover:shadow-md transition-shadow border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 sm:p-5 pb-1 sm:pb-2">
               <CardTitle className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
-                {language === 'mr' ? 'शिल्लक बाकी' : 'Due Balance'}
+                {t('due_balance')}
               </CardTitle>
               <div className="p-1.5 sm:p-2 bg-rose-50 rounded-lg text-rose-700 shrink-0">
                 <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -225,7 +225,7 @@ export default function Dashboard() {
             <CardContent className="p-3.5 sm:p-5 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-black text-rose-700 font-serif leading-tight">{formatCurrency(pendingPayments)}</div>
               <p className="text-[10px] sm:text-xs text-rose-600 mt-1 font-medium truncate">
-                {language === 'mr' ? 'द्यावयाची बाकी' : 'To settle'}
+                {t('to_settle')}
               </p>
             </CardContent>
           </Card>
@@ -235,7 +235,7 @@ export default function Dashboard() {
           <Card className="hover:shadow-md transition-shadow border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 sm:p-5 pb-1 sm:pb-2">
               <CardTitle className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
-                {language === 'mr' ? 'शेतकरी संख्या' : 'Active Farmers'}
+                {t('active_farmers')}
               </CardTitle>
               <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg text-blue-700 shrink-0">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -244,7 +244,7 @@ export default function Dashboard() {
             <CardContent className="p-3.5 sm:p-5 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-black text-slate-950 font-serif leading-tight">{stats.activeFarmers || 0}</div>
               <p className="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium truncate">
-                {language === 'mr' ? 'नोंदणीकृत शेतकरी' : 'Registered'}
+                {t('registered')}
               </p>
             </CardContent>
           </Card>
@@ -266,15 +266,13 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <span>{language === 'mr' ? 'गोदाम धान्य साठा (Live Grain Stock Balance)' : 'Live Godown Grain Stock'}</span>
+                  <span>{t('live_godown_grain_stock')}</span>
                   <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                     {inventoryStock.summary?.totalStockQuintals ?? 0} Qtl Available
                   </span>
                 </h3>
                 <p className="text-[11px] text-slate-500">
-                  {language === 'mr'
-                    ? 'खरेदीतून जमा झालेला व मंडी विक्रीतून वजा होणारा थेट धान्य साठा'
-                    : 'Real-time commodity balances updated on farmer purchases and mandi sales.'}
+                  {t('real_time_commodity_balances_updated_on_farm')}
                 </p>
               </div>
             </div>
@@ -282,7 +280,7 @@ export default function Dashboard() {
             <Link to="/inventory">
               <Button size="sm" variant="outline" className="text-xs h-8 font-bold text-emerald-900 border-emerald-300 hover:bg-emerald-50">
                 <Boxes className="w-3.5 h-3.5 mr-1 text-emerald-700" />
-                {language === 'mr' ? 'साठा व मंडी विक्री व्यवस्थापन →' : 'Manage Stock & Sell →'}
+                {t('manage_stock_sell')}
               </Button>
             </Link>
           </div>
@@ -308,9 +306,9 @@ export default function Dashboard() {
                     <span className="text-[10px] font-semibold text-slate-500">Qtl</span>
                   </div>
                   <div className="text-[10px] text-slate-500 flex items-center justify-between mt-1">
-                    <span>{grain.availableBags} पोती</span>
+                    <span>{grain.availableBags} {t('bags_unit')}</span>
                     <span className={`font-bold ${isOut ? 'text-slate-400' : 'text-emerald-700'}`}>
-                      {isOut ? 'निरंक' : 'उपलब्ध'}
+                      {isOut ? t('nil') : t('available')}
                     </span>
                   </div>
                 </div>

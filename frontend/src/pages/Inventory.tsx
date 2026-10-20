@@ -89,7 +89,7 @@ interface MandiSale {
 }
 
 export default function Inventory() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { currentTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
@@ -230,19 +230,19 @@ export default function Inventory() {
     const r = parseFloat(saleForm.saleRate);
 
     if (!saleForm.commodityId) {
-      setSaleError(language === 'mr' ? 'कृपया धान्य/कमोडिटी निवडा' : 'Please select a grain/commodity');
+      setSaleError(t('please_select_a_grain_commodity'));
       return;
     }
     if (isNaN(w) || w <= 0) {
-      setSaleError(language === 'mr' ? 'कृपया विक्रीचे वजन (क्विंटल) टाका' : 'Please enter valid weight in quintals');
+      setSaleError(t('please_enter_valid_weight_in_quintals'));
       return;
     }
     if (isNaN(r) || r <= 0) {
-      setSaleError(language === 'mr' ? 'कृपया मंडी विक्री दर टाका' : 'Please enter valid sale rate');
+      setSaleError(t('please_enter_valid_sale_rate'));
       return;
     }
     if (!saleForm.buyerName.trim()) {
-      setSaleError(language === 'mr' ? 'कृपया खरेदीदार / मिल / व्यापाऱ्याचे नाव टाका' : 'Please enter buyer / mill name');
+      setSaleError(t('please_enter_buyer_mill_name'));
       return;
     }
 
@@ -300,11 +300,11 @@ export default function Inventory() {
 
     const w = parseFloat(adjForm.weightQuintals);
     if (!adjForm.commodityId) {
-      setAdjError(language === 'mr' ? 'कृपया धान्य निवडा' : 'Please select a grain');
+      setAdjError(t('please_select_a_grain'));
       return;
     }
     if (isNaN(w) || w <= 0) {
-      setAdjError(language === 'mr' ? 'कृपया अचूक वजन टाका' : 'Please enter valid weight');
+      setAdjError(t('please_enter_valid_weight'));
       return;
     }
 
@@ -353,9 +353,7 @@ export default function Inventory() {
         setPendingSaleDelete(null);
         await fetchData();
         toast.success(
-          language === 'mr'
-            ? 'विक्री नोंद रद्द झाली. साठा परत जमा झाला.'
-            : 'Sale cancelled. The quantity is back in stock.'
+          t('sale_cancelled_the_quantity_is_back_in_stock')
         );
       } else {
         toast.error(data.error || 'Could not cancel the sale.');
@@ -392,16 +390,14 @@ export default function Inventory() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl md:text-2xl font-serif font-black text-slate-900 leading-tight">
-                {language === 'mr' ? 'धान्य साठा व मंडी विक्री व्यवस्थापन' : 'Grain Inventory & Mandi Sales'}
+                {t('grain_inventory_mandi_sales')}
               </h1>
               <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-100 text-amber-900 border border-amber-200">
                 Live Godown Stock
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {language === 'mr'
-                ? 'कोणत्या धान्याचा किती साठा शिल्लक आहे ते पहा, मंडी विक्री नोंदवा आणि साठा स्वयंचलित व्यवस्थापित करा.'
-                : 'Track available godown stock by grain, record mandi outbound sales, and auto-manage quantities.'}
+              {t('track_available_godown_stock_by_grain_record')}
             </p>
           </div>
         </div>
@@ -418,7 +414,7 @@ export default function Inventory() {
             className="text-xs h-9 border-slate-300 font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-900"
           >
             <Plus className="w-3.5 h-3.5 mr-1 text-slate-600" />
-            {language === 'mr' ? '+ सुरुवातीचा साठा / ॲडजस्टमेंट' : '+ Add Opening Stock'}
+            {t('add_opening_stock')}
           </Button>
 
           <Button
@@ -430,7 +426,7 @@ export default function Inventory() {
             className="text-xs h-9 font-bold bg-emerald-800 hover:bg-emerald-900 text-amber-200 shadow-xs border border-amber-400/40"
           >
             <ArrowUpRight className="w-4 h-4 mr-1 text-amber-400" />
-            {language === 'mr' ? '+ मंडी विक्री नोंदवा (Sell to Mandi)' : '+ Record Mandi Sale'}
+            {t('record_mandi_sale')}
           </Button>
         </div>
       </div>
@@ -444,7 +440,7 @@ export default function Inventory() {
           </div>
           <CardContent className="p-4 relative z-10">
             <div className="flex items-center justify-between text-emerald-200 text-xs font-bold uppercase tracking-wider mb-2">
-              <span>{language === 'mr' ? 'गोदामातील एकूण शिल्लक साठा' : 'Total Godown Stock'}</span>
+              <span>{t('total_godown_stock')}</span>
               <Scale className="w-4 h-4 text-amber-400" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -452,12 +448,12 @@ export default function Inventory() {
                 {summary?.totalStockQuintals ?? 0}
               </span>
               <span className="text-xs font-bold text-emerald-200">
-                {language === 'mr' ? 'क्विंटल (Qtl)' : 'Quintals'}
+                {t('quintals')}
               </span>
             </div>
             <div className="mt-2 pt-2 border-t border-emerald-800/80 flex items-center justify-between text-xs text-emerald-100">
-              <span>{language === 'mr' ? 'अंदाजे पोती / बोरी' : 'Est. Total Bags'}:</span>
-              <strong className="text-white font-bold">{summary?.totalStockBags ?? 0} {language === 'mr' ? 'पोती' : 'Bags'}</strong>
+              <span>{t('est_total_bags')}:</span>
+              <strong className="text-white font-bold">{summary?.totalStockBags ?? 0} {t('bags')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -466,15 +462,15 @@ export default function Inventory() {
         <Card className="border border-slate-200 bg-white shadow-xs rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-              <span>{language === 'mr' ? 'साठ्याचे अंदाजे मूल्य (किंमत)' : 'Stock Valuation'}</span>
+              <span>{t('stock_valuation')}</span>
               <IndianRupee className="w-4 h-4 text-emerald-700" />
             </div>
             <div className="text-2xl md:text-3xl font-black text-slate-900 font-serif">
               {formatCurrency(summary?.totalStockValue ?? 0)}
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-              <span>{language === 'mr' ? 'धान्य प्रकार' : 'Grain Types'}:</span>
-              <strong className="text-slate-900 font-bold">{summary?.commoditiesCount ?? 0} {language === 'mr' ? 'प्रकार' : 'Items'}</strong>
+              <span>{t('grain_types')}:</span>
+              <strong className="text-slate-900 font-bold">{summary?.commoditiesCount ?? 0} {t('items')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -483,15 +479,15 @@ export default function Inventory() {
         <Card className="border border-slate-200 bg-white shadow-xs rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-              <span>{language === 'mr' ? 'एकूण मंडी विक्री महसूल' : 'Total Mandi Sales'}</span>
+              <span>{t('total_mandi_sales')}</span>
               <TrendingUp className="w-4 h-4 text-amber-600" />
             </div>
             <div className="text-2xl md:text-3xl font-black text-emerald-700 font-serif">
               {formatCurrency(summary?.totalMandiSalesAmount ?? 0)}
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-              <span>{language === 'mr' ? 'एकूण विक्री व्यवहार' : 'Total Sales'}:</span>
-              <strong className="text-slate-900 font-bold">{summary?.totalSalesCount ?? 0} {language === 'mr' ? 'नोंदी' : 'Deals'}</strong>
+              <span>{t('total_sales')}:</span>
+              <strong className="text-slate-900 font-bold">{summary?.totalSalesCount ?? 0} {t('deals')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -500,13 +496,13 @@ export default function Inventory() {
         <Card className="border border-slate-200 bg-white shadow-xs rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
-              <span>{language === 'mr' ? 'साठा स्थिती' : 'Godown Health'}</span>
+              <span>{t('godown_health')}</span>
               <Layers className="w-4 h-4 text-blue-600" />
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-sm font-bold text-slate-800">
-                {stockList.filter(s => s.availableQuintals > 0).length} / {stockList.length} {language === 'mr' ? 'धान्य उपलब्ध' : 'Grains in Stock'}
+                {stockList.filter(s => s.availableQuintals > 0).length} / {stockList.length} {t('grains_in_stock')}
               </span>
             </div>
             <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2">
@@ -531,7 +527,7 @@ export default function Inventory() {
             }`}
           >
             <Boxes className="w-3.5 h-3.5" />
-            <span>{language === 'mr' ? 'धान्यनिहाय शिल्लक साठा (Stock by Grain)' : 'Stock by Grain'}</span>
+            <span>{t('stock_by_grain')}</span>
             <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
               {stockList.length}
             </span>
@@ -546,7 +542,7 @@ export default function Inventory() {
             }`}
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>{language === 'mr' ? 'मंडी विक्री नोंदी व पावत्या (Mandi Sales)' : 'Mandi Sales History'}</span>
+            <span>{t('mandi_sales_history')}</span>
             <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
               {salesList.length}
             </span>
@@ -559,7 +555,7 @@ export default function Inventory() {
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input
               type="text"
-              placeholder={language === 'mr' ? 'धान्य किंवा व्यापारी शोधा...' : 'Search grain or buyer...'}
+              placeholder={t('search_grain_or_buyer')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-8 text-xs h-9 w-48 sm:w-56 bg-white"
@@ -571,7 +567,7 @@ export default function Inventory() {
             onChange={e => setSelectedCommodityFilter(e.target.value)}
             className="text-xs h-9 bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700"
           >
-            <option value="all">{language === 'mr' ? 'सर्व धान्य (All)' : 'All Grains'}</option>
+            <option value="all">{t('all_grains')}</option>
             {stockList.map(c => (
               <option key={c.id} value={String(c.id)}>{c.name}</option>
             ))}
@@ -617,15 +613,15 @@ export default function Inventory() {
                     <div>
                       {isOut ? (
                         <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 text-slate-600">
-                          {language === 'mr' ? 'निरंक (0 साठा)' : 'Out of Stock'}
+                          {t('out_of_stock')}
                         </span>
                       ) : isLow ? (
                         <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-800">
-                          {language === 'mr' ? 'कमी साठा' : 'Low Stock'}
+                          {t('low_stock')}
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">
-                          {language === 'mr' ? 'शिल्लक उपलब्ध' : 'In Stock'}
+                          {t('in_stock')}
                         </span>
                       )}
                     </div>
@@ -636,12 +632,12 @@ export default function Inventory() {
                     <div className="bg-gradient-to-r from-emerald-50 to-amber-50/40 p-3 rounded-xl border border-emerald-200/60 flex items-center justify-between">
                       <div>
                         <div className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
-                          {language === 'mr' ? 'सध्या शिल्लक साठा' : 'Available Balance'}
+                          {t('available_balance')}
                         </div>
                         <div className="text-2xl font-black text-slate-950 font-serif mt-0.5">
                           {item.availableQuintals}{' '}
                           <span className="text-xs font-bold text-slate-600">
-                            {language === 'mr' ? 'क्विंटल' : 'Qtl'}
+                            {t('qtl')}
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-500 font-semibold">
@@ -651,7 +647,7 @@ export default function Inventory() {
 
                       <div className="text-right">
                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                          {language === 'mr' ? 'साठा मूल्य' : 'Book Value'}
+                          {t('book_value')}
                         </div>
                         <div className="text-sm font-bold text-emerald-800 font-serif">
                           {formatCurrency(item.stockValue)}
@@ -668,7 +664,7 @@ export default function Inventory() {
                       <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                         <div className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                           <ArrowDownRight className="w-3 h-3 text-emerald-600" />
-                          <span>{language === 'mr' ? 'एकूण आवक (खरेदी)' : 'Total Inward'}</span>
+                          <span>{t('total_inward')}</span>
                         </div>
                         <div className="font-bold text-slate-900 mt-1">
                           {item.purchasedQuintals} Qtl
@@ -682,7 +678,7 @@ export default function Inventory() {
                       <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                         <div className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                           <ArrowUpRight className="w-3 h-3 text-amber-600" />
-                          <span>{language === 'mr' ? 'एकूण जावक (विक्री)' : 'Total Outward'}</span>
+                          <span>{t('total_outward')}</span>
                         </div>
                         <div className="font-bold text-slate-900 mt-1">
                           {item.soldQuintals} Qtl
@@ -704,7 +700,7 @@ export default function Inventory() {
                       }`}
                     >
                       <ArrowUpRight className="w-3.5 h-3.5 mr-1" />
-                      {language === 'mr' ? 'हे धान्य मंडीत विका (Sell)' : 'Sell to Mandi'}
+                      {t('sell_to_mandi')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -728,16 +724,14 @@ export default function Inventory() {
             <div>
               <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <ArrowUpRight className="w-4 h-4 text-emerald-700" />
-                {language === 'mr' ? 'मंडी विक्री व्यवहार व पावत्या' : 'Mandi Outward Sales Register'}
+                {t('mandi_outward_sales_register')}
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
-                {language === 'mr'
-                  ? 'मंडी व्यापारी, डाळ मिल किंवा ऑइल मिलला केलेल्या विक्रीच्या पावत्या व नोंदी'
-                  : 'Outward deliveries to mandi buyers, dal mills, or oil mills with real-time stock deductions.'}
+                {t('outward_deliveries_to_mandi_buyers_dal_mills')}
               </p>
             </div>
             <div className="text-xs font-bold text-slate-700">
-              {filteredSales.length} {language === 'mr' ? 'विक्री नोंदी' : 'Sales Records'}
+              {filteredSales.length} {t('sales_records')}
             </div>
           </CardHeader>
 
@@ -746,12 +740,10 @@ export default function Inventory() {
               <div className="p-10 text-center text-slate-500">
                 <ArrowUpRight className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                 <p className="text-sm font-bold text-slate-700">
-                  {language === 'mr' ? 'अद्याप कोणतीही मंडी विक्री नोंदवलेली नाही' : 'No mandi sales recorded yet'}
+                  {t('no_mandi_sales_recorded_yet')}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {language === 'mr'
-                    ? 'धान्य विकल्यावर वरील "+ मंडी विक्री नोंदवा" बटणावर क्लिक करा.'
-                    : 'Click "+ Record Mandi Sale" above to sell godown stock.'}
+                  {t('click_record_mandi_sale_above_to_sell_godown')}
                 </p>
               </div>
             ) : (
@@ -858,10 +850,10 @@ export default function Inventory() {
                 </div>
                 <div>
                   <h3 className="font-serif font-black text-base text-amber-300">
-                    {language === 'mr' ? 'मंडी धान्य विक्री नोंदवा' : 'Record Mandi Grain Sale'}
+                    {t('record_mandi_grain_sale')}
                   </h3>
                   <p className="text-[11px] text-emerald-200">
-                    {language === 'mr' ? 'जावक साठा नोंदवून शिल्लक साठा स्वयंचलित वजा करा' : 'Outward sale automatically deducts available godown stock'}
+                    {t('outward_sale_automatically_deducts_available')}
                   </p>
                 </div>
               </div>
@@ -885,7 +877,7 @@ export default function Inventory() {
               {/* 1. Grain Selection & Live Available Stock Indicator */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {language === 'mr' ? 'विक्रीचे धान्य निवडा *' : 'Select Commodity / Grain *'}
+                  {t('select_commodity_grain')}
                 </label>
                 <select
                   required
@@ -893,7 +885,7 @@ export default function Inventory() {
                   onChange={e => setSaleForm({ ...saleForm, commodityId: e.target.value })}
                   className="w-full text-xs h-10 bg-slate-50 border border-slate-300 rounded-xl px-3 font-semibold text-slate-900 focus:bg-white"
                 >
-                  <option value="">{language === 'mr' ? '-- धान्य निवडा --' : '-- Select Grain --'}</option>
+                  <option value="">{t('select_grain')}</option>
                   {stockList.map(c => (
                     <option key={c.id} value={String(c.id)}>
                       {c.name} — उपलब्ध साठा: {c.availableQuintals} Qtl ({c.availableBags} पोती)
@@ -904,10 +896,10 @@ export default function Inventory() {
                 {selectedSaleCommodity && (
                   <div className="mt-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
                     <span className="text-emerald-900 font-bold">
-                      {selectedSaleCommodity.name} {language === 'mr' ? 'गोदामात शिल्लक:' : 'In Godown:'}
+                      {selectedSaleCommodity.name} {t('in_godown')}
                     </span>
                     <strong className="text-emerald-800 font-serif font-black">
-                      {selectedSaleCommodity.availableQuintals} Qtl / {selectedSaleCommodity.availableBags} {language === 'mr' ? 'पोती' : 'Bags'}
+                      {selectedSaleCommodity.availableQuintals} Qtl / {selectedSaleCommodity.availableBags} {t('bags')}
                     </strong>
                   </div>
                 )}
@@ -917,7 +909,7 @@ export default function Inventory() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'खरेदीदार व्यापारी / मिलचे नाव *' : 'Buyer / Mill Name *'}
+                    {t('buyer_mill_name')}
                   </label>
                   <Input
                     required
@@ -930,7 +922,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'व्यापारी फोन / ठिकाण' : 'Buyer Mobile / Mandi'}
+                    {t('buyer_mobile_mandi')}
                   </label>
                   <Input
                     type="text"
@@ -946,7 +938,7 @@ export default function Inventory() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'विक्री तारीख' : 'Sale Date'}
+                    {t('sale_date')}
                   </label>
                   <Input
                     type="date"
@@ -957,7 +949,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'वाहन क्र. (गाडी नंबर)' : 'Vehicle / Truck No.'}
+                    {t('vehicle_truck_no')}
                   </label>
                   <Input
                     type="text"
@@ -973,7 +965,7 @@ export default function Inventory() {
               <div className="grid grid-cols-3 gap-3 bg-amber-50/50 p-3 rounded-xl border border-amber-200/80">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'एकूण पोती' : 'Bags'}
+                    {t('bags_2')}
                   </label>
                   <Input
                     type="number"
@@ -987,7 +979,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-emerald-950 mb-1">
-                    {language === 'mr' ? 'वजन (क्विंटल) *' : 'Weight (Qtl) *'}
+                    {t('weight_qtl')}
                   </label>
                   <Input
                     required
@@ -1002,7 +994,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-emerald-950 mb-1">
-                    {language === 'mr' ? 'दर (₹/क्विंटल) *' : 'Rate (₹/Qtl) *'}
+                    {t('rate_qtl')}
                   </label>
                   <Input
                     required
@@ -1021,7 +1013,7 @@ export default function Inventory() {
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 mb-1">
-                    {language === 'mr' ? 'हमाली खर्च (₹)' : 'Hamali (₹)'}
+                    {t('hamali')}
                   </label>
                   <Input
                     type="number"
@@ -1033,7 +1025,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 mb-1">
-                    {language === 'mr' ? 'वाहतूक खर्च (₹)' : 'Transport (₹)'}
+                    {t('transport')}
                   </label>
                   <Input
                     type="number"
@@ -1045,7 +1037,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 mb-1">
-                    {language === 'mr' ? 'मंडी सेस/टॅक्स (₹)' : 'Mandi Cess (₹)'}
+                    {t('mandi_cess')}
                   </label>
                   <Input
                     type="number"
@@ -1061,7 +1053,7 @@ export default function Inventory() {
               <div className="bg-emerald-950 text-white p-3.5 rounded-xl border border-amber-400/30 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-emerald-300 tracking-wider">
-                    {language === 'mr' ? 'अंतिम विक्री रक्कम (Net Receivable)' : 'Net Sale Amount'}
+                    {t('net_sale_amount')}
                   </span>
                   <div className="text-xl font-black font-serif text-amber-300">
                     {formatCurrency(calcSaleNetAmount())}
@@ -1082,7 +1074,7 @@ export default function Inventory() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {language === 'mr' ? 'पेमेंट स्थिती' : 'Payment Status'}
+                    {t('payment_status')}
                   </label>
                   <select
                     value={saleForm.paymentStatus}
@@ -1096,7 +1088,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {language === 'mr' ? 'पेमेंट पद्धत' : 'Payment Mode'}
+                    {t('payment_mode')}
                   </label>
                   <select
                     value={saleForm.paymentMode}
@@ -1120,7 +1112,7 @@ export default function Inventory() {
                   onClick={() => setIsSaleModalOpen(false)}
                   className="text-xs h-9"
                 >
-                  {language === 'mr' ? 'रद्द करा' : 'Cancel'}
+                  {t('cancel_2')}
                 </Button>
                 <Button
                   type="submit"
@@ -1130,9 +1122,7 @@ export default function Inventory() {
                 >
                   {saleSubmitting
                     ? 'नोंदणी करत आहे...'
-                    : language === 'mr'
-                    ? '✓ विक्री नोंदवा आणि साठा वजा करा'
-                    : '✓ Record Sale & Deduct Stock'}
+                    : t('record_sale_deduct_stock')}
                 </Button>
               </div>
             </form>
@@ -1150,7 +1140,7 @@ export default function Inventory() {
               <div className="flex items-center gap-2">
                 <Boxes className="w-5 h-5 text-amber-400" />
                 <h3 className="font-serif font-black text-sm text-white">
-                  {language === 'mr' ? 'सुरुवातीचा साठा / स्टॉक ॲडजस्टमेंट' : 'Opening Stock / Adjustment'}
+                  {t('opening_stock_adjustment')}
                 </h3>
               </div>
               <button onClick={() => setIsAdjModalOpen(false)} className="text-slate-400 hover:text-white p-1">
@@ -1167,7 +1157,7 @@ export default function Inventory() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {language === 'mr' ? 'धान्य निवडा *' : 'Select Commodity *'}
+                  {t('select_commodity')}
                 </label>
                 <select
                   required
@@ -1185,7 +1175,7 @@ export default function Inventory() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'वजन (क्विंटल) *' : 'Weight (Qtl) *'}
+                    {t('weight_qtl')}
                   </label>
                   <Input
                     required
@@ -1199,7 +1189,7 @@ export default function Inventory() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {language === 'mr' ? 'पोती संख्या' : 'Bags Count'}
+                    {t('bags_count')}
                   </label>
                   <Input
                     type="number"
@@ -1214,7 +1204,7 @@ export default function Inventory() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {language === 'mr' ? 'अंदाजे खरेदी दर (₹/क्विंटल)' : 'Book Rate (₹/Qtl)'}
+                  {t('book_rate_qtl')}
                 </label>
                 <Input
                   type="number"
@@ -1228,7 +1218,7 @@ export default function Inventory() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {language === 'mr' ? 'नोंदीचे कारण' : 'Reason / Note'}
+                  {t('reason_note')}
                 </label>
                 <Input
                   type="text"
@@ -1246,7 +1236,7 @@ export default function Inventory() {
                   onClick={() => setIsAdjModalOpen(false)}
                   className="text-xs h-9"
                 >
-                  {language === 'mr' ? 'रद्द करा' : 'Cancel'}
+                  {t('cancel_2')}
                 </Button>
                 <Button
                   type="submit"
@@ -1254,7 +1244,7 @@ export default function Inventory() {
                   size="sm"
                   className="text-xs h-9 bg-slate-900 hover:bg-slate-800 text-white font-bold"
                 >
-                  {adjSubmitting ? 'जमा होत आहे...' : language === 'mr' ? '✓ साठा जमा करा' : '✓ Add to Godown Stock'}
+                  {adjSubmitting ? 'जमा होत आहे...' : t('add_to_godown_stock')}
                 </Button>
               </div>
             </form>
@@ -1271,7 +1261,7 @@ export default function Inventory() {
             {/* Header Toolbar */}
             <div className="bg-slate-900 p-3 text-white flex items-center justify-between print:hidden">
               <span className="text-xs font-bold text-amber-300">
-                {language === 'mr' ? 'मंडी विक्री पावती (Mandi Delivery Slip)' : 'Mandi Delivery Slip'}
+                {t('mandi_delivery_slip')}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -1280,7 +1270,7 @@ export default function Inventory() {
                   className="text-xs h-7 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
                 >
                   <Printer className="w-3 h-3 mr-1" />
-                  {language === 'mr' ? 'प्रिंट' : 'Print'}
+                  {t('print')}
                 </Button>
                 <button
                   onClick={() => setViewingSaleSlip(null)}
@@ -1402,14 +1392,12 @@ export default function Inventory() {
       <ConfirmDialog
         open={pendingSaleDelete !== null}
         tone="danger"
-        title={language === 'mr' ? 'विक्री नोंद रद्द करायची?' : 'Cancel this sale?'}
+        title={t('cancel_this_sale')}
         message={
-          language === 'mr'
-            ? 'ही विक्री नोंद काढून टाकली जाईल आणि विकलेला माल पुन्हा साठ्यात जमा होईल.'
-            : 'The sale record will be removed and the quantity sold will go back into available stock.'
+          t('the_sale_record_will_be_removed_and_the_quan')
         }
-        confirmLabel={language === 'mr' ? 'होय, रद्द करा' : 'Yes, cancel it'}
-        cancelLabel={language === 'mr' ? 'नको' : 'Keep it'}
+        confirmLabel={t('yes_cancel_it')}
+        cancelLabel={t('keep_it')}
         onConfirm={confirmDeleteSale}
         onCancel={() => setPendingSaleDelete(null)}
       />
