@@ -1,4 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
+import { MobileInput } from '../components/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -391,12 +392,10 @@ export default function Profile() {
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                   {t('primary_mobile')} <span className="text-rose-500">*</span>
                 </label>
-                <Input
-                  type="tel"
+                <MobileInput
                   required
-                  maxLength={10}
                   value={profileData.mobile1}
-                  onChange={(e) => setProfileData({ ...profileData, mobile1: e.target.value.replace(/\D/g, '') })}
+                  onValueChange={(v) => setProfileData({ ...profileData, mobile1: v })}
                   placeholder={t('k_10_digit_mobile_number')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
@@ -406,11 +405,9 @@ export default function Profile() {
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                   {t('alternate_mobile')}
                 </label>
-                <Input
-                  type="tel"
-                  maxLength={10}
+                <MobileInput
                   value={profileData.mobile2}
-                  onChange={(e) => setProfileData({ ...profileData, mobile2: e.target.value.replace(/\D/g, '') })}
+                  onValueChange={(v) => setProfileData({ ...profileData, mobile2: v })}
                   placeholder={t('alternate_mobile_optional')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />

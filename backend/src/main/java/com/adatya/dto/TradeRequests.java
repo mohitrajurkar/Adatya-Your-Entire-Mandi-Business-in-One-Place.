@@ -110,7 +110,10 @@ public final class TradeRequests {
             @Size(max = 160, message = "Farmer name must be at most 160 characters")
             String name,
 
-            @Size(max = 160)
+            // Villages identify farmers who share a name, which is common in a
+            // mandi ledger, so this is required rather than optional.
+            @NotBlank(message = "Village is required")
+            @Size(max = 160, message = "Village must be at most 160 characters")
             String village,
 
             @Pattern(regexp = "|\\d{10}", message = "Mobile must be a 10-digit number")

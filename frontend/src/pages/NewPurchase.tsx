@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { apiFetch, newRequestKey } from '../lib/api';
+import { MobileInput } from '../components/ui';
 
 
 export default function NewPurchase() {
@@ -37,26 +38,47 @@ export default function NewPurchase() {
   const [isNewFarmerModalOpen, setIsNewFarmerModalOpen] = useState(false);
   const [quickFarmer, setQuickFarmer] = useState({ name: '', village: '', mobile: '' });
   const [savingQuickFarmer, setSavingQuickFarmer] = useState(false);
+  const [quickFarmerError, setQuickFarmerError] = useState<string | null>(null);
 
   const handleQuickCreateFarmer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickFarmer.name.trim()) return;
+    setQuickFarmerError(null);
+    if (!quickFarmer.name.trim()) {
+      setQuickFarmerError('Please enter the farmer name');
+      return;
+    }
+    if (!quickFarmer.village.trim()) {
+      setQuickFarmerError('Please enter the village');
+      return;
+    }
+    if (quickFarmer.mobile && quickFarmer.mobile.length !== 10) {
+      setQuickFarmerError('Mobile number must be exactly 10 digits, or left blank');
+      return;
+    }
+
     setSavingQuickFarmer(true);
     try {
       const res = await apiFetch(`/farmers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(quickFarmer)
+        body: JSON.stringify({
+          name: quickFarmer.name.trim(),
+          village: quickFarmer.village.trim(),
+          mobile: quickFarmer.mobile,
+        })
       });
-      const created = await res.json();
-      if (res.ok) {
-        setFarmers(prev => [created, ...prev]);
-        setFormData(prev => ({ ...prev, farmerId: created.id.toString() }));
-        setIsNewFarmerModalOpen(false);
-        setQuickFarmer({ name: '', village: '', mobile: '' });
+      const created = await res.json().catch(() => null);
+      if (!res.ok) {
+        // This used to fail silently: the dialog simply stayed open.
+        setQuickFarmerError(created?.error || 'Could not save this farmer.');
+        return;
       }
-    } catch (err) {
-      console.error(err);
+      setFarmers(prev => [created, ...prev]);
+      setFormData(prev => ({ ...prev, farmerId: created.id.toString() }));
+      setIsNewFarmerModalOpen(false);
+      setQuickFarmer({ name: '', village: '', mobile: '' });
+    } catch (err: any) {
+      setQuickFarmerError(err?.message || 'Could not reach the server.');
     } finally {
       setSavingQuickFarmer(false);
     }
@@ -533,6 +555,11 @@ export default function NewPurchase() {
               </button>
             </div>
 
+            {quickFarmerError && (
+              <p className="mb-3 rounded-control bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700" role="alert">
+                {quickFarmerError}
+              </p>
+            )}
             <form onSubmit={handleQuickCreateFarmer} className="space-y-3.5">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase">
@@ -549,9 +576,10 @@ export default function NewPurchase() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase">
-                  {t('village')}
+                  {t('village')} <span className="text-rose-500">*</span>
                 </label>
                 <Input
+                  required
                   placeholder={t('e_g_chalberdi')}
                   value={quickFarmer.village}
                   onChange={e => setQuickFarmer({ ...quickFarmer, village: e.target.value })}
@@ -563,12 +591,10 @@ export default function NewPurchase() {
                 <label className="text-xs font-bold text-slate-700 uppercase">
                   {t('k_10_digit_mobile')}
                 </label>
-                <Input
-                  type="tel"
-                  maxLength={10}
+                <MobileInput
                   placeholder="9823456789"
                   value={quickFarmer.mobile}
-                  onChange={e => setQuickFarmer({ ...quickFarmer, mobile: e.target.value.replace(/\D/g, '') })}
+                  onValueChange={v => setQuickFarmer({ ...quickFarmer, mobile: v })}
                   className="h-10 text-xs font-medium"
                 />
               </div>

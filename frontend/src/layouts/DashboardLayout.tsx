@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
-import ThemeSelectorModal from '../components/ThemeSelectorModal';
+import FirstRunSetup, { hasCompletedSetup, wasSetupSkipped } from '../components/FirstRunSetup';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { DEFAULT_LOGO } from '../config/logos';
 import { apiFetch, clearSession } from '../lib/api';
@@ -28,10 +28,11 @@ import { apiFetch, clearSession } from '../lib/api';
 
 export default function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { currentTheme, isThemeModalOpen, setIsThemeModalOpen } = useTheme();
+  const { currentTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
-  const [businessProfileData, setBusinessProfileData] = useState<{ businessName?: string; address?: string } | null>(null);
+  const [businessProfileData, setBusinessProfileData] = useState<any>(null);
+  const [showSetup, setShowSetup] = useState(false);
 
   const handleLogout = () => {
     clearSession();
@@ -57,6 +58,11 @@ export default function DashboardLayout() {
       .then(data => {
         if (data && !data.error) {
           setBusinessProfileData(data);
+          // First sign-in: no signatory name or signature yet, so bills would
+          // print unsigned. Ask once, and respect a previous skip.
+          if (!hasCompletedSetup(data) && !wasSetupSkipped()) {
+            setShowSetup(true);
+          }
         }
       })
       .catch(() => {});
@@ -92,14 +98,14 @@ export default function DashboardLayout() {
   const userInitial = (activeBusinessName?.[0] || userName?.[0] || 'A').toUpperCase();
 
   return (
+    <>
+      {showSetup && (
+        <FirstRunSetup profile={businessProfileData} onDone={() => setShowSetup(false)} />
+      )}
     <div
       className={`flex h-screen font-sans text-slate-900 overflow-hidden transition-colors duration-200 ${currentTheme.lightBg}`}
     >
       {/* Theme Selector Modal */}
-      <ThemeSelectorModal
-        isOpen={isThemeModalOpen}
-        onClose={() => setIsThemeModalOpen(false)}
-      />
 
       {/* Mobile Backdrop */}
       {mobileMenuOpen && (
@@ -252,20 +258,6 @@ export default function DashboardLayout() {
                 </button>
               ))}
             </div>
-
-            {/* UI Theme Switcher Button */}
-            <button
-              onClick={() => setIsThemeModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-white hover:bg-amber-50/40 text-xs font-bold text-slate-800 transition-all shadow-xs"
-              title="Change UI Theme and Bill Layout"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full border border-black/20"
-                style={{ backgroundColor: currentTheme.swatches.primary }}
-              />
-              <Palette className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden sm:inline">{currentTheme.name.split(' ')[0]}</span>
-            </button>
 
             <Link
               to="/profile"
@@ -430,5 +422,6 @@ export default function DashboardLayout() {
         )}
       </main>
     </div>
+    </>
   );
 }

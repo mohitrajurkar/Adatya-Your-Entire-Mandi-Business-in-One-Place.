@@ -22,7 +22,6 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import PaidStamp from '../components/PaidStamp';
 import WhatsAppShareModal from '../components/WhatsAppShareModal';
-import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { OFFICIAL_LOGO_SRC } from '../config/logos';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -51,9 +50,7 @@ export default function Invoice() {
     themeId,
     setThemeId,
     billStyle,
-    setBillStyle,
-    isThemeModalOpen,
-    setIsThemeModalOpen
+    setBillStyle
   } = useTheme();
 
   const fetchInvoice = () => {
@@ -236,10 +233,6 @@ export default function Invoice() {
   return (
     <div className={`min-h-screen py-8 px-3 sm:px-6 transition-colors duration-200 ${currentTheme.lightBg}`}>
       {/* Theme Selector Modal */}
-      <ThemeSelectorModal
-        isOpen={isThemeModalOpen}
-        onClose={() => setIsThemeModalOpen(false)}
-      />
 
       {/* WhatsApp Modal */}
       <WhatsAppShareModal
@@ -352,16 +345,6 @@ export default function Invoice() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            {/* Theme Selector Button */}
-            <Button
-              onClick={() => setIsThemeModalOpen(true)}
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-800 hover:border-amber-500 hover:bg-amber-50/50 flex items-center gap-1.5 font-semibold"
-            >
-              <Palette className="h-4 w-4 text-amber-600" />
-              <span className="hidden md:inline">UI Themes:</span> {currentTheme.name.split(' ')[0]}
-            </Button>
 
             {/* WhatsApp Send PDF Button */}
             <Button
@@ -435,29 +418,6 @@ export default function Invoice() {
                       style={{ backgroundColor: t.swatches.primary }}
                     />
                     <span>{t.name.split(' ')[0]}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Bill Layout Options Quick Pills */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-              {[
-                { id: 'royal-framed', label: '🏛️ Royal Frame' },
-                { id: 'traditional-patrika', label: '📜 Vyapari Patrika' },
-              ].map((style) => {
-                const isActive = billStyle === style.id;
-                return (
-                  <button
-                    key={style.id}
-                    onClick={() => setBillStyle(style.id as BillStyleId)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                      isActive
-                        ? 'bg-white text-emerald-800 shadow-xs font-bold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    {style.label}
                   </button>
                 );
               })}

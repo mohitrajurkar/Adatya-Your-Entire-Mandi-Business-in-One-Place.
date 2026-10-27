@@ -4,6 +4,7 @@ export type { ButtonProps } from './button';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent } from './card';
 export { Input } from './input';
 export { FormField, TextInput, SelectInput, NumberInput } from './form-field';
+export { MobileInput, normaliseMobile } from './mobile-input';
 export type { FormFieldProps, FieldIds } from './form-field';
 export { Modal, ConfirmDialog } from './modal';
 export type { ModalProps, ConfirmDialogProps } from './modal';

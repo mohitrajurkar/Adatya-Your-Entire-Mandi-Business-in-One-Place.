@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { MobileInput } from '../components/ui';
 import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -22,7 +23,6 @@ import {
   HardDrive
 } from 'lucide-react';
 import SignaturePad from '../components/SignaturePad';
-import ThemeSelectorModal from '../components/ThemeSelectorModal';
 import { Link } from 'react-router-dom';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { OFFICIAL_LOGO_SRC, OFFICIAL_LOGO_DETAILS } from '../config/logos';
@@ -40,9 +40,7 @@ export default function Settings() {
     themeId,
     setThemeId,
     billStyle,
-    setBillStyle,
-    isThemeModalOpen,
-    setIsThemeModalOpen
+    setBillStyle
   } = useTheme();
 
   const [formData, setFormData] = useState({
@@ -223,10 +221,6 @@ export default function Settings() {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-4xl mx-auto pb-20">
       {/* Theme Selector Modal */}
-      <ThemeSelectorModal
-        isOpen={isThemeModalOpen}
-        onClose={() => setIsThemeModalOpen(false)}
-      />
 
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -240,14 +234,6 @@ export default function Settings() {
               <User className="w-3.5 h-3.5 mr-1.5 text-emerald-700" /> Edit Profile
             </Button>
           </Link>
-          <Button
-            onClick={() => setIsThemeModalOpen(true)}
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-800 bg-white hover:bg-slate-50 text-xs"
-          >
-            <Palette className="w-3.5 h-3.5 mr-1.5 text-amber-600" /> Themes
-          </Button>
           <Link to="/purchases">
             <Button variant="outline" size="sm" className="bg-white border-slate-300 text-slate-800 text-xs">
               <Eye className="w-3.5 h-3.5 mr-1.5" /> Bills
@@ -285,14 +271,6 @@ export default function Settings() {
               <Palette className="h-4 w-4 text-amber-600" />
               {t('theme_bill_layout')}
             </CardTitle>
-            <Button
-              onClick={() => setIsThemeModalOpen(true)}
-              size="sm"
-              variant="ghost"
-              className="text-xs text-amber-800 hover:text-amber-900 h-7"
-            >
-              Open Switcher
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="p-5 space-y-5">
@@ -511,9 +489,9 @@ export default function Settings() {
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5 text-slate-500" /> Primary Mobile
                 </label>
-                <Input
+                <MobileInput
                   value={formData.mobile1}
-                  onChange={e => handleInputChange('mobile1', e.target.value)}
+                  onValueChange={v => handleInputChange('mobile1', v)}
                   placeholder="10-digit mobile number"
                   required
                 />
@@ -522,9 +500,9 @@ export default function Settings() {
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5 text-slate-500" /> Secondary Mobile
                 </label>
-                <Input
+                <MobileInput
                   value={formData.mobile2}
-                  onChange={e => handleInputChange('mobile2', e.target.value)}
+                  onValueChange={v => handleInputChange('mobile2', v)}
                   placeholder="Alternate mobile (optional)"
                 />
               </div>

@@ -56,8 +56,9 @@ function readStored(): Language {
   } catch {
     /* storage unavailable */
   }
-  // Marathi by default: this is a Maharashtra mandi product.
-  return 'mr';
+  // English by default. A trader switches to Marathi or Hindi from the
+  // header and the choice is remembered per device.
+  return 'en';
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {

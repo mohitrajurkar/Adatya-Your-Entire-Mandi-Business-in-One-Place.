@@ -277,6 +277,7 @@ class FinancialIntegrityIT extends AbstractSecurityIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Ramesh",
+                                "village", "Test Village",
                                 "outstandingBalance", 0))))
                 .andExpect(status().isOk());
 

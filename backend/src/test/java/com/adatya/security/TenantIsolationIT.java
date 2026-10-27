@@ -55,7 +55,7 @@ class TenantIsolationIT extends AbstractSecurityIT {
         mockMvc.perform(put("/api/farmers/" + farmerB)
                         .header("Authorization", bearer(tokenA))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("name", "Hijacked"))))
+                        .content(objectMapper.writeValueAsString(Map.of("name", "Hijacked", "village", "Elsewhere"))))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/api/farmers").header("Authorization", bearer(tokenB)))

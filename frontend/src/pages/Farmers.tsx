@@ -1,4 +1,5 @@
 import { useLanguage } from '../context/LanguageContext';
+import { MobileInput, useToast } from '../components/ui';
 import React, { useEffect, useState, FormEvent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -14,7 +15,10 @@ export default function Farmers() {
   const { t } = useLanguage();
   const [farmers, setFarmers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const toast = useToast();
   const [isAdding, setIsAdding] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [newFarmer, setNewFarmer] = useState({ name: '', village: '', mobile: '' });
 
   useEffect(() => {
@@ -33,17 +37,47 @@ export default function Farmers() {
 
   const handleAddFarmer = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    // Name and village together are what identify a farmer in the ledger:
+    // several farmers in one mandi commonly share a name.
+    if (!newFarmer.name.trim()) {
+      setFormError('Please enter the farmer name');
+      return;
+    }
+    if (!newFarmer.village.trim()) {
+      setFormError('Please enter the village');
+      return;
+    }
+    if (newFarmer.mobile && newFarmer.mobile.length !== 10) {
+      setFormError('Mobile number must be exactly 10 digits, or left blank');
+      return;
+    }
+
+    setSaving(true);
     try {
-      await apiFetch(`/farmers`, {
+      const res = await apiFetch(`/farmers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newFarmer)
+        body: JSON.stringify({
+          name: newFarmer.name.trim(),
+          village: newFarmer.village.trim(),
+          mobile: newFarmer.mobile,
+        })
       });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setFormError(data?.error || 'Could not save this farmer. Please check the details.');
+        return;
+      }
       setIsAdding(false);
       setNewFarmer({ name: '', village: '', mobile: '' });
+      toast.success(`${data?.name || 'Farmer'} added.`);
       fetchFarmers();
-    } catch (e) {
-      console.error(e);
+    } catch (err: any) {
+      setFormError(err?.message || 'Could not reach the server. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -72,22 +106,27 @@ export default function Farmers() {
                 <CardTitle className="text-lg">Register New Farmer</CardTitle>
               </CardHeader>
               <CardContent>
+                {formError && (
+                  <p className="mb-3 rounded-control bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700" role="alert">
+                    {formError}
+                  </p>
+                )}
                 <form onSubmit={handleAddFarmer} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Full Name</label>
-                    <Input required value={newFarmer.name} onChange={e => setNewFarmer({...newFarmer, name: e.target.value})} placeholder={t('e_g_gajanan_pawar')} />
+                    <label className="text-sm font-medium">Full Name <span className="text-rose-600">*</span></label>
+                    <Input required autoFocus value={newFarmer.name} onChange={e => setNewFarmer({...newFarmer, name: e.target.value})} placeholder={t('e_g_gajanan_pawar')} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Village</label>
-                    <Input value={newFarmer.village} onChange={e => setNewFarmer({...newFarmer, village: e.target.value})} placeholder={t('e_g_maregaon')} />
+                    <label className="text-sm font-medium">Village <span className="text-rose-600">*</span></label>
+                    <Input required value={newFarmer.village} onChange={e => setNewFarmer({...newFarmer, village: e.target.value})} placeholder={t('e_g_maregaon')} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Mobile Number</label>
-                    <Input value={newFarmer.mobile} onChange={e => setNewFarmer({...newFarmer, mobile: e.target.value})} placeholder="10-digit number" />
+                    <label className="text-sm font-medium">Mobile Number <span className="text-xs font-normal text-slate-500">(optional)</span></label>
+                    <MobileInput value={newFarmer.mobile} onValueChange={v => setNewFarmer({ ...newFarmer, mobile: v })} placeholder="10-digit number (optional)" />
                   </div>
                   <div className="flex gap-2">
                     <Button type="button" variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
-                    <Button type="submit">Save</Button>
+                    <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
                   </div>
                 </form>
               </CardContent>
