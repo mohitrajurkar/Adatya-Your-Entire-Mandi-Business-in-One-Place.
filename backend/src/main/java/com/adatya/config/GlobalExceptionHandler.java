@@ -38,11 +38,34 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException e) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (org.springframework.validation.FieldError fe : e.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(fe.getField(), fe.getDefaultMessage());
+        }
+
         String message = e.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Please check the values you entered");
-        return body(HttpStatus.BAD_REQUEST, message);
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("success", false);
+        payload.put("error", message);
+        payload.put("fieldErrors", fieldErrors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(payload);
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(jakarta.validation.ConstraintViolationException e) {
+        Map<String, String> violations = new LinkedHashMap<>();
+        for (jakarta.validation.ConstraintViolation<?> cv : e.getConstraintViolations()) {
+            violations.put(cv.getPropertyPath().toString(), cv.getMessage());
+        }
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("success", false);
+        payload.put("error", "Validation failed for one or more fields");
+        payload.put("fieldErrors", violations);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(payload);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

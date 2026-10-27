@@ -50,7 +50,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
@@ -67,9 +67,10 @@ public class SecurityConfig {
                 .accessDeniedHandler(forbiddenHandler())
             )
             .authorizeHttpRequests(auth -> auth
-                // Public: obtaining a token, and the container health probe.
+                // Public: obtaining a token, container health probe, and API documentation.
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Platform administration is restricted to the platform owner.
@@ -110,4 +111,30 @@ public class SecurityConfig {
                 response.getOutputStream(),
                 Map.of("success", false, "error", message));
     }
+
+    @Bean
+    public org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.OncePerRequestFilter> securityHeadersFilter() {
+        org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.OncePerRequestFilter> registrationBean =
+                new org.springframework.boot.web.servlet.FilterRegistrationBean<>();
+        registrationBean.setFilter(new org.springframework.web.filter.OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request,
+                                            jakarta.servlet.http.HttpServletResponse response,
+                                            jakarta.servlet.FilterChain filterChain) throws java.io.IOException, jakarta.servlet.ServletException {
+                // Content Security Policy
+                response.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.example.com");
+                // HSTS (1 year)
+                response.setHeader("Strict-Transport-Security", "max-age=31536000 ; includeSubDomains");
+                // Clickjacking protection
+                response.setHeader("X-Frame-Options", "DENY");
+                // MIME type sniffing protection
+                response.setHeader("X-Content-Type-Options", "nosniff");
+                filterChain.doFilter(request, response);
+            }
+        });
+        registrationBean.setOrder(1);
+        registrationBean.addUrlPatterns("/*");
+        return registrationBean;
+    }
 }
+

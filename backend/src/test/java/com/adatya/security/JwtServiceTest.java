@@ -39,10 +39,18 @@ class JwtServiceTest {
         JwtService service = new JwtService(SECRET, 60);
         String token = service.issueToken(42L, "9000000001", "ADMIN");
 
-        // Flip the final character of the signature.
-        char last = token.charAt(token.length() - 1);
-        String tampered = token.substring(0, token.length() - 1) + (last == 'a' ? 'b' : 'a');
+        // Alter a character in the PAYLOAD segment, which is covered by the
+        // signature. Flipping the last character of the signature instead is
+        // unreliable: base64url encodes 86 characters for a 64-byte HS512
+        // signature, so the final character carries four unused bits and
+        // changing it can decode to the very same bytes.
+        String[] parts = token.split("\\.");
+        assertEquals(3, parts.length, "A JWT has three segments");
+        char middle = parts[1].charAt(0);
+        parts[1] = (middle == 'a' ? 'b' : 'a') + parts[1].substring(1);
+        String tampered = String.join(".", parts);
 
+        assertNotEquals(token, tampered);
         assertNull(service.verifyToken(tampered));
         assertNull(service.verifyToken("not.a.token"));
         assertNull(service.verifyToken(""));

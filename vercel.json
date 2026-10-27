@@ -1,0 +1,73 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "outputDirectory": "frontend/dist",
+  "buildCommand": "npm --prefix frontend install && npm --prefix frontend run build",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(sw\\.js|registerSW\\.js|manifest\\.webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.yourdomain.com/api/:path*"
+    },
+    {
+      "source": "/actuator/:path*",
+      "destination": "https://api.yourdomain.com/actuator/:path*"
+    },
+    {
+      "source": "/swagger-ui/:path*",
+      "destination": "https://api.yourdomain.com/swagger-ui/:path*"
+    },
+    {
+      "source": "/v3/api-docs/:path*",
+      "destination": "https://api.yourdomain.com/v3/api-docs/:path*"
+    },
+    {
+      "source": "/((?!api/|actuator/|swagger-ui/|v3/api-docs/|assets/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

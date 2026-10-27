@@ -147,27 +147,28 @@ public class InventoryService {
             // bags, so bag figures are reported as recorded-only.
             int recordedBags = Math.max(0, inwardBags - outwardBags - soldBags);
 
+            String status = statusFor(available, totalInward);
+
             Map<String, Object> row = new LinkedHashMap<>();
+            // The commodity id is required: the sale and stock-adjustment forms
+            // post commodityId, so without it neither flow can be completed.
             row.put("id", id);
-            row.put("name", commodity.getName());
+            row.put("commodityName", commodity.getName());
+            row.put("quintals", available);
+            row.put("isLowStock", "low_stock".equals(status));
+            row.put("isOutOfStock", "out_of_stock".equals(status));
+            // Figures the inventory screen displays per commodity.
+            row.put("kg", Money.scaleQuantity(available.multiply(new BigDecimal("100"))));
+            row.put("bags", recordedBags);
+            row.put("value", stockValue);
             row.put("defaultRate", Money.scaleMoney(commodity.getDefaultRate()));
             row.put("purchasedQuintals", purchasedQty);
             row.put("purchasedAmount", Money.scaleMoney(purchasedAmount));
             row.put("avgPurchaseRate", avgPurchaseRate);
             row.put("soldQuintals", soldQty);
             row.put("soldAmount", Money.scaleMoney(soldAmount));
-            row.put("soldBags", soldBags);
             row.put("avgSaleRate", avgSaleRate);
-            row.put("adjInwardQuintals", inwardQty);
-            row.put("adjOutwardQuintals", outwardQty);
-            row.put("availableQuintals", available);
-            row.put("availableKg", Money.scaleQuantity(available.multiply(new BigDecimal("100"))));
-            row.put("recordedBags", recordedBags);
-            // Kept for the existing UI, now meaning recorded bags only.
-            row.put("availableBags", recordedBags);
-            row.put("stockValue", stockValue);
             row.put("lowStockThreshold", lowStockThreshold(totalInward));
-            row.put("status", statusFor(available, totalInward));
             rows.add(row);
 
             if (Money.isPositive(available)) {
@@ -181,21 +182,19 @@ public class InventoryService {
                 .map(s -> Money.scaleMoney(s.getNetAmount()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Map<String, Object> summary = new LinkedHashMap<>();
-        summary.put("totalStockQuintals", Money.scaleQuantity(totalQuintals));
-        summary.put("totalStockBags", totalBags);
-        summary.put("totalStockValue", Money.scaleMoney(totalValue));
-        summary.put("totalMandiSalesAmount", Money.scaleMoney(salesAmount));
-        summary.put("totalSalesCount", sales.size());
-        summary.put("commoditiesCount", commodities.size());
-        summary.put("lowStockCount", rows.stream().filter(r -> "low_stock".equals(r.get("status"))).count());
-        summary.put("outOfStockCount", rows.stream().filter(r -> "out_of_stock".equals(r.get("status"))).count());
-
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("success", true);
-        response.put("stock", rows);
-        response.put("summary", summary);
-        return response;
+        // Flat totals, rather than the previous nested "summary" object. Each
+        // one is shown on the inventory or dashboard tiles.
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalQuintals", Money.scaleQuantity(totalQuintals));
+        result.put("totalBags", totalBags);
+        result.put("totalValue", Money.scaleMoney(totalValue));
+        result.put("totalSalesAmount", Money.scaleMoney(salesAmount));
+        result.put("salesCount", sales.size());
+        result.put("commodityCount", commodities.size());
+        result.put("lowStockCount", rows.stream().filter(r -> Boolean.TRUE.equals(r.get("isLowStock"))).count());
+        result.put("outOfStockCount", rows.stream().filter(r -> Boolean.TRUE.equals(r.get("isOutOfStock"))).count());
+        result.put("items", rows);
+        return result;
     }
 
     /** 10% of everything ever taken in, with a 1 quintal floor. */

@@ -26,7 +26,7 @@ services:
       DB_URL: ${DB_URL:-jdbc:postgresql://database:5432/adatya_db}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
-      HIBERNATE_DDL_AUTO: ${HIBERNATE_DDL_AUTO:-update}
+      HIBERNATE_DDL_AUTO: ${HIBERNATE_DDL_AUTO:-validate}
       # Required: the backend refuses to start without a signing secret.
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -base64 48)}
       JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-720}

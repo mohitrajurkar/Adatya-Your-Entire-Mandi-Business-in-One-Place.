@@ -192,10 +192,10 @@ class FinancialIntegrityIT extends AbstractSecurityIT {
 
         MvcResult stock = mockMvc.perform(get("/api/inventory/stock").header("Authorization", bearer(token)))
                 .andExpect(status().isOk()).andReturn();
-        JsonNode rows = objectMapper.readTree(stock.getResponse().getContentAsString()).path("stock");
+        JsonNode rows = objectMapper.readTree(stock.getResponse().getContentAsString()).path("items");
         JsonNode held = null;
         for (JsonNode row : rows) {
-            if (new BigDecimal(row.path("availableQuintals").asText()).signum() > 0) {
+            if (new BigDecimal(row.path("quintals").asText()).signum() > 0) {
                 held = row;
                 break;
             }
@@ -223,10 +223,10 @@ class FinancialIntegrityIT extends AbstractSecurityIT {
 
         JsonNode rows = objectMapper.readTree(mockMvc.perform(get("/api/inventory/stock")
                         .header("Authorization", bearer(token)))
-                .andReturn().getResponse().getContentAsString()).path("stock");
+                .andReturn().getResponse().getContentAsString()).path("items");
         long commodityId = 0;
         for (JsonNode row : rows) {
-            if (new BigDecimal(row.path("availableQuintals").asText()).signum() > 0) {
+            if (new BigDecimal(row.path("quintals").asText()).signum() > 0) {
                 commodityId = row.path("id").asLong();
                 break;
             }

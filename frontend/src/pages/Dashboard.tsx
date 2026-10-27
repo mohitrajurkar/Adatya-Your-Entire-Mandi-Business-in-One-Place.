@@ -32,7 +32,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [selectedForWhatsApp, setSelectedForWhatsApp] = useState<any | null>(null);
-  const [inventoryStock, setInventoryStock] = useState<{ stock: any[]; summary: any } | null>(null);
+  const [inventoryStock, setInventoryStock] = useState<{ items: any[]; totalQuintals?: number } | null>(null);
 
   useEffect(() => {
     apiFetch(`/dashboard`)
@@ -48,8 +48,10 @@ export default function Dashboard() {
     apiFetch(`/inventory/stock`)
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
-          setInventoryStock({ stock: data.stock || [], summary: data.summary || null });
+        // The stock response no longer carries a "success" flag; a well-formed
+        // body is identified by its items array.
+        if (Array.isArray(data?.items)) {
+          setInventoryStock({ items: data.items, totalQuintals: data.totalQuintals });
         }
       })
       .catch(() => {});
@@ -268,7 +270,7 @@ export default function Dashboard() {
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <span>{t('live_godown_grain_stock')}</span>
                   <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    {inventoryStock.summary?.totalStockQuintals ?? 0} Qtl Available
+                    {inventoryStock.totalQuintals ?? 0} Qtl Available
                   </span>
                 </h3>
                 <p className="text-[11px] text-slate-500">
@@ -287,8 +289,8 @@ export default function Dashboard() {
 
           {/* Grain Stock Pills */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-            {inventoryStock.stock.map((grain: any) => {
-              const isOut = grain.availableQuintals <= 0;
+            {inventoryStock.items.map((grain: any) => {
+              const isOut = grain.isOutOfStock;
               return (
                 <div
                   key={grain.id}
@@ -298,15 +300,15 @@ export default function Dashboard() {
                       : 'bg-gradient-to-b from-white to-emerald-50/30 border-emerald-200/80 shadow-2xs hover:border-emerald-500'
                   }`}
                 >
-                  <div className="text-[11px] font-bold text-slate-800 truncate" title={grain.name}>
-                    {grain.name}
+                  <div className="text-[11px] font-bold text-slate-800 truncate" title={grain.commodityName}>
+                    {grain.commodityName}
                   </div>
                   <div className="text-base font-black text-slate-950 font-serif mt-0.5">
-                    {grain.availableQuintals}{' '}
+                    {grain.quintals}{' '}
                     <span className="text-[10px] font-semibold text-slate-500">Qtl</span>
                   </div>
                   <div className="text-[10px] text-slate-500 flex items-center justify-between mt-1">
-                    <span>{grain.availableBags} {t('bags_unit')}</span>
+                    <span>{grain.bags} {t('bags_unit')}</span>
                     <span className={`font-bold ${isOut ? 'text-slate-400' : 'text-emerald-700'}`}>
                       {isOut ? t('nil') : t('available')}
                     </span>

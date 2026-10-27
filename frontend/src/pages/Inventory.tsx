@@ -33,34 +33,36 @@ import {
 } from 'lucide-react';
 
 
+/** One row of GET /api/inventory/stock. */
 interface StockCommodity {
   id: number;
-  name: string;
+  commodityName: string;
+  quintals: number;
+  kg: number;
+  bags: number;
+  value: number;
   defaultRate: number;
   purchasedQuintals: number;
-  purchasedBags: number;
   purchasedAmount: number;
   avgPurchaseRate: number;
   soldQuintals: number;
-  soldBags: number;
   soldAmount: number;
   avgSaleRate: number;
-  adjInwardQuintals: number;
-  adjOutwardQuintals: number;
-  availableQuintals: number;
-  availableKg: number;
-  availableBags: number;
-  stockValue: number;
-  status: 'in_stock' | 'low_stock' | 'out_of_stock';
+  isLowStock: boolean;
+  isOutOfStock: boolean;
+  lowStockThreshold: number;
 }
 
+/** Totals are flat on the response rather than nested under "summary". */
 interface StockSummary {
-  totalStockQuintals: number;
-  totalStockBags: number;
-  totalStockValue: number;
-  totalMandiSalesAmount: number;
-  totalSalesCount: number;
-  commoditiesCount: number;
+  totalQuintals: number;
+  totalBags: number;
+  totalValue: number;
+  totalSalesAmount: number;
+  salesCount: number;
+  commodityCount: number;
+  lowStockCount: number;
+  outOfStockCount: number;
 }
 
 interface MandiSale {
@@ -161,9 +163,10 @@ export default function Inventory() {
         setBusinessProfile(profileData);
       }
 
-      if (stockData.success) {
-        setStockList(stockData.stock || []);
-        setSummary(stockData.summary || null);
+      if (stockRes.ok && Array.isArray(stockData.items)) {
+        setStockList(stockData.items);
+        const { items, ...totals } = stockData;
+        setSummary(totals as StockSummary);
       }
       if (Array.isArray(salesData)) {
         setSalesList(salesData);
@@ -189,8 +192,8 @@ export default function Inventory() {
       buyerLocation: '',
       vehicleNumber: '',
       date: new Date().toISOString().slice(0, 10),
-      bags: target ? String(target.availableBags > 0 ? target.availableBags : '') : '',
-      weightQuintals: target ? String(target.availableQuintals > 0 ? target.availableQuintals : '') : '',
+      bags: target ? String(target.bags > 0 ? target.bags : '') : '',
+      weightQuintals: target ? String(target.quintals > 0 ? target.quintals : '') : '',
       saleRate: target ? String(Math.round(target.avgPurchaseRate * 1.05)) : '',
       hamali: '0',
       transport: '0',
@@ -249,8 +252,8 @@ export default function Inventory() {
     // Stock is enforced by the server, so this is told as a fact rather than
     // offered as "proceed anyway" -- that prompt used to let the sale through
     // and drive inventory negative, and would now simply be rejected.
-    if (selectedSaleCommodity && w > selectedSaleCommodity.availableQuintals) {
-      setSaleError(tf('only_qtl_in_stock_cannot_sell', { available: selectedSaleCommodity.availableQuintals, asked: w }));
+    if (selectedSaleCommodity && w > selectedSaleCommodity.quintals) {
+      setSaleError(tf('only_qtl_in_stock_cannot_sell', { available: selectedSaleCommodity.quintals, asked: w }));
       return;
     }
 
@@ -276,7 +279,7 @@ export default function Inventory() {
           const matchedComm = stockList.find(c => c.id === Number(saleForm.commodityId));
           setViewingSaleSlip({
             ...data.sale,
-            commodityName: matchedComm?.name || 'Grain'
+            commodityName: matchedComm?.commodityName || 'Grain'
           });
         }
       } else {
@@ -361,7 +364,7 @@ export default function Inventory() {
 
   // Filtered lists
   const filteredStock = stockList.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.commodityName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesComm = selectedCommodityFilter === 'all' || String(item.id) === selectedCommodityFilter;
     return matchesSearch && matchesComm;
   });
@@ -441,7 +444,7 @@ export default function Inventory() {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl md:text-3xl font-black text-amber-300 font-serif">
-                {summary?.totalStockQuintals ?? 0}
+                {summary?.totalQuintals ?? 0}
               </span>
               <span className="text-xs font-bold text-emerald-200">
                 {t('quintals')}
@@ -449,7 +452,7 @@ export default function Inventory() {
             </div>
             <div className="mt-2 pt-2 border-t border-emerald-800/80 flex items-center justify-between text-xs text-emerald-100">
               <span>{t('est_total_bags')}:</span>
-              <strong className="text-white font-bold">{summary?.totalStockBags ?? 0} {t('bags')}</strong>
+              <strong className="text-white font-bold">{summary?.totalBags ?? 0} {t('bags')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -462,11 +465,11 @@ export default function Inventory() {
               <IndianRupee className="w-4 h-4 text-emerald-700" />
             </div>
             <div className="text-2xl md:text-3xl font-black text-slate-900 font-serif">
-              {formatCurrency(summary?.totalStockValue ?? 0)}
+              {formatCurrency(summary?.totalValue ?? 0)}
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
               <span>{t('grain_types')}:</span>
-              <strong className="text-slate-900 font-bold">{summary?.commoditiesCount ?? 0} {t('items')}</strong>
+              <strong className="text-slate-900 font-bold">{summary?.commodityCount ?? 0} {t('items')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -479,11 +482,11 @@ export default function Inventory() {
               <TrendingUp className="w-4 h-4 text-amber-600" />
             </div>
             <div className="text-2xl md:text-3xl font-black text-emerald-700 font-serif">
-              {formatCurrency(summary?.totalMandiSalesAmount ?? 0)}
+              {formatCurrency(summary?.totalSalesAmount ?? 0)}
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
               <span>{t('total_sales')}:</span>
-              <strong className="text-slate-900 font-bold">{summary?.totalSalesCount ?? 0} {t('deals')}</strong>
+              <strong className="text-slate-900 font-bold">{summary?.salesCount ?? 0} {t('deals')}</strong>
             </div>
           </CardContent>
         </Card>
@@ -498,13 +501,13 @@ export default function Inventory() {
             <div className="flex items-center gap-2 mt-1">
               <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-sm font-bold text-slate-800">
-                {stockList.filter(s => s.availableQuintals > 0).length} / {stockList.length} {t('grains_in_stock')}
+                {stockList.filter(s => s.quintals > 0).length} / {stockList.length} {t('grains_in_stock')}
               </span>
             </div>
             <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2">
               <span>{t('nil_stock')}</span>
               <strong className="text-amber-700 font-bold">
-                {stockList.filter(s => s.availableQuintals <= 0).length} {t('types')}
+                {stockList.filter(s => s.quintals <= 0).length} {t('types')}
               </strong>
             </div>
           </CardContent>
@@ -565,7 +568,7 @@ export default function Inventory() {
           >
             <option value="all">{t('all_grains')}</option>
             {stockList.map(c => (
-              <option key={c.id} value={String(c.id)}>{c.name}</option>
+              <option key={c.id} value={String(c.id)}>{c.commodityName}</option>
             ))}
           </select>
         </div>
@@ -576,8 +579,8 @@ export default function Inventory() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredStock.map((item) => {
-              const isLow = item.availableQuintals > 0 && item.availableQuintals < 10;
-              const isOut = item.availableQuintals <= 0;
+              const isLow = item.isLowStock;
+              const isOut = item.isOutOfStock;
 
               return (
                 <Card
@@ -597,7 +600,7 @@ export default function Inventory() {
                       </div>
                       <div>
                         <CardTitle className="text-base font-serif font-black text-slate-900">
-                          {item.name}
+                          {item.commodityName}
                         </CardTitle>
                         <span className="text-[11px] text-slate-500">
                           MSP/Def Rate: ₹{item.defaultRate}/Qtl
@@ -631,13 +634,13 @@ export default function Inventory() {
                           {t('available_balance')}
                         </div>
                         <div className="text-2xl font-black text-slate-950 font-serif mt-0.5">
-                          {item.availableQuintals}{' '}
+                          {item.quintals}{' '}
                           <span className="text-xs font-bold text-slate-600">
                             {t('qtl')}
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-500 font-semibold">
-                          {tf('kg_approx_bags', { kg: item.availableKg, bags: item.availableBags })}
+                          {tf('kg_approx_bags', { kg: item.kg, bags: item.bags })}
                         </div>
                       </div>
 
@@ -646,7 +649,7 @@ export default function Inventory() {
                           {t('book_value')}
                         </div>
                         <div className="text-sm font-bold text-emerald-800 font-serif">
-                          {formatCurrency(item.stockValue)}
+                          {formatCurrency(item.value)}
                         </div>
                         <div className="text-[10px] text-slate-500">
                           @ ₹{item.avgPurchaseRate}/Qtl
@@ -688,9 +691,9 @@ export default function Inventory() {
                     {/* Action Button: Sell this commodity directly */}
                     <Button
                       onClick={() => handleOpenSaleForCommodity(item.id)}
-                      disabled={item.availableQuintals <= 0}
+                      disabled={item.quintals <= 0}
                       className={`w-full text-xs h-9 font-bold transition-all ${
-                        item.availableQuintals <= 0
+                        item.quintals <= 0
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                           : 'bg-emerald-800 hover:bg-emerald-900 text-amber-200'
                       }`}
@@ -884,7 +887,7 @@ export default function Inventory() {
                   <option value="">{t('select_grain')}</option>
                   {stockList.map(c => (
                     <option key={c.id} value={String(c.id)}>
-                      {tf('commodity_available_stock', { name: c.name, qtl: c.availableQuintals, bags: c.availableBags })}
+                      {tf('commodity_available_stock', { name: c.commodityName, qtl: c.quintals, bags: c.bags })}
                     </option>
                   ))}
                 </select>
@@ -892,10 +895,10 @@ export default function Inventory() {
                 {selectedSaleCommodity && (
                   <div className="mt-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
                     <span className="text-emerald-900 font-bold">
-                      {selectedSaleCommodity.name} {t('in_godown')}
+                      {selectedSaleCommodity.commodityName} {t('in_godown')}
                     </span>
                     <strong className="text-emerald-800 font-serif font-black">
-                      {selectedSaleCommodity.availableQuintals} Qtl / {selectedSaleCommodity.availableBags} {t('bags')}
+                      {selectedSaleCommodity.quintals} Qtl / {selectedSaleCommodity.bags} {t('bags')}
                     </strong>
                   </div>
                 )}
@@ -1163,7 +1166,7 @@ export default function Inventory() {
                 >
                   <option value="">{t('select')}</option>
                   {stockList.map(c => (
-                    <option key={c.id} value={String(c.id)}>{c.name}</option>
+                    <option key={c.id} value={String(c.id)}>{c.commodityName}</option>
                   ))}
                 </select>
               </div>

@@ -141,10 +141,10 @@ class IdempotencyIT extends AbstractSecurityIT {
 
         JsonNode rows = objectMapper.readTree(mockMvc.perform(get("/api/inventory/stock")
                         .header("Authorization", bearer(token)))
-                .andReturn().getResponse().getContentAsString()).path("stock");
+                .andReturn().getResponse().getContentAsString()).path("items");
         long commodityId = 0;
         for (JsonNode row : rows) {
-            if (new BigDecimal(row.path("availableQuintals").asText()).signum() > 0) {
+            if (new BigDecimal(row.path("quintals").asText()).signum() > 0) {
                 commodityId = row.path("id").asLong();
                 break;
             }
@@ -173,11 +173,11 @@ class IdempotencyIT extends AbstractSecurityIT {
         // And the stock reflects a single sale: 10 purchased less 6 sold.
         JsonNode after = objectMapper.readTree(mockMvc.perform(get("/api/inventory/stock")
                         .header("Authorization", bearer(token)))
-                .andReturn().getResponse().getContentAsString()).path("stock");
+                .andReturn().getResponse().getContentAsString()).path("items");
         for (JsonNode row : after) {
             if (row.path("id").asLong() == commodityId) {
                 assertEquals(0, new BigDecimal("4.000")
-                                .compareTo(new BigDecimal(row.path("availableQuintals").asText())),
+                                .compareTo(new BigDecimal(row.path("quintals").asText())),
                         "Stock must be reduced once, not three times");
             }
         }
