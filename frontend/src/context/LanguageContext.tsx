@@ -39,6 +39,8 @@ interface LanguageContextType {
   /** Cycles through the available languages, for the compact header control. */
   toggleLanguage: () => void;
   t: (key: TranslationKey) => string;
+  /** Same as t(), with {placeholders} replaced from the supplied values. */
+  tf: (key: TranslationKey, values: Record<string, string | number>) => string;
   /** Picks the right string when a value is supplied per language. */
   pick: (values: Partial<Record<Language, string>>) => string;
 }
@@ -96,6 +98,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       // en is the fallback, so an untranslated string is readable rather than
       // showing a raw key to a trader.
       t: (key: TranslationKey) => dictionary[key] ?? en[key] ?? key,
+      tf: (key: TranslationKey, values: Record<string, string | number>) => {
+        const template = dictionary[key] ?? en[key] ?? key;
+        return template.replace(/\{(\w+)\}/g, (match, name) =>
+          name in values ? String(values[name]) : match);
+      },
       pick: (values: Partial<Record<Language, string>>) =>
         values[language] ?? values.en ?? values.mr ?? '',
     };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -29,6 +30,7 @@ import { apiFetch } from '../lib/api';
 
 
 export default function Settings() {
+  const { t, tf } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -86,7 +88,7 @@ export default function Settings() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      setBackupMsg({ type: 'success', text: 'बॅकअप फाईल सुरक्षितपणे डाऊनलोड झाली! (Backup exported successfully)' });
+      setBackupMsg({ type: 'success', text: t('backup_exported_successfully') });
     } catch (err: any) {
       setBackupMsg({ type: 'error', text: err.message || 'Error exporting backup' });
     } finally {
@@ -122,13 +124,13 @@ export default function Settings() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setBackupMsg({ type: 'success', text: 'बॅकअप यशस्वीरीत्या रिस्टोअर झाला! सर्व जुना डेटा पूर्ववत झाला.' });
+        setBackupMsg({ type: 'success', text: t('backup_restored_successfully_your_earlier_da') });
         fetchBackupStats();
       } else {
         throw new Error(data.error || 'Failed to restore backup');
       }
     } catch (err: any) {
-      setBackupMsg({ type: 'error', text: 'बॅकअप रिस्टोअर त्रुटी: ' + (err.message || String(err)) });
+      setBackupMsg({ type: 'error', text: tf('backup_restore_error', { detail: err.message || String(err) }) });
     } finally {
       setBackupLoading(false);
       setPendingFile(null);
@@ -281,7 +283,7 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Palette className="h-4 w-4 text-amber-600" />
-              Theme & Bill Layout (रंग व पावती पर्याय)
+              {t('theme_bill_layout')}
             </CardTitle>
             <Button
               onClick={() => setIsThemeModalOpen(true)}
@@ -297,11 +299,11 @@ export default function Settings() {
           {/* Color Themes Grid */}
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2.5">
-              Color Theme (रंग निवडा)
+              {t('color_theme')}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               {(Object.keys(THEMES) as AppThemeId[]).map((tid) => {
-                const t = THEMES[tid];
+                const theme = THEMES[tid];
                 const isSelected = themeId === tid;
                 return (
                   <button
@@ -315,13 +317,12 @@ export default function Settings() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-slate-900">{t.name.split('&')[0]}</span>
+                      <span className="text-xs text-slate-900">{t(theme.labelKey)}</span>
                       {isSelected && <Check className="w-3.5 h-3.5 text-amber-600 stroke-[3]" />}
                     </div>
-                    <div className="text-[11px] text-amber-800 font-medium mb-2">{t.nameMr}</div>
                     <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
-                      <span className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: t.swatches.primary }} />
-                      <span className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: t.swatches.accent }} />
+                      <span className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: theme.swatches.primary }} />
+                      <span className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: theme.swatches.accent }} />
                     </div>
                   </button>
                 );
@@ -332,12 +333,12 @@ export default function Settings() {
           {/* Bill Layout Options - ONLY 2 Options: Royal Frame & Vyapari Patrika */}
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2.5">
-              Bill Voucher Layout (पावती प्रकार)
+              {t('bill_voucher_layout_2')}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: 'royal-framed', title: 'Royal Mandi Double Frame', mr: 'शाही दुहेरी फ्रेम' },
-                { id: 'traditional-patrika', title: 'Traditional Vyapari Patrika', mr: 'पारंपरिक व्यापारी पावती' },
+                { id: 'royal-framed', title: 'Royal Mandi Double Frame', mr: t('royal_double_frame') },
+                { id: 'traditional-patrika', title: 'Traditional Vyapari Patrika', mr: t('traditional_trader_bill') },
               ].map((style) => {
                 const isSelected = billStyle === style.id;
                 return (
@@ -371,7 +372,7 @@ export default function Settings() {
             <div>
               <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-600" />
-                Adatya Official Brand Logo (अधिकृत लोगो)
+                {t('adatya_official_brand_logo')}
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
                 Original luxury emerald & gold emblem with transparent background, active across all invoices, bills, and navigation headers.
@@ -424,14 +425,8 @@ export default function Settings() {
                   Official Luxury Mandi Emblem
                 </div>
                 <h4 className="text-base font-serif font-black text-slate-900">
-                  {OFFICIAL_LOGO_DETAILS.name}
+                  {t(OFFICIAL_LOGO_DETAILS.labelKey)}
                 </h4>
-                <div className="text-xs font-semibold text-emerald-800">
-                  {OFFICIAL_LOGO_DETAILS.nameMr}
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {OFFICIAL_LOGO_DETAILS.description}
-                </p>
                 <div className="pt-2 text-[11px] font-bold text-slate-500 flex items-center gap-1 justify-center md:justify-start">
                   <span className="text-emerald-600 font-black">✓</span> Automatically embedded on every printed invoice, WhatsApp PDF bill, and voucher.
                 </div>
@@ -446,7 +441,7 @@ export default function Settings() {
         <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
           <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <PenTool className="h-4 w-4 text-emerald-600" />
-            Official Bill Signature (स्वाक्षरी)
+            {t('official_bill_signature')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-5">
@@ -469,14 +464,14 @@ export default function Settings() {
           <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-slate-700" />
-              Business Details (व्यापार तपशील)
+              {t('business_details')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Business Name (नाव)
+                  {t('business_name_2')}
                 </label>
                 <Input
                   value={formData.businessName}
@@ -488,7 +483,7 @@ export default function Settings() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Proprietor / Owner Name (मालक)
+                  {t('proprietor_owner_name')}
                 </label>
                 <Input
                   value={formData.proprietorName}
@@ -501,7 +496,7 @@ export default function Settings() {
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-slate-500" /> Address (पत्ता)
+                <MapPin className="w-3.5 h-3.5 text-slate-500" /> {t('address')}
               </label>
               <Input
                 value={formData.address}
@@ -557,13 +552,13 @@ export default function Settings() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-slate-950 flex items-center gap-2">
-                डेटा सुरक्षा व संपूर्ण बॅकअप (Data Safety & Backups)
+                {t('data_safety_backups')}
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-600 inline" /> कायमस्वरूपी सुरक्षित (Persistent)
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 inline" /> {t('persistent')}
                 </span>
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
-                सर्व खरेदी नोंदी, शेतकरी हिशोब आणि मंडी व्यवहार सुरक्षित ठेवा व कधीही डाऊनलोड करा.
+                {t('keep_every_purchase_farmer_ledger_and_mandi_')}
               </p>
             </div>
           </div>
@@ -572,7 +567,7 @@ export default function Settings() {
             onClick={fetchBackupStats}
             className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 underline self-start sm:self-auto"
           >
-            रिफ्रेश आकडेवारी
+            {t('refresh_figures')}
           </button>
         </CardHeader>
         <CardContent className="p-6 space-y-5">
@@ -591,10 +586,10 @@ export default function Settings() {
           <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 space-y-1">
             <div className="font-bold flex items-center gap-1.5 text-emerald-900">
               <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-              भविष्यातील अपडेट्स किंवा बदलांनंतरही डेटा कधीही गमावला जाणार नाही
+              {t('your_data_is_never_lost_across_future_update')}
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed pl-5.5">
-              अ‍ॅप्लिकेशनमध्ये नवीन फीचर्स जोडताना किंवा कोड बदलताना तुमचा स्थानिक डेटाबेस (SQLite) अखंडित राहतो. अतिरिक्त सुरक्षिततेसाठी तुम्ही कधीही संपूर्ण डेटाचा JSON बॅकअप डाऊनलोड करून ठेवू शकता.
+              {t('your_saved_data_stays_intact_when_new_featur')}
             </p>
           </div>
 
@@ -602,19 +597,19 @@ export default function Settings() {
           {backupStats && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">खरेदी पावत्या</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('purchase_bills_2')}</div>
                 <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.purchases || 0}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">नोंदणीकृत शेतकरी</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('registered_farmers')}</div>
                 <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.farmers || 0}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">मंडी विक्री नोंदी</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('mandi_sale_records')}</div>
                 <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.mandiSales || 0}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">पेमेंट नोंदी</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('payment_records')}</div>
                 <div className="text-lg font-black text-slate-900 font-serif mt-0.5">{backupStats.counts?.payments || 0}</div>
               </div>
             </div>
@@ -629,7 +624,7 @@ export default function Settings() {
               className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-xs flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4 stroke-[2.5]" />
-              {backupLoading ? 'डाऊनलोड करत आहे...' : 'डाऊनलोड बॅकअप फाईल (Export JSON)'}
+              {backupLoading ? t('downloading_2') : t('export_json')}
             </Button>
 
             <label className="cursor-pointer">
@@ -642,7 +637,7 @@ export default function Settings() {
               />
               <div className="h-10 px-4 rounded-xl border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold shadow-2xs flex items-center justify-center gap-2 transition-colors">
                 <Upload className="w-4 h-4 text-slate-600 stroke-[2.5]" />
-                {backupLoading ? 'प्रक्रिया सुरू आहे...' : 'बॅकअप रिस्टोअर करा (Restore JSON)'}
+                {backupLoading ? t('processing') : t('restore_json')}
               </div>
             </label>
           </div>
@@ -657,10 +652,10 @@ export default function Settings() {
               <Upload className="w-6 h-6 stroke-[2.5]" />
             </div>
             <h3 className="text-base font-bold text-center text-slate-900">
-              बॅकअप रिस्टोअर करायचा आहे का?
+              {t('restore_this_backup')}
             </h3>
             <p className="text-xs text-center text-slate-500 mt-1.5 leading-relaxed">
-              तुम्ही निवडलेली फाईल: <strong className="text-slate-800">{pendingFile?.name}</strong>. या फाईलनुसार जुना डेटाबेस रिस्टोअर केला जाईल.
+              {tf('selected_file_will_replace', { name: pendingFile?.name || '' })}
             </p>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <button
@@ -671,7 +666,7 @@ export default function Settings() {
                 }}
                 className="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors"
               >
-                रद्द करा (Cancel)
+                {t('cancel_3')}
               </button>
               <button
                 type="button"
@@ -679,7 +674,7 @@ export default function Settings() {
                 className="w-full py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-1.5"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                हो, रिस्टोअर करा
+                {t('yes_restore')}
               </button>
             </div>
           </div>

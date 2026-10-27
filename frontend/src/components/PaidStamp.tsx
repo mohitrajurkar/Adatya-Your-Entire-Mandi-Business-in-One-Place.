@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PaidStampProps {
   status?: string;
@@ -11,6 +12,7 @@ interface PaidStampProps {
 export default function PaidStamp({
   className = ''
 }: PaidStampProps) {
+  const { t } = useLanguage();
   return (
     <div
       className={`relative inline-block border-[3.5px] border-red-600 text-red-600 font-bold uppercase tracking-widest px-6 py-2 rounded-sm transform -rotate-12 select-none print:transform print:-rotate-12 ${className}`}
@@ -23,7 +25,7 @@ export default function PaidStamp({
           PAID
         </span>
         <span className="text-[10px] font-bold tracking-wider text-red-600 mt-1 border-t border-red-500/80 pt-0.5 w-full">
-          रक्कम अदा
+          {t('amount_paid_2')}
         </span>
       </div>
     </div>

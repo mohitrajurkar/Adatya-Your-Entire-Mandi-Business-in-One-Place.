@@ -6,7 +6,8 @@ export type BillStyleId = 'royal-framed' | 'traditional-patrika';
 export interface ThemeConfig {
   id: AppThemeId;
   name: string;
-  nameMr: string;
+  /** Translation key for the display name, so the label follows the chosen language. */
+  labelKey: 'theme_royal_mandi' | 'theme_standard_white';
   description: string;
   sidebarBg: string;
   sidebarText: string;
@@ -38,7 +39,7 @@ export const THEMES: Record<AppThemeId, ThemeConfig> = {
   premium: {
     id: 'premium',
     name: 'Royal Mandi Theme',
-    nameMr: 'रॉयल थीम (शाही हिरवा व सोनेरी)',
+    labelKey: 'theme_royal_mandi',
     description: 'Official royal emerald and warm harvest gold luxury theme.',
     sidebarBg: 'bg-[#04251a]',
     sidebarText: 'text-emerald-100',
@@ -68,7 +69,7 @@ export const THEMES: Record<AppThemeId, ThemeConfig> = {
   white: {
     id: 'white',
     name: 'Standard White',
-    nameMr: 'क्लीन व्हाईट थीम (पांढरा)',
+    labelKey: 'theme_standard_white',
     description: 'Clean modern standard white and slate style.',
     sidebarBg: 'bg-slate-900',
     sidebarText: 'text-slate-200',

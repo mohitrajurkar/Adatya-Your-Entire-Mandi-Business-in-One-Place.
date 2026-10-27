@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Upload, Trash2, Check, Image as ImageIcon, UserCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -16,6 +17,7 @@ export default function SignaturePad({
   initialName = '',
   onSave
 }: SignaturePadProps) {
+  const { t } = useLanguage();
   const [signatureName, setSignatureName] = useState(initialName || '');
   const [currentSignature, setCurrentSignature] = useState<string | null>(initialSignature || null);
   const [isSaved, setIsSaved] = useState(false);
@@ -70,7 +72,7 @@ export default function SignaturePad({
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
             <UserCheck className="w-4 h-4 text-emerald-600" />
-            Signatory Person Name (स्वाक्षरी व्यक्तीचे नाव)
+            {t('signatory_person_name')}
           </label>
           <Input
             value={signatureName}
@@ -90,7 +92,7 @@ export default function SignaturePad({
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
             <Upload className="w-4 h-4 text-emerald-600" />
-            Upload Official Signature (स्वाक्षरी अपलोड करा)
+            {t('upload_official_signature')}
           </label>
 
           {currentSignature ? (

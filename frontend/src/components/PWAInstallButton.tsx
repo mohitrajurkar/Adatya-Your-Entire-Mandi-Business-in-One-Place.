@@ -70,7 +70,7 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
                     1
                   </div>
                   <div>
-                    Safari मध्ये खालील <strong>Share</strong> बटणावर टॅप करा
+                    {t('tap_the_share_button_below_in_safari')}
                     <div className="mt-1 flex items-center gap-1.5 text-blue-600 font-semibold">
                       <Share className="w-4 h-4" /> Share icon in Safari toolbar
                     </div>
@@ -82,9 +82,9 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
                     2
                   </div>
                   <div>
-                    खाली स्क्रोल करा आणि <strong>'Add to Home Screen'</strong> वर टॅप करा
+                    {t('scroll_down_and_tap_add_to_home_screen')}
                     <div className="mt-1 flex items-center gap-1.5 text-emerald-700 font-semibold">
-                      <PlusSquare className="w-4 h-4" /> 'Add to Home Screen' (होम स्क्रीनवर जोडा)
+                      <PlusSquare className="w-4 h-4" /> {t('add_to_home_screen')}
                     </div>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' | 'pill'
                     3
                   </div>
                   <div>
-                    वर उजव्या कोपऱ्यात <strong>'Add'</strong> दाबा. आता तुमच्या फोनवर थेट ॲप दिसेल!
+                    {t('tap_add_in_the_top_right_the_app_will_appear')}
                   </div>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { X, Check, Palette, Layers } from 'lucide-react';
 import { useTheme, THEMES, AppThemeId, BillStyleId } from '../context/ThemeContext';
 import { Button } from './ui/button';
@@ -9,6 +10,7 @@ interface ThemeSelectorModalProps {
 }
 
 export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps) {
+  const { t } = useLanguage();
   const { themeId, setThemeId, billStyle, setBillStyle } = useTheme();
 
   if (!isOpen) return null;
@@ -19,12 +21,12 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
     {
       id: 'royal-framed',
       title: 'Royal Mandi Double Frame',
-      titleMr: 'शाही दुहेरी फ्रेम',
+      titleMr: t('royal_double_frame'),
     },
     {
       id: 'traditional-patrika',
       title: 'Traditional Vyapari Patrika',
-      titleMr: 'व्यापारी वही-खाते पावती',
+      titleMr: t('traditional_trader_ledger_bill'),
     },
   ];
 
@@ -52,16 +54,16 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
           {/* Section 1: 2 Themes */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-              Theme (रंग पर्याय)
+              {t('theme')}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
-              {themesList.map((t) => {
-                const isSelected = themeId === t.id;
+              {themesList.map((themeItem) => {
+                const isSelected = themeId === themeItem.id;
                 return (
                   <button
-                    key={t.id}
+                    key={themeItem.id}
                     type="button"
-                    onClick={() => setThemeId(t.id as AppThemeId)}
+                    onClick={() => setThemeId(themeItem.id as AppThemeId)}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       isSelected
                         ? 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-500/40 font-bold'
@@ -69,18 +71,17 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-slate-900">{t.name}</span>
+                      <span className="text-xs text-slate-900">{t(themeItem.labelKey)}</span>
                       {isSelected && <Check className="w-3.5 h-3.5 text-amber-600 stroke-[3]" />}
                     </div>
-                    <div className="text-[11px] text-amber-800 font-medium mb-2">{t.nameMr}</div>
                     <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
                       <span
                         className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0"
-                        style={{ backgroundColor: t.swatches.primary }}
+                        style={{ backgroundColor: themeItem.swatches.primary }}
                       />
                       <span
                         className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0"
-                        style={{ backgroundColor: t.swatches.accent }}
+                        style={{ backgroundColor: themeItem.swatches.accent }}
                       />
                     </div>
                   </button>
@@ -93,7 +94,7 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-emerald-600" />
-              Bill Voucher Layout (बिल पावती)
+              {t('bill_voucher_layout')}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               {billStylesList.map((style) => {

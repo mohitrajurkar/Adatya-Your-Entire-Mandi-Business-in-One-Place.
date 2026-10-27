@@ -1,4 +1,5 @@
 import React, { useState, FormEvent } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { motion, AnimatePresence } from 'motion/react';
@@ -6,6 +7,7 @@ import { Lock, Phone, Eye, EyeOff, ShieldCheck, ArrowRight, Wheat, Loader2, User
 import { publicPost, setSession } from '../lib/api';
 
 export default function Login() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<'login' | 'register'>('login');
   
   // Login Form State
@@ -127,7 +129,7 @@ export default function Login() {
               Your ledger, your control.
             </p>
             <p className="text-[11px] text-slate-500 mt-1">
-              कृषी मंडी आडत व व्यापारी पोर्टल · Mandi Procurement & Invoicing Portal
+              {t('mandi_procurement_invoicing_portal')}
             </p>
           </div>
 
@@ -146,7 +148,7 @@ export default function Login() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <LogIn className="w-3.5 h-3.5" /> Sign In (लॉगिन)
+              <LogIn className="w-3.5 h-3.5" /> {t('sign_in')}
             </button>
             <button
               type="button"
@@ -161,7 +163,7 @@ export default function Login() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <UserPlus className="w-3.5 h-3.5" /> Create Account (नवीन खाते)
+              <UserPlus className="w-3.5 h-3.5" /> {t('create_account')}
             </button>
           </div>
 
@@ -256,14 +258,14 @@ export default function Login() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Firm / Business Name (व्यापारी पेढीचे नाव) <span className="text-rose-500">*</span>
+                    {t('firm_business_name')} <span className="text-rose-500">*</span>
                   </label>
                   <Input
                     type="text"
                     required
                     value={regBusinessName}
                     onChange={(e) => setRegBusinessName(e.target.value)}
-                    placeholder="उदा. श्री गणेश अ‍ॅग्रो ट्रेडर्स / Sai Traders"
+                    placeholder={t('e_g_shree_ganesh_agro_traders')}
                     className="h-10 bg-slate-50 border-slate-300 font-semibold text-xs"
                   />
                   <p className="text-[10px] text-slate-500">
@@ -275,14 +277,14 @@ export default function Login() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5 text-slate-500" />
-                    Broker / Proprietor Name (आडत्या / मालकाचे नाव)
+                    {t('broker_proprietor_name')}
                   </label>
                   <Input
                     type="text"
                     required
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    placeholder="उदा. राहुल देशमुख / Rahul Deshmukh"
+                    placeholder={t('e_g_rahul_deshmukh')}
                     className="h-10 bg-slate-50 border-slate-300 font-medium text-xs"
                   />
                 </div>
@@ -291,7 +293,7 @@ export default function Login() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-slate-500" />
-                    Mobile Number (१० अंकी मोबाईल नंबर) <span className="text-rose-500">*</span>
+                    {t('mobile_number')} <span className="text-rose-500">*</span>
                   </label>
                   <Input
                     type="tel"
@@ -308,7 +310,7 @@ export default function Login() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    Password (पासवर्ड) <span className="text-rose-500">*</span>
+                    {t('password')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <Input

@@ -307,10 +307,10 @@ export default function Invoice() {
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
               >
-                <option value="Cash">Cash (रोख)</option>
+                <option value="Cash">{t('cash_2')}</option>
                 <option value="UPI">UPI / PhonePe / GPay</option>
                 <option value="Bank Transfer">NEFT / RTGS / Bank Transfer</option>
-                <option value="Cheque">Cheque (धनादेश)</option>
+                <option value="Cheque">{t('cheque_2')}</option>
               </select>
             </div>
 
@@ -498,7 +498,7 @@ export default function Invoice() {
               {/* Optional Auspicious Traditional Invocation for Vyapari Patrika */}
               {billStyle === 'traditional-patrika' && (
                 <div className="text-center text-xs font-serif font-bold text-amber-900 tracking-[0.2em] mb-2 select-none">
-                  ॥ श्री गणेशाय नमः ॥
+                  {t('shri_ganeshay_namah')}
                 </div>
               )}
 
@@ -540,7 +540,7 @@ export default function Invoice() {
                   <div className="relative inline-flex items-center gap-3">
                     <span className="text-slate-400 font-serif text-sm">✦ ✦ ✦</span>
                     <div className={`${themeRibbonBg} text-white px-8 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] shadow-xs rounded-sm`}>
-                      INVOICE BILL / खरेदी पावती
+                      {t('invoice_bill')}
                     </div>
                     <span className="text-slate-400 font-serif text-sm">✦ ✦ ✦</span>
                   </div>
@@ -552,7 +552,7 @@ export default function Invoice() {
                 {/* Farmer Info */}
                 <div className="space-y-1">
                   <div className="text-[11px] uppercase font-bold tracking-wider text-slate-500">
-                    Customer / Farmer Details (शेतकरी तपशील)
+                    {t('customer_farmer_details')}
                   </div>
                   <div className="font-bold text-base text-slate-950 flex items-center gap-1.5">
                     <User className="w-4 h-4 text-slate-700 shrink-0" />
@@ -573,7 +573,7 @@ export default function Invoice() {
                 {/* Invoice & Date Info */}
                 <div className="space-y-1 sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-3 sm:pt-0 sm:pl-4">
                   <div className="text-[11px] uppercase font-bold tracking-wider text-slate-500">
-                    Bill Voucher Details (पावती तपशील)
+                    {t('bill_voucher_details')}
                   </div>
                   <div className="font-mono font-bold text-base text-slate-950">
                     Invoice No: <span className="text-slate-900">{data.purchaseNumber}</span>
@@ -598,7 +598,7 @@ export default function Invoice() {
                     <tr className={`${themeTableHead} text-white text-xs uppercase tracking-wider`}>
                       <th className={`border ${themeBorder} py-2.5 px-3 text-center w-14 font-bold`}>Sr. No.</th>
                       <th className={`border ${themeBorder} py-2.5 px-4 text-left font-bold`}>
-                        Commodity / Crop (शेतमाल)
+                        {t('commodity_crop')}
                       </th>
                       <th className={`border ${themeBorder} py-2.5 px-3 text-center w-28 font-bold`}>
                         Quantity (Qtl)
@@ -646,7 +646,7 @@ export default function Invoice() {
                   <tfoot>
                     <tr className={`bg-slate-100 border-t-2 ${themeBorder} font-bold`}>
                       <td colSpan={2} className={`border ${themeBorder} py-3 px-4 text-left uppercase text-xs tracking-wider text-slate-800`}>
-                        Total Procurement Value (एकूण रक्कम)
+                        {t('total_procurement_value')}
                       </td>
                       <td className={`border ${themeBorder} py-3 px-3 text-center text-slate-900 font-bold`}>
                         {data.items?.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0).toFixed(2)} Qtl
@@ -673,15 +673,15 @@ export default function Invoice() {
               {/* Settlement Summary Box */}
               <div className={`relative z-10 border-2 ${themeBorder} rounded-lg p-4 bg-slate-50 mb-8 space-y-2 text-sm font-semibold max-w-md ml-auto`}>
                 <div className="flex justify-between items-center text-slate-800">
-                  <span>Total Amount (एकूण रक्कम):</span>
+                  <span>{t('total_amount')}</span>
                   <span className="font-bold text-slate-950">{formatCurrency(data.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center text-emerald-800 border-t border-slate-200 pt-1.5">
-                  <span>Total Paid / Advance (दिलेली रक्कम):</span>
+                  <span>{t('total_paid_advance')}</span>
                   <span className="font-bold text-emerald-700">{formatCurrency(data.advancePaid)}</span>
                 </div>
                 <div className="flex justify-between items-center text-rose-800 border-t-2 border-slate-300 pt-1.5 text-base">
-                  <span>Remaining Amount (शिल्लक रक्कम):</span>
+                  <span>{t('remaining_amount')}</span>
                   <span className="font-black text-rose-700">{formatCurrency(data.remainingAmount)}</span>
                 </div>
               </div>
@@ -732,7 +732,7 @@ export default function Invoice() {
               {/* Bottom Mandi Text in Marathi as explicitly requested */}
               <div className="mt-8 pt-4 border-t border-slate-300 text-center">
                 <p className="font-serif font-bold text-sm text-slate-900 tracking-wide">
-                  कृषी उत्पन्न बाजार समिती मार्डी, मारेगाव
+                  {t('agricultural_produce_market_committee')}
                 </p>
               </div>
 

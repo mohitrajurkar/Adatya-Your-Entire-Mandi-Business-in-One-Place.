@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ConfirmDialog, useToast } from '../components/ui';
@@ -31,6 +32,7 @@ import { apiFetch } from '../lib/api';
 
 
 export default function AdminBusinesses() {
+  const { t, tf } = useLanguage();
   const [overview, setOverview] = useState<any>(null);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -139,7 +141,7 @@ export default function AdminBusinesses() {
               <ShieldCheck className="w-4 h-4" /> Super Admin Control Center
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-serif tracking-tight text-white">
-              सर्व नोंदणीकृत व्यवसाय आणि व्यापारी डेटा
+              {t('all_registered_businesses_and_trader_data')}
             </h1>
             <p className="text-slate-300 text-sm max-w-2xl">
               Signed in as platform administrator. Monitor all business accounts, farmer ledgers, and transactions platform-wide.
@@ -152,7 +154,7 @@ export default function AdminBusinesses() {
               variant="outline"
               className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs font-bold h-10 px-4 rounded-xl backdrop-blur"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> रिफ्रेश (Refresh)
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('refresh')}
             </Button>
           </div>
         </div>
@@ -170,7 +172,7 @@ export default function AdminBusinesses() {
         <Card className="border-slate-200/80 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              नोंदणीकृत व्यवसाय (Total Businesses)
+              {t('total_businesses')}
             </CardTitle>
             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
               <Building2 className="w-5 h-5" />
@@ -189,7 +191,7 @@ export default function AdminBusinesses() {
         <Card className="border-slate-200/80 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              एकूण खरेदी उलाढाल (Total Procurement)
+              {t('total_procurement')}
             </CardTitle>
             <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
               <TrendingUp className="w-5 h-5" />
@@ -200,7 +202,7 @@ export default function AdminBusinesses() {
               {formatCurrency(overview?.totalProcurementValue || 0)}
             </div>
             <p className="text-xs text-slate-500 mt-1 font-medium">
-              {overview?.totalPurchases || 0} खरेदी पावत्या ({Math.round(overview?.totalPurchasedQuintals || 0)} क्विंटल)
+              {tf('purchase_bills_count_qtl', { bills: overview?.totalPurchases || 0, qtl: Math.round(overview?.totalPurchasedQuintals || 0) })}
             </p>
           </CardContent>
         </Card>
@@ -208,7 +210,7 @@ export default function AdminBusinesses() {
         <Card className="border-slate-200/80 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              शेतकरी नेटवर्क (Total Farmers)
+              {t('total_farmers')}
             </CardTitle>
             <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
               <Users className="w-5 h-5" />
@@ -227,7 +229,7 @@ export default function AdminBusinesses() {
         <Card className="border-slate-200/80 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              मंडी विक्री महसूल (Mandi Sales)
+              {t('mandi_sales')}
             </CardTitle>
             <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
               <Boxes className="w-5 h-5" />
@@ -238,7 +240,7 @@ export default function AdminBusinesses() {
               {formatCurrency(overview?.totalSalesRevenue || 0)}
             </div>
             <p className="text-xs text-slate-500 mt-1 font-medium">
-              {overview?.totalMandiSales || 0} एकूण विक्री सौदे
+              {overview?.totalMandiSales || 0} {t('total_sale_deals')}
             </p>
           </CardContent>
         </Card>
@@ -249,7 +251,7 @@ export default function AdminBusinesses() {
         <CardHeader className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle className="text-lg sm:text-xl font-bold text-slate-900">
-              नोंदणीकृत व्यापारी व व्यवसायांची यादी (Businesses Directory)
+              {t('businesses_directory')}
             </CardTitle>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
               Click on any business to inspect their complete ledger, purchases, farmers, and transactions.
@@ -277,7 +279,7 @@ export default function AdminBusinesses() {
           ) : filteredBusinesses.length === 0 ? (
             <div className="py-16 text-center text-slate-500 space-y-2">
               <Building2 className="w-10 h-10 text-slate-300 mx-auto" />
-              <p className="text-base font-bold text-slate-700">कोणताही व्यवसाय आढळला नाही (No businesses found)</p>
+              <p className="text-base font-bold text-slate-700">{t('no_businesses_found')}</p>
               <p className="text-xs text-slate-400">Try searching with a different term.</p>
             </div>
           ) : (
@@ -285,13 +287,13 @@ export default function AdminBusinesses() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
-                    <th className="py-3.5 px-6">व्यवसाय / फर्म (Business Name)</th>
-                    <th className="py-3.5 px-4">मालक (Owner)</th>
-                    <th className="py-3.5 px-4">मोबाईल (Mobile)</th>
-                    <th className="py-3.5 px-4">मंडी ठिकाण (APMC Location)</th>
-                    <th className="py-3.5 px-4">नोंदणी तारीख (Reg. Date)</th>
-                    <th className="py-3.5 px-4 text-right">खरेदी उलाढाल (Volume)</th>
-                    <th className="py-3.5 px-6 text-center">कृती (Actions)</th>
+                    <th className="py-3.5 px-6">{t('business_name')}</th>
+                    <th className="py-3.5 px-4">{t('owner')}</th>
+                    <th className="py-3.5 px-4">{t('mobile')}</th>
+                    <th className="py-3.5 px-4">{t('apmc_location')}</th>
+                    <th className="py-3.5 px-4">{t('reg_date')}</th>
+                    <th className="py-3.5 px-4 text-right">{t('volume')}</th>
+                    <th className="py-3.5 px-6 text-center">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm font-medium">
@@ -428,7 +430,7 @@ export default function AdminBusinesses() {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <ShoppingCart className="w-4 h-4" /> खरेदी पावत्या (Purchases & Bills)
+                  <ShoppingCart className="w-4 h-4" /> {t('purchases_bills')}
                 </button>
                 <button
                   onClick={() => setActiveTab('farmers')}
@@ -438,7 +440,7 @@ export default function AdminBusinesses() {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <Users className="w-4 h-4" /> शेतकरी यादी (Farmers Ledger)
+                  <Users className="w-4 h-4" /> {t('farmers_ledger')}
                 </button>
                 <button
                   onClick={() => setActiveTab('sales')}
@@ -448,7 +450,7 @@ export default function AdminBusinesses() {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <Boxes className="w-4 h-4" /> मंडी विक्री (Mandi Sales)
+                  <Boxes className="w-4 h-4" /> {t('mandi_sales_2')}
                 </button>
                 <button
                   onClick={() => setActiveTab('inventory')}
@@ -458,7 +460,7 @@ export default function AdminBusinesses() {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <Scale className="w-4 h-4" /> धान्य साठा (Grain Inventory)
+                  <Scale className="w-4 h-4" /> {t('grain_inventory')}
                 </button>
                 <button
                   onClick={() => setActiveTab('profile')}
@@ -468,7 +470,7 @@ export default function AdminBusinesses() {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  <Building2 className="w-4 h-4" /> फर्म तपशील (Business Profile)
+                  <Building2 className="w-4 h-4" /> {t('business_profile')}
                 </button>
               </div>
 
@@ -488,24 +490,24 @@ export default function AdminBusinesses() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-bold text-slate-800">
-                            खरेदी नोंदी (Total: {businessFullData.purchases?.length || 0})
+                            {tf('purchase_records_total', { n: businessFullData.purchases?.length || 0 })}
                           </h3>
                         </div>
                         {(!businessFullData.purchases || businessFullData.purchases.length === 0) ? (
                           <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-                            या फर्मने अद्याप कोणतीही खरेदी नोंदवलेली नाही (No purchase bills yet).
+                            {t('this_firm_has_not_recorded_any_purchases_yet')}
                           </div>
                         ) : (
                           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200">
                                 <tr>
-                                  <th className="py-3 px-4">पावती नं (Bill #)</th>
-                                  <th className="py-3 px-4">तारीख (Date)</th>
-                                  <th className="py-3 px-4 text-right">एकूण रक्कम (Total)</th>
-                                  <th className="py-3 px-4 text-right">अगाऊ (Advance)</th>
-                                  <th className="py-3 px-4 text-right">उर्वरित बाकी (Due)</th>
-                                  <th className="py-3 px-4 text-center">स्थिती (Status)</th>
+                                  <th className="py-3 px-4">{t('bill')}</th>
+                                  <th className="py-3 px-4">{t('date_2')}</th>
+                                  <th className="py-3 px-4 text-right">{t('total_2')}</th>
+                                  <th className="py-3 px-4 text-right">{t('advance')}</th>
+                                  <th className="py-3 px-4 text-right">{t('due')}</th>
+                                  <th className="py-3 px-4 text-center">{t('status')}</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-medium">
@@ -536,11 +538,11 @@ export default function AdminBusinesses() {
                     {activeTab === 'farmers' && (
                       <div className="space-y-4">
                         <h3 className="text-sm font-bold text-slate-800">
-                          जोडलेले शेतकरी (Total: {businessFullData.farmers?.length || 0})
+                          {tf('registered_farmers_total', { n: businessFullData.farmers?.length || 0 })}
                         </h3>
                         {(!businessFullData.farmers || businessFullData.farmers.length === 0) ? (
                           <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-                            कोणतेही शेतकरी जोडलेले नाहीत (No farmers registered yet).
+                            {t('no_farmers_registered_yet')}
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -548,10 +550,10 @@ export default function AdminBusinesses() {
                               <div key={f.id} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between">
                                 <div>
                                   <div className="font-bold text-slate-900 text-sm">{f.name}</div>
-                                  <div className="text-xs text-slate-500 mt-0.5">{f.village || 'गाव नाही'} • {f.mobile || 'मोबाईल नाही'}</div>
+                                  <div className="text-xs text-slate-500 mt-0.5">{f.village || t('no_village')} • {f.mobile || t('no_mobile')}</div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-xs text-slate-400">उर्वरित बाकी</div>
+                                  <div className="text-xs text-slate-400">{t('remaining_due_2')}</div>
                                   <div className={`font-mono font-bold text-sm ${f.currentBalance > 0 ? 'text-rose-600' : 'text-slate-700'}`}>
                                     {formatCurrency(f.currentBalance || 0)}
                                   </div>
@@ -567,22 +569,22 @@ export default function AdminBusinesses() {
                     {activeTab === 'sales' && (
                       <div className="space-y-4">
                         <h3 className="text-sm font-bold text-slate-800">
-                          मंडी धान्य विक्री व्यवहार (Total: {businessFullData.mandiSales?.length || 0})
+                          {tf('mandi_sale_deals_total', { n: businessFullData.mandiSales?.length || 0 })}
                         </h3>
                         {(!businessFullData.mandiSales || businessFullData.mandiSales.length === 0) ? (
                           <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-                            कोणतीही मंडी विक्री नोंद आढळली नाही (No mandi dispatch sales).
+                            {t('no_mandi_dispatch_sales_found')}
                           </div>
                         ) : (
                           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200">
                                 <tr>
-                                  <th className="py-3 px-4">तारीख (Date)</th>
-                                  <th className="py-3 px-4">खरेदीदार (Buyer)</th>
-                                  <th className="py-3 px-4">गाडी नं (Vehicle)</th>
-                                  <th className="py-3 px-4 text-right">पोती (Bags)</th>
-                                  <th className="py-3 px-4 text-right">निव्वळ रक्कम (Net Amount)</th>
+                                  <th className="py-3 px-4">{t('date_2')}</th>
+                                  <th className="py-3 px-4">{t('buyer')}</th>
+                                  <th className="py-3 px-4">{t('vehicle')}</th>
+                                  <th className="py-3 px-4 text-right">{t('bags_3')}</th>
+                                  <th className="py-3 px-4 text-right">{t('net_amount')}</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-medium">
@@ -606,11 +608,11 @@ export default function AdminBusinesses() {
                     {activeTab === 'inventory' && (
                       <div className="space-y-4">
                         <h3 className="text-sm font-bold text-slate-800">
-                          सध्याचा धान्य साठा (Active Commodities)
+                          {t('active_commodities')}
                         </h3>
                         {(!businessFullData.commodities || businessFullData.commodities.length === 0) ? (
                           <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-                            कोणतीही कमोडिटी आढळली नाही.
+                            {t('no_commodities_found')}
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -658,7 +660,7 @@ export default function AdminBusinesses() {
                   onClick={() => setSelectedBusiness(null)}
                   className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-6 h-9 rounded-xl"
                 >
-                  बंद करा (Close)
+                  {t('close')}
                 </Button>
               </div>
             </motion.div>

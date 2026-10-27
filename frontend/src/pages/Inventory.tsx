@@ -89,7 +89,7 @@ interface MandiSale {
 }
 
 export default function Inventory() {
-  const { language, t } = useLanguage();
+  const { language, t, tf } = useLanguage();
   const { currentTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
@@ -250,11 +250,7 @@ export default function Inventory() {
     // offered as "proceed anyway" -- that prompt used to let the sale through
     // and drive inventory negative, and would now simply be rejected.
     if (selectedSaleCommodity && w > selectedSaleCommodity.availableQuintals) {
-      setSaleError(
-        language === 'mr'
-          ? `उपलब्ध साठा फक्त ${selectedSaleCommodity.availableQuintals} क्विंटल आहे. ${w} क्विंटल विक्री नोंदवता येणार नाही.`
-          : `Only ${selectedSaleCommodity.availableQuintals} Qtl is in stock, so a sale of ${w} Qtl cannot be recorded.`
-      );
+      setSaleError(tf('only_qtl_in_stock_cannot_sell', { available: selectedSaleCommodity.availableQuintals, asked: w }));
       return;
     }
 
@@ -506,9 +502,9 @@ export default function Inventory() {
               </span>
             </div>
             <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2">
-              <span>निरंक साठा:</span>
+              <span>{t('nil_stock')}</span>
               <strong className="text-amber-700 font-bold">
-                {stockList.filter(s => s.availableQuintals <= 0).length} प्रकार
+                {stockList.filter(s => s.availableQuintals <= 0).length} {t('types')}
               </strong>
             </div>
           </CardContent>
@@ -641,7 +637,7 @@ export default function Inventory() {
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-500 font-semibold">
-                          ({item.availableKg} kg · अंदाजे {item.availableBags} पोती)
+                          {tf('kg_approx_bags', { kg: item.availableKg, bags: item.availableBags })}
                         </div>
                       </div>
 
@@ -751,16 +747,16 @@ export default function Inventory() {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-700 uppercase font-black tracking-wider text-[10px]">
                     <tr>
-                      <th className="py-3 px-4">पावती / Sale No</th>
-                      <th className="py-3 px-4">तारीख</th>
-                      <th className="py-3 px-4">खरेदीदार व्यापारी / मिल</th>
-                      <th className="py-3 px-4">धान्य (Commodity)</th>
-                      <th className="py-3 px-4 text-right">पोती (Bags)</th>
-                      <th className="py-3 px-4 text-right">वजन (क्विंटल)</th>
-                      <th className="py-3 px-4 text-right">दर (₹/Qtl)</th>
-                      <th className="py-3 px-4 text-right">रक्कम (Net ₹)</th>
-                      <th className="py-3 px-4 text-center">स्थिती</th>
-                      <th className="py-3 px-4 text-center">कृती</th>
+                      <th className="py-3 px-4">{t('sale_no')}</th>
+                      <th className="py-3 px-4">{t('date_3')}</th>
+                      <th className="py-3 px-4">{t('buyer_trader_mill')}</th>
+                      <th className="py-3 px-4">{t('commodity')}</th>
+                      <th className="py-3 px-4 text-right">{t('bags_3')}</th>
+                      <th className="py-3 px-4 text-right">{t('weight_qtl_2')}</th>
+                      <th className="py-3 px-4 text-right">{t('qtl_3')}</th>
+                      <th className="py-3 px-4 text-right">{t('net')}</th>
+                      <th className="py-3 px-4 text-center">{t('status_2')}</th>
+                      <th className="py-3 px-4 text-center">{t('actions_2')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -888,7 +884,7 @@ export default function Inventory() {
                   <option value="">{t('select_grain')}</option>
                   {stockList.map(c => (
                     <option key={c.id} value={String(c.id)}>
-                      {c.name} — उपलब्ध साठा: {c.availableQuintals} Qtl ({c.availableBags} पोती)
+                      {tf('commodity_available_stock', { name: c.name, qtl: c.availableQuintals, bags: c.availableBags })}
                     </option>
                   ))}
                 </select>
@@ -914,7 +910,7 @@ export default function Inventory() {
                   <Input
                     required
                     type="text"
-                    placeholder="उदा. राठी ऑइल मिल / गुप्ता ट्रेडर्स"
+                    placeholder={t('e_g_rathi_oil_mill_gupta_traders')}
                     value={saleForm.buyerName}
                     onChange={e => setSaleForm({ ...saleForm, buyerName: e.target.value })}
                     className="text-xs h-9"
@@ -926,7 +922,7 @@ export default function Inventory() {
                   </label>
                   <Input
                     type="text"
-                    placeholder="उदा. 9823000000 / वाशीम मंडी"
+                    placeholder={t('e_g_9823000000_washim_mandi')}
                     value={saleForm.buyerLocation}
                     onChange={e => setSaleForm({ ...saleForm, buyerLocation: e.target.value })}
                     className="text-xs h-9"
@@ -953,7 +949,7 @@ export default function Inventory() {
                   </label>
                   <Input
                     type="text"
-                    placeholder="उदा. MH-29-AY-4512"
+                    placeholder={t('e_g_mh_29_ay_4512')}
                     value={saleForm.vehicleNumber}
                     onChange={e => setSaleForm({ ...saleForm, vehicleNumber: e.target.value })}
                     className="text-xs h-9 uppercase font-mono"
@@ -971,7 +967,7 @@ export default function Inventory() {
                     type="number"
                     inputMode="numeric"
                     step="1"
-                    placeholder="उदा. 50"
+                    placeholder={t('e_g_50')}
                     value={saleForm.bags}
                     onChange={e => setSaleForm({ ...saleForm, bags: e.target.value })}
                     className="text-xs h-9 bg-white"
@@ -986,7 +982,7 @@ export default function Inventory() {
                     type="number"
                     inputMode="decimal"
                     step="0.01"
-                    placeholder="उदा. 25.50"
+                    placeholder={t('e_g_25_50')}
                     value={saleForm.weightQuintals}
                     onChange={e => setSaleForm({ ...saleForm, weightQuintals: e.target.value })}
                     className="text-xs h-9 bg-white font-bold"
@@ -1001,7 +997,7 @@ export default function Inventory() {
                     type="number"
                     inputMode="decimal"
                     step="1"
-                    placeholder="उदा. 5200"
+                    placeholder={t('e_g_5200')}
                     value={saleForm.saleRate}
                     onChange={e => setSaleForm({ ...saleForm, saleRate: e.target.value })}
                     className="text-xs h-9 bg-white font-bold"
@@ -1061,10 +1057,10 @@ export default function Inventory() {
                 </div>
 
                 <div className="text-right text-[11px] text-emerald-200">
-                  <div>उपएकूण: ₹{calcSaleSubtotal().toFixed(0)}</div>
+                  <div>{t('subtotal')}{calcSaleSubtotal().toFixed(0)}</div>
                   {selectedSaleCommodity && (
                     <div className="text-[10px] text-amber-300 mt-0.5">
-                      अपेक्षित नफा: ~₹{Math.max(0, calcSaleSubtotal() - (parseFloat(saleForm.weightQuintals) || 0) * selectedSaleCommodity.avgPurchaseRate).toFixed(0)}
+                      {t('expected_profit')}{Math.max(0, calcSaleSubtotal() - (parseFloat(saleForm.weightQuintals) || 0) * selectedSaleCommodity.avgPurchaseRate).toFixed(0)}
                     </div>
                   )}
                 </div>
@@ -1081,9 +1077,9 @@ export default function Inventory() {
                     onChange={e => setSaleForm({ ...saleForm, paymentStatus: e.target.value })}
                     className="w-full text-xs h-9 bg-white border border-slate-300 rounded-lg px-2"
                   >
-                    <option value="Paid">Paid (रोख जमा)</option>
-                    <option value="Partial">Partial (काही बाकी)</option>
-                    <option value="Pending">Credit / Pending (उधारी)</option>
+                    <option value="Paid">{t('paid')}</option>
+                    <option value="Partial">{t('partial')}</option>
+                    <option value="Pending">{t('credit_pending')}</option>
                   </select>
                 </div>
                 <div>
@@ -1095,7 +1091,7 @@ export default function Inventory() {
                     onChange={e => setSaleForm({ ...saleForm, paymentMode: e.target.value })}
                     className="w-full text-xs h-9 bg-white border border-slate-300 rounded-lg px-2"
                   >
-                    <option value="Cash">Cash (रोख)</option>
+                    <option value="Cash">{t('cash_2')}</option>
                     <option value="Bank Transfer">Bank Transfer (RTGS/NEFT)</option>
                     <option value="UPI">UPI</option>
                     <option value="Cheque">Cheque</option>
@@ -1121,7 +1117,7 @@ export default function Inventory() {
                   className="text-xs h-9 bg-emerald-800 hover:bg-emerald-900 text-amber-200 font-bold px-5"
                 >
                   {saleSubmitting
-                    ? 'नोंदणी करत आहे...'
+                    ? t('recording')
                     : t('record_sale_deduct_stock')}
                 </Button>
               </div>
@@ -1165,7 +1161,7 @@ export default function Inventory() {
                   onChange={e => setAdjForm({ ...adjForm, commodityId: e.target.value })}
                   className="w-full text-xs h-9 bg-white border border-slate-300 rounded-lg px-2.5 font-medium"
                 >
-                  <option value="">-- निवडा --</option>
+                  <option value="">{t('select')}</option>
                   {stockList.map(c => (
                     <option key={c.id} value={String(c.id)}>{c.name}</option>
                   ))}
@@ -1181,7 +1177,7 @@ export default function Inventory() {
                     required
                     type="number"
                     step="0.01"
-                    placeholder="उदा. 50.00"
+                    placeholder={t('e_g_50_00')}
                     value={adjForm.weightQuintals}
                     onChange={e => setAdjForm({ ...adjForm, weightQuintals: e.target.value })}
                     className="text-xs h-9 font-bold"
@@ -1194,7 +1190,7 @@ export default function Inventory() {
                   <Input
                     type="number"
                     step="1"
-                    placeholder="उदा. 100"
+                    placeholder={t('e_g_100')}
                     value={adjForm.bags}
                     onChange={e => setAdjForm({ ...adjForm, bags: e.target.value })}
                     className="text-xs h-9"
@@ -1209,7 +1205,7 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="1"
-                  placeholder="उदा. 4800"
+                  placeholder={t('e_g_4800')}
                   value={adjForm.rate}
                   onChange={e => setAdjForm({ ...adjForm, rate: e.target.value })}
                   className="text-xs h-9"
@@ -1244,7 +1240,7 @@ export default function Inventory() {
                   size="sm"
                   className="text-xs h-9 bg-slate-900 hover:bg-slate-800 text-white font-bold"
                 >
-                  {adjSubmitting ? 'जमा होत आहे...' : t('add_to_godown_stock')}
+                  {adjSubmitting ? t('adding') : t('add_to_godown_stock')}
                 </Button>
               </div>
             </form>
@@ -1303,7 +1299,7 @@ export default function Inventory() {
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">
-                    जावक पावती
+                    {t('outward_slip')}
                   </span>
                   <div className="font-mono font-bold text-xs text-slate-900 mt-1">
                     {viewingSaleSlip.saleNumber}
@@ -1315,16 +1311,16 @@ export default function Inventory() {
               {/* Buyer info */}
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">खरेदीदार:</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">{t('buyer_2')}</span>
                   <div className="font-bold text-slate-950">{viewingSaleSlip.buyerName}</div>
                   {viewingSaleSlip.buyerLocation && (
                     <div className="text-slate-600 text-[11px]">📍 {viewingSaleSlip.buyerLocation}</div>
                   )}
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">गाडी नंबर / वाहन:</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">{t('vehicle_number')}</span>
                   <div className="font-mono font-bold text-slate-900">
-                    {viewingSaleSlip.vehicleNumber || 'हात विक्री / Tempo'}
+                    {viewingSaleSlip.vehicleNumber || t('hand_sale_tempo')}
                   </div>
                 </div>
               </div>
@@ -1333,11 +1329,11 @@ export default function Inventory() {
               <table className="w-full text-xs border border-slate-200">
                 <thead className="bg-slate-100 font-bold text-slate-800 text-[11px]">
                   <tr>
-                    <th className="p-2 border">धान्य (Commodity)</th>
-                    <th className="p-2 border text-right">पोती</th>
-                    <th className="p-2 border text-right">वजन (Qtl)</th>
-                    <th className="p-2 border text-right">दर (₹/Qtl)</th>
-                    <th className="p-2 border text-right">रक्कम (₹)</th>
+                    <th className="p-2 border">{t('commodity')}</th>
+                    <th className="p-2 border text-right">{t('bags_4')}</th>
+                    <th className="p-2 border text-right">{t('qtl_2')}</th>
+                    <th className="p-2 border text-right">{t('qtl_3')}</th>
+                    <th className="p-2 border text-right">{t('amount_2')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1357,17 +1353,17 @@ export default function Inventory() {
                   {(viewingSaleSlip.hamali > 0 || viewingSaleSlip.transport > 0) && (
                     <>
                       <div className="flex justify-between text-slate-600 text-[11px]">
-                        <span>हमाली:</span>
+                        <span>{t('hamali_2')}</span>
                         <span>- ₹{viewingSaleSlip.hamali}</span>
                       </div>
                       <div className="flex justify-between text-slate-600 text-[11px]">
-                        <span>वाहतूक:</span>
+                        <span>{t('transport_2')}</span>
                         <span>- ₹{viewingSaleSlip.transport}</span>
                       </div>
                     </>
                   )}
                   <div className="flex justify-between font-black text-slate-950 border-t-2 border-slate-900 pt-1 text-sm font-serif">
-                    <span>एकूण देय रक्कम:</span>
+                    <span>{t('total_payable')}</span>
                     <span>{formatCurrency(viewingSaleSlip.netAmount)}</span>
                   </div>
                 </div>
@@ -1377,11 +1373,11 @@ export default function Inventory() {
               <div className="pt-6 flex items-center justify-between text-[11px] text-slate-600 border-t border-slate-200">
                 <div className="text-center">
                   <div className="h-8"></div>
-                  <div>खरेदीदार स्वाक्षरी</div>
+                  <div>{t('buyer_signature')}</div>
                 </div>
                 <div className="text-center">
                   <div className="h-8"></div>
-                  <div className="font-bold text-slate-950">अधिकृत आडत्या स्वाक्षरी</div>
+                  <div className="font-bold text-slate-950">{t('authorised_broker_signature')}</div>
                 </div>
               </div>
             </div>

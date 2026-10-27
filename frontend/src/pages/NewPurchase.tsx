@@ -13,7 +13,7 @@ import { apiFetch, newRequestKey } from '../lib/api';
 
 export default function NewPurchase() {
   const navigate = useNavigate();
-  const { language, t } = useLanguage();
+  const { language, t, tf } = useLanguage();
   const [farmers, setFarmers] = useState<any[]>([]);
   const [commodities, setCommodities] = useState<any[]>([]);
   
@@ -117,15 +117,15 @@ export default function NewPurchase() {
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
       if (it.commodityId === 'other' && !it.customCommodityName?.trim()) {
-        setErrorMsg(language === 'mr' ? `कृपया आयटम #${i + 1} साठी धान्याचे नाव टाका` : `Please enter the grain name for item #${i + 1}`);
+        setErrorMsg(tf('enter_grain_name_for_item', { n: i + 1 }));
         return;
       }
       if (!it.commodityId) {
-        setErrorMsg(language === 'mr' ? `कृपया आयटम #${i + 1} साठी धान्य निवडा` : `Please select commodity for item #${i + 1}`);
+        setErrorMsg(tf('select_commodity_for_item', { n: i + 1 }));
         return;
       }
       if (!it.quantity || it.quantity <= 0) {
-        setErrorMsg(language === 'mr' ? `कृपया आयटम #${i + 1} साठी योग्य वजन टाका` : `Please enter valid quantity for item #${i + 1}`);
+        setErrorMsg(tf('enter_valid_quantity_item', { n: i + 1 }));
         return;
       }
     }
@@ -286,7 +286,7 @@ export default function NewPurchase() {
                     <div className="flex-1 space-y-1.5 min-w-[220px]">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                         <Tag className="w-3.5 h-3.5 text-slate-500" />
-                        {language === 'mr' ? `धान्य #${index + 1}` : `Commodity #${index + 1}`}
+                        {tf('commodity_number', { n: index + 1 })}
                       </label>
                       <select 
                         required
@@ -488,10 +488,10 @@ export default function NewPurchase() {
         {/* Mobile Sticky Bottom Summary & Instant Submit Action Bar */}
         <div className="md:hidden fixed bottom-14 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-20 flex items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase">एकूण (Gross Total)</div>
+            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('gross_total_2')}</div>
             <div className="text-base font-black text-slate-950 font-serif leading-tight">{formatCurrency(totalAmount)}</div>
             {remainingAmount > 0 && (
-              <div className="text-[10px] font-bold text-rose-600">बाकी: {formatCurrency(remainingAmount)}</div>
+              <div className="text-[10px] font-bold text-rose-600">{t('due_2')} {formatCurrency(remainingAmount)}</div>
             )}
           </div>
           <Button
@@ -540,7 +540,7 @@ export default function NewPurchase() {
                 </label>
                 <Input
                   required
-                  placeholder="उदा. गजानन पवार / Gajanan Pawar"
+                  placeholder={t('e_g_gajanan_pawar')}
                   value={quickFarmer.name}
                   onChange={e => setQuickFarmer({ ...quickFarmer, name: e.target.value })}
                   className="h-10 text-xs font-semibold"
@@ -552,7 +552,7 @@ export default function NewPurchase() {
                   {t('village')}
                 </label>
                 <Input
-                  placeholder="उदा. चालबर्डी / Chalberdi"
+                  placeholder={t('e_g_chalberdi')}
                   value={quickFarmer.village}
                   onChange={e => setQuickFarmer({ ...quickFarmer, village: e.target.value })}
                   className="h-10 text-xs font-medium"
@@ -587,7 +587,7 @@ export default function NewPurchase() {
                   disabled={savingQuickFarmer}
                   className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs h-10 rounded-xl shadow-xs"
                 >
-                  {savingQuickFarmer ? 'नोंदणी करत आहे...' : (t('register_select'))}
+                  {savingQuickFarmer ? t('recording') : (t('register_select'))}
                 </Button>
               </div>
             </form>

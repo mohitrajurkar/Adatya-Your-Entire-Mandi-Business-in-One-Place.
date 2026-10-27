@@ -266,7 +266,7 @@ export default function Profile() {
           <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-emerald-700" />
-              Firm & Broker Identity (व्यापारी पेढी व आडत्या माहिती)
+              {t('firm_broker_identity')}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
               This firm name appears on the dashboard, purchase vouchers, and farmer bills.
@@ -276,28 +276,28 @@ export default function Profile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
-                  Firm / Business Name (व्यापारी पेढीचे नाव) <span className="text-rose-500">*</span>
+                  {t('firm_business_name')} <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   type="text"
                   required
                   value={profileData.businessName}
                   onChange={(e) => setProfileData({ ...profileData, businessName: e.target.value })}
-                  placeholder="उदा. श्री गणेश अ‍ॅग्रो ट्रेडर्स"
+                  placeholder={t('e_g_shree_ganesh_agro_traders_2')}
                   className="h-10 text-xs font-bold bg-slate-50 border-slate-300"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
-                  Broker / Proprietor Name (आडत्या / मालकाचे नाव) <span className="text-rose-500">*</span>
+                  {t('broker_proprietor_name')} <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   type="text"
                   required
                   value={profileData.proprietorName}
                   onChange={(e) => setProfileData({ ...profileData, proprietorName: e.target.value })}
-                  placeholder="उदा. मारोती वि. बोधले"
+                  placeholder={t('e_g_maroti_v_bodhale')}
                   className="h-10 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -305,7 +305,7 @@ export default function Profile() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                Business Tagline / Subtitle (पावतीवरील वर्णन)
+                {t('business_tagline_subtitle')}
               </label>
               <Input
                 type="text"
@@ -323,7 +323,7 @@ export default function Profile() {
           <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-emerald-700" />
-              Mandi Yard & APMC Location (बाजार समिती ठिकाण व परवाना)
+              {t('mandi_yard_apmc_location')}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
               Address and APMC yard printed at the bottom and header of the farmer bill.
@@ -332,13 +332,13 @@ export default function Profile() {
           <CardContent className="p-5 space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                APMC Mandi / Market Yard Address (बाजार समिती पत्ता / ठिकाण)
+                {t('apmc_mandi_market_yard_address')}
               </label>
               <Input
                 type="text"
                 value={profileData.address}
                 onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                placeholder="उदा. कृषी उत्पन्न बाजार समिती मार्डी, मारेगाव, यवतमाळ - ४४५३०४"
+                placeholder={t('e_g_apmc_yard_latur_413512')}
                 className="h-10 text-xs font-medium bg-slate-50 border-slate-300"
               />
             </div>
@@ -347,20 +347,20 @@ export default function Profile() {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <FileBadge className="w-3.5 h-3.5 text-slate-500" />
-                  Mandi License No. (बाजार समिती परवाना क्र.)
+                  {t('mandi_license_no')}
                 </label>
                 <Input
                   type="text"
                   value={profileData.mandiLicense}
                   onChange={(e) => setProfileData({ ...profileData, mandiLicense: e.target.value })}
-                  placeholder="उदा. APMC/XXX/2026-00"
+                  placeholder={t('e_g_apmc_xxx_2026_00')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  GSTIN (ऐच्छिक / Optional)
+                  {t('gstin')}
                 </label>
                 <Input
                   type="text"
@@ -379,7 +379,7 @@ export default function Profile() {
           <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Phone className="h-4 w-4 text-emerald-700" />
-              Contact & Payment Details (मोबाईल व पेमेंट माहिती)
+              {t('contact_payment_details')}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
               Numbers used for WhatsApp bill sending and UPI payment receipt.
@@ -389,7 +389,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Primary Mobile (प्रमुख मोबाईल) <span className="text-rose-500">*</span>
+                  {t('primary_mobile')} <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   type="tel"
@@ -397,21 +397,21 @@ export default function Profile() {
                   maxLength={10}
                   value={profileData.mobile1}
                   onChange={(e) => setProfileData({ ...profileData, mobile1: e.target.value.replace(/\D/g, '') })}
-                  placeholder="10-अंकी मोबाईल क्रमांक"
+                  placeholder={t('k_10_digit_mobile_number')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Alternate Mobile (पर्यायी मोबाईल)
+                  {t('alternate_mobile')}
                 </label>
                 <Input
                   type="tel"
                   maxLength={10}
                   value={profileData.mobile2}
                   onChange={(e) => setProfileData({ ...profileData, mobile2: e.target.value.replace(/\D/g, '') })}
-                  placeholder="पर्यायी मोबाईल (ऐच्छिक)"
+                  placeholder={t('alternate_mobile_optional')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -419,7 +419,7 @@ export default function Profile() {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <QrCode className="w-3.5 h-3.5 text-slate-500" />
-                  UPI ID (पेमेंट स्वीकारण्यासाठी)
+                  {t('upi_id')}
                 </label>
                 <Input
                   type="text"
@@ -438,7 +438,7 @@ export default function Profile() {
           <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Lock className="h-4 w-4 text-emerald-700" />
-              Security & Password (पासवर्ड बदला)
+              {t('security_password')}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
               Leave empty if you do not wish to change your password.
@@ -448,7 +448,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Current Password (सध्याचा पासवर्ड)
+                  {t('current_password')}
                 </label>
                 <Input
                   type="password"
@@ -462,7 +462,7 @@ export default function Profile() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  New Password (नवीन पासवर्ड)
+                  {t('new_password')}
                 </label>
                 <div className="relative">
                   <Input
@@ -484,7 +484,7 @@ export default function Profile() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Confirm New Password (पासवर्ड पुन्हा टाका)
+                  {t('confirm_new_password')}
                 </label>
                 <Input
                   type={showPassword ? 'text' : 'password'}
@@ -517,7 +517,7 @@ export default function Profile() {
           <div>
             <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <LogOut className="h-4 w-4 text-rose-600" />
-              Account Session & Sign Out (सत्र व्यवस्थापन)
+              {t('account_session_sign_out')}
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-0.5">
               Securely sign out of your Adatya account on this device.
@@ -544,7 +544,7 @@ export default function Profile() {
         <CardHeader className="p-5 pb-3 border-b border-red-200">
           <CardTitle className="text-sm font-bold text-red-800 flex items-center gap-2">
             <Trash2 className="h-4 w-4 text-red-600" />
-            Danger Zone — Delete Account (खाते कायमचे हटवा)
+            {t('danger_zone_delete_account')}
           </CardTitle>
           <CardDescription className="text-xs text-red-700/80 mt-0.5 font-medium">
             This will permanently delete your account, all farmers, purchases, mandi sales, inventory, and business data. This action cannot be undone.
@@ -610,7 +610,7 @@ export default function Profile() {
 
             <div className="mt-5 space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Current Password (पुष्टी करण्यासाठी)</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('current_password_2')}</label>
                 <Input
                   type="password"
                   value={deletePassword}

@@ -75,11 +75,11 @@ export default function Farmers() {
                 <form onSubmit={handleAddFarmer} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Full Name</label>
-                    <Input required value={newFarmer.name} onChange={e => setNewFarmer({...newFarmer, name: e.target.value})} placeholder="उदा. गजानन पवार / Gajanan Pawar" />
+                    <Input required value={newFarmer.name} onChange={e => setNewFarmer({...newFarmer, name: e.target.value})} placeholder={t('e_g_gajanan_pawar')} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Village</label>
-                    <Input value={newFarmer.village} onChange={e => setNewFarmer({...newFarmer, village: e.target.value})} placeholder="उदा. मारेगाव / Maregaon" />
+                    <Input value={newFarmer.village} onChange={e => setNewFarmer({...newFarmer, village: e.target.value})} placeholder={t('e_g_maregaon')} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Mobile Number</label>
