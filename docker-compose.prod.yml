@@ -1,0 +1,152 @@
+# =============================================================================
+# Adatya production stack for a single EC2 host.
+#
+# Differences from docker-compose.yml, which stays as the local development
+# setup:
+#   - the web container serves HTTPS on 443 and redirects 80
+#   - a certbot container obtains and renews the Let's Encrypt certificate
+#   - the database port is never published to the host
+#   - containers restart automatically and their logs are capped
+#
+# Usage on the server:
+#   docker compose -f docker-compose.prod.yml up -d --build
+# =============================================================================
+
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: adatya-database
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-adatya_db}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Deliberately no "ports": PostgreSQL stays on the internal Docker
+    # network and is never reachable from the internet.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${POSTGRES_DB:-adatya_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: adatya-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL:-jdbc:postgresql://database:5432/adatya_db}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      # Flyway owns the schema; Hibernate only verifies it matches.
+      HIBERNATE_DDL_AUTO: ${HIBERNATE_DDL_AUTO:-validate}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -base64 48)}
+      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-720}
+      # Seed the owner account on first boot, then clear both from .env.
+      DEFAULT_ADMIN_MOBILE: ${DEFAULT_ADMIN_MOBILE:-}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-}
+      # Must be the https:// origin, or the browser blocks every API call.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Set CORS_ALLOWED_ORIGINS to your https origin}
+      BACKUP_PRE_RESTORE_DIR: /var/adatya/pre-restore
+    volumes:
+      - pre_restore:/var/adatya/pre-restore
+    depends_on:
+      database:
+        condition: service_healthy
+    # No published ports: only nginx reaches the backend, over the internal
+    # network.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: adatya-frontend
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN to your hostname, e.g. adatya.duckdns.org}
+    # The production config is mounted as a template; the nginx image
+    # substitutes ${DOMAIN} into it at startup.
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/templates/default.conf.template:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }
+
+  # Renews the certificate. Let's Encrypt certificates last 90 days; this
+  # wakes twice a day, renews when fewer than 30 remain, and nginx picks the
+  # new one up on its own reload schedule below.
+  certbot:
+    image: certbot/certbot:latest
+    container_name: adatya-certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: >
+      sh -c "trap exit TERM;
+             while :; do
+               certbot renew --webroot -w /var/www/certbot --quiet;
+               sleep 12h & wait $${!};
+             done"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }
+
+  # Reloads nginx every night so a renewed certificate is picked up without
+  # anyone having to remember.
+  nginx-reloader:
+    image: docker:cli
+    container_name: adatya-nginx-reloader
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: >
+      sh -c "trap exit TERM;
+             while :; do
+               sleep 24h & wait $${!};
+               docker exec adatya-frontend nginx -s reload || true;
+             done"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  postgres_data:
+    name: adatya_postgres_data
+  certbot_conf:
+    name: adatya_certbot_conf
+  certbot_www:
+    name: adatya_certbot_www
+  pre_restore:
+    name: adatya_pre_restore

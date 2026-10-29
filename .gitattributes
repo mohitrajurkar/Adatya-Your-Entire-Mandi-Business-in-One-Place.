@@ -1,0 +1,29 @@
+# Normalise line endings so the deployment is not at the mercy of whoever
+# cloned the repository and how their git is configured.
+#
+# The shell scripts and nginx config run on Linux. A CRLF line ending in a
+# script makes bash fail with "bad interpreter: /bin/bash^M", which would
+# break deployment at the first step, so these must always be checked out
+# with LF regardless of platform or of anyone's core.autocrlf setting.
+
+* text=auto
+
+*.sh        text eol=lf
+*.conf      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+Dockerfile  text eol=lf
+*.sql       text eol=lf
+
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.ttf  binary
+*.woff binary
+*.woff2 binary
