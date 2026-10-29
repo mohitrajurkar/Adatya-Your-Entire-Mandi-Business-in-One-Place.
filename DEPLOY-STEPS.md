@@ -119,7 +119,7 @@ docker --version
 ## 5. Get the code and generate secrets
 
 ```bash
-git clone YOUR_REPOSITORY_URL adatya
+git clone -b master https://github.com/mohitrajurkar/Adatya-Your-Entire-Mandi-Business-in-One-Place..git adatya
 cd adatya
 chmod +x scripts/*.sh
 
@@ -128,6 +128,10 @@ chmod +x scripts/*.sh
 
 Use **your own** 10-digit mobile as the second argument; that becomes the owner
 login.
+
+`-b master` is not optional. The repository's default branch is still `main`,
+which holds a snapshot from before the security and deployment work, with
+none of these files in it. Cloning without it gets you the wrong code.
 
 This writes `.env` with a freshly generated `JWT_SECRET`, database password and
 one-time admin password, readable only by you. It deliberately does not reuse
