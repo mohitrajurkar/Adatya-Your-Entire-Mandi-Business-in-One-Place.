@@ -127,10 +127,11 @@ public class AuthController {
             ));
         }
 
-        if (!mobile.matches("\\d{10}")) {
+        // Indian mobile numbers are ten digits beginning 6, 7, 8 or 9.
+        if (!mobile.matches("[6-9]\\d{9}")) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "error", "Please enter a valid 10-digit mobile number"
+                "error", "Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9"
             ));
         }
 

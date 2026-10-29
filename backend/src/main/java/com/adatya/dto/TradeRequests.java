@@ -116,7 +116,9 @@ public final class TradeRequests {
             @Size(max = 160, message = "Village must be at most 160 characters")
             String village,
 
-            @Pattern(regexp = "|\\d{10}", message = "Mobile must be a 10-digit number")
+            // Blank, or a ten-digit Indian mobile number beginning 6, 7, 8 or 9.
+            @Pattern(regexp = "|[6-9]\\d{9}",
+                     message = "Mobile must be a 10-digit number starting with 6, 7, 8 or 9")
             String mobile
     ) {
     }

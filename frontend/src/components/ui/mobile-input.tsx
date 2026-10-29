@@ -10,7 +10,8 @@ import { cn } from '../../lib/utils';
  *
  * This strips anything that is not a digit as it is typed, drops a leading
  * country code, and stops at ten, so an invalid number cannot be entered in
- * the first place. inputMode="numeric" brings up the number pad on a phone.
+ * the first place. A first digit outside 6-9 is refused as well, since no
+ * Indian mobile number begins with one. inputMode="numeric" brings up the number pad on a phone.
  */
 export interface MobileInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type'> {
@@ -19,15 +20,33 @@ export interface MobileInputProps
   onValueChange: (value: string) => void;
 }
 
-/** Digits only, 91/0 prefix removed, capped at ten. */
+/**
+ * Digits only, country code and trunk prefix removed, capped at ten.
+ *
+ * Indian mobile numbers begin with 6, 7, 8 or 9, so a leading digit outside
+ * that range is dropped rather than accepted and rejected later by the
+ * server. A pasted "+91 98230 11001" or "098230 11001" both reduce to
+ * "9823011001".
+ */
 export function normaliseMobile(raw: string): string {
   let digits = (raw || '').replace(/\D/g, '');
-  if (digits.length > 10 && digits.startsWith('91')) {
+
+  // Strip a country code or trunk prefix wherever it leaves a plausible number.
+  if (digits.startsWith('91') && digits.length > 10) {
     digits = digits.slice(2);
   }
-  if (digits.length > 10 && digits.startsWith('0')) {
+  while (digits.length > 0 && digits.length > 10 && digits.startsWith('0')) {
     digits = digits.slice(1);
   }
+  if (digits.startsWith('0')) {
+    digits = digits.replace(/^0+/, '');
+  }
+
+  // A first digit below 6 cannot start a mobile number.
+  while (digits.length > 0 && !/[6-9]/.test(digits[0])) {
+    digits = digits.slice(1);
+  }
+
   return digits.slice(0, 10);
 }
 

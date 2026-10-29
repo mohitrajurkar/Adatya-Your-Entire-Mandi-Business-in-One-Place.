@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Card } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { formatCurrency } from '../lib/utils';
+import {
+  Card,
+  Button,
+  DataTable,
+  MoneyText,
+  StatusBadge,
+} from '../components/ui';
+import type { Column, PaymentStatus } from '../components/ui';
 import { generateBillPdfDoc, shareBillPdfToWhatsApp } from '../lib/pdfGenerator';
 import {
   Plus,
-  Search,
   FileText,
   MessageSquare,
   Eye,
-  Filter,
-  ArrowUpDown,
-  Building2,
   Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
 import WhatsAppShareModal from '../components/WhatsAppShareModal';
 import { apiFetch } from '../lib/api';
 
@@ -27,13 +26,24 @@ export default function Purchases() {
   const { t } = useLanguage();
   const [purchases, setPurchases] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Paid' | 'Partial' | 'Pending'>('All');
   const [selectedForWhatsApp, setSelectedForWhatsApp] = useState<any | null>(null);
   const [sharingPurchaseId, setSharingPurchaseId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<{
+    totalPurchases: number;
+    totalValue: number;
+    totalPaid: number;
+    totalOutstanding: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchPurchases();
+    // Server-computed totals, so every screen quotes the same figures.
+    apiFetch(`/purchases/summary`)
+      .then(res => res.json())
+      .then(data => { if (data && !data.error) setSummary(data); })
+      .catch(() => {});
     apiFetch(`/profile`)
       .then(res => res.json())
       .then(setProfile)
@@ -47,6 +57,8 @@ export default function Purchases() {
       if (Array.isArray(data)) setPurchases(data);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,22 +116,106 @@ export default function Purchases() {
     }
   };
 
-  const filteredPurchases = purchases.filter(p => {
-    const matchesSearch =
-      p.purchaseNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.farmerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.farmerVillage?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.farmerMobile?.includes(searchTerm);
+  // The status tabs narrow the rows; search, sorting and paging belong to the
+  // table itself.
+  const visiblePurchases =
+    statusFilter === 'All' ? purchases : purchases.filter(p => p.status === statusFilter);
 
-    const matchesStatus =
-      statusFilter === 'All' ? true : p.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalProcured = purchases.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
-  const totalPaid = purchases.reduce((acc, curr) => acc + (curr.advancePaid || 0), 0);
-  const totalPending = purchases.reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
+  const columns: Column<any>[] = [
+    {
+      key: 'purchaseNumber',
+      header: 'Bill No.',
+      value: row => row.purchaseNumber ?? '',
+      render: row => (
+        <span className="font-semibold text-ink">{row.purchaseNumber}</span>
+      ),
+    },
+    {
+      key: 'farmer',
+      header: 'Farmer',
+      value: row => `${row.farmerName ?? ''} ${row.farmerVillage ?? ''} ${row.farmerMobile ?? ''}`,
+      render: row => (
+        <div>
+          <div className="text-ink">{row.farmerName}</div>
+          {row.farmerVillage && (
+            <div className="text-2xs text-ink-subtle">{row.farmerVillage}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'date',
+      header: 'Date',
+      value: row => row.date ?? '',
+      render: row => (
+        <span className="text-ink-muted">
+          {row.date ? format(new Date(row.date), 'dd MMM yyyy') : '—'}
+        </span>
+      ),
+      hideOnMobile: true,
+    },
+    {
+      key: 'totalAmount',
+      header: 'Total',
+      align: 'right',
+      value: row => Number(row.totalAmount ?? 0),
+      render: row => <MoneyText value={row.totalAmount} className="font-semibold text-ink" />,
+    },
+    {
+      key: 'advancePaid',
+      header: 'Paid',
+      align: 'right',
+      value: row => Number(row.advancePaid ?? 0),
+      render: row => <MoneyText value={row.advancePaid} className="text-paid-fg" />,
+      hideOnMobile: true,
+    },
+    {
+      key: 'remainingAmount',
+      header: 'Due',
+      align: 'right',
+      value: row => Number(row.remainingAmount ?? 0),
+      render: row => (
+        <MoneyText
+          value={row.remainingAmount}
+          className={Number(row.remainingAmount) > 0 ? 'font-semibold text-due-fg' : 'text-ink-subtle'}
+        />
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      value: row => row.status ?? '',
+      render: row => <StatusBadge status={(row.status || 'Pending') as PaymentStatus} />,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      sortable: false,
+      render: row => (
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); handleDirectWhatsApp(row); }}
+            disabled={sharingPurchaseId === row.id}
+            title="Share bill PDF on WhatsApp"
+            className="inline-flex items-center gap-1.5 rounded-control border border-brand-200 bg-brand-50 px-2.5 py-1.5 text-2xs font-semibold text-brand-800 transition-colors hover:bg-brand-100 disabled:opacity-60"
+          >
+            {sharingPurchaseId === row.id ? (
+              <><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> PDF…</>
+            ) : (
+              <><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" /> WhatsApp</>
+            )}
+          </button>
+          <Link to={`/invoice/${row.id}`} onClick={e => e.stopPropagation()}>
+            <span className="inline-flex items-center gap-1 rounded-control border border-line bg-surface px-2.5 py-1.5 text-2xs font-semibold text-ink-muted transition-colors hover:text-ink">
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" /> {t('view_bill')}
+            </span>
+          </Link>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 pb-16">
@@ -148,265 +244,73 @@ export default function Purchases() {
         </Link>
       </div>
 
-      {/* Metrics Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Purchases</div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(totalProcured)}</div>
-          <div className="text-xs text-slate-400 mt-0.5">{purchases.length} total transaction vouchers</div>
-        </div>
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount Paid</div>
-          <div className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(totalPaid)}</div>
-          <div className="text-xs text-emerald-600 mt-0.5">Disbursed to farmers</div>
-        </div>
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Dues</div>
-          <div className="text-2xl font-bold text-rose-600 mt-1">{formatCurrency(totalPending)}</div>
-          <div className="text-xs text-rose-500 mt-0.5">Outstanding balances</div>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Card className="overflow-hidden border border-slate-200/80 shadow-sm">
-          {/* Filter Bar */}
-          <div className="p-4 border-b border-slate-200/80 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            {/* Search */}
-            <div className="relative w-full max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                type="search"
-                placeholder="Search invoice, farmer name, village..."
-                className="pl-9 bg-white border-slate-200 shadow-2xs"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-xl">
-              {(['All', 'Paid', 'Partial', 'Pending'] as const).map(tab => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setStatusFilter(tab)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                    statusFilter === tab
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Optimized Card View (< md) */}
-          <div className="block md:hidden divide-y divide-slate-100">
-            {filteredPurchases.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs">
-                {t('no_purchases_found')}
-              </div>
-            ) : (
-              filteredPurchases.map(purchase => (
-                <div key={purchase.id} className="p-4 space-y-3 bg-white">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      to={`/invoice/${purchase.id}`}
-                      className="font-mono text-xs font-black text-slate-950 hover:text-emerald-700"
-                    >
-                      {purchase.purchaseNumber}
-                    </Link>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-500 font-medium">
-                        {purchase.date ? format(new Date(purchase.date), 'dd MMM yyyy') : '-'}
-                      </span>
-                      <span
-                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                          purchase.status === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : purchase.status === 'Partial'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {purchase.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm font-bold text-slate-900">
-                      {purchase.farmerName || 'Farmer'}
-                    </div>
-                    {purchase.farmerVillage && (
-                      <div className="text-xs text-slate-500">
-                        {t('village_label')}: {purchase.farmerVillage}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 3-Col Metric Snapshot */}
-                  <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                    <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('total_amount_label')}</div>
-                      <div className="text-xs font-black text-slate-900 mt-0.5">{formatCurrency(purchase.totalAmount)}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('advance_label')}</div>
-                      <div className="text-xs font-black text-emerald-700 mt-0.5">{formatCurrency(purchase.advancePaid)}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">{t('due_label')}</div>
-                      <div className={`text-xs font-black mt-0.5 ${purchase.remainingAmount > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
-                        {formatCurrency(purchase.remainingAmount)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mobile Actions */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleDirectWhatsApp(purchase)}
-                      disabled={sharingPurchaseId === purchase.id}
-                      className="w-full py-2 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-300 shadow-2xs"
-                    >
-                      {sharingPurchaseId === purchase.id ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> PDF...
-                        </>
-                      ) : (
-                        <>
-                          <MessageSquare className="h-3.5 w-3.5 fill-emerald-700" /> WhatsApp PDF
-                        </>
-                      )}
-                    </button>
-
-                    <Link to={`/invoice/${purchase.id}`} className="w-full">
-                      <button
-                        type="button"
-                        className="w-full py-2 rounded-xl text-slate-800 hover:bg-slate-100 text-xs font-bold flex items-center justify-center gap-1 border border-slate-300 bg-white shadow-2xs"
-                      >
-                        <Eye className="h-3.5 w-3.5" /> {t('view_bill')}
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Desktop Table (md+) */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50/80 border-b border-slate-200">
-                <tr>
-                  <th className="px-5 py-3.5 font-bold tracking-wider">Invoice No.</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider">Date</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider">Farmer</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider text-right">Total Amount</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider text-right">Advance Paid</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider text-right">Balance Due</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider text-center">Status</th>
-                  <th className="px-5 py-3.5 font-bold tracking-wider text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPurchases.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
-                      No purchase entries found matching your search.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredPurchases.map(purchase => (
-                    <tr key={purchase.id} className="bg-white hover:bg-slate-50/80 transition-colors group">
-                      <td className="px-5 py-4 font-mono font-bold text-slate-900 group-hover:text-emerald-700">
-                        <Link to={`/invoice/${purchase.id}`} className="hover:underline">
-                          {purchase.purchaseNumber}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-4 text-slate-500 text-xs font-medium whitespace-nowrap">
-                        {purchase.date ? format(new Date(purchase.date), 'dd MMM yyyy') : '-'}
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="font-semibold text-slate-900 leading-tight">
-                          {purchase.farmerName || 'Farmer'}
-                        </div>
-                        {purchase.farmerVillage && (
-                          <div className="text-[11px] text-slate-500">
-                            {purchase.farmerVillage}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 font-bold text-slate-900 text-right">
-                        {formatCurrency(purchase.totalAmount)}
-                      </td>
-                      <td className="px-5 py-4 text-emerald-700 font-semibold text-right">
-                        {formatCurrency(purchase.advancePaid)}
-                      </td>
-                      <td className="px-5 py-4 font-bold text-right">
-                        <span className={purchase.remainingAmount > 0 ? 'text-rose-600' : 'text-slate-400'}>
-                          {formatCurrency(purchase.remainingAmount)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        <span
-                          className={`inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                            purchase.status === 'Paid'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : purchase.status === 'Partial'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
-                          }`}
-                        >
-                          {purchase.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* 1-Click WhatsApp PDF Share Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleDirectWhatsApp(purchase)}
-                            disabled={sharingPurchaseId === purchase.id}
-                            title="Share Bill PDF on WhatsApp (No text)"
-                            className="px-2.5 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border border-emerald-300 hover:border-emerald-600 shadow-2xs"
-                          >
-                            {sharingPurchaseId === purchase.id ? (
-                              <>
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" /> PDF...
-                              </>
-                            ) : (
-                              <>
-                                <MessageSquare className="h-3.5 w-3.5 fill-emerald-700 hover:fill-white" /> WhatsApp PDF
-                              </>
-                            )}
-                          </button>
-
-                          {/* View Bill Button */}
-                          <Link to={`/invoice/${purchase.id}`}>
-                            <button
-                              type="button"
-                              title="View & Print Bill"
-                              className="px-2 py-1.5 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors text-xs font-semibold flex items-center gap-1 border border-slate-200 bg-white"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> View
-                            </button>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {/* Totals are the server's, so this page cannot disagree with the
+          dashboard. They were previously summed from the loaded rows. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="p-4">
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Total Purchases</div>
+          <MoneyText value={summary?.totalValue} className="mt-1 block text-2xl font-bold text-ink" />
+          <div className="mt-0.5 text-2xs text-ink-subtle">
+            {summary?.totalPurchases ?? purchases.length} transaction vouchers
           </div>
         </Card>
-      </motion.div>
+        <Card className="p-4">
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Amount Paid</div>
+          <MoneyText value={summary?.totalPaid} className="mt-1 block text-2xl font-bold text-paid-fg" />
+          <div className="mt-0.5 text-2xs text-ink-subtle">Disbursed to farmers</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Pending Dues</div>
+          <MoneyText value={summary?.totalOutstanding} className="mt-1 block text-2xl font-bold text-due-fg" />
+          <div className="mt-0.5 text-2xs text-ink-subtle">Outstanding balances</div>
+        </Card>
+      </div>
+
+      <DataTable
+        rows={visiblePurchases}
+        columns={columns}
+        rowKey={row => row.id}
+        loading={loading}
+        searchPlaceholder="Search bill number, farmer, village or mobile…"
+        caption="Crop purchase bills"
+        toolbar={
+          <div className="flex items-center gap-1 rounded-control bg-surface-sunken p-1">
+            {(['All', 'Paid', 'Partial', 'Pending'] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setStatusFilter(tab)}
+                aria-pressed={statusFilter === tab}
+                className={
+                  'rounded px-3 py-1.5 text-2xs font-semibold transition-colors ' +
+                  (statusFilter === tab
+                    ? 'bg-surface text-ink shadow-card'
+                    : 'text-ink-muted hover:text-ink')
+                }
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        }
+        emptyIcon={<FileText className="h-5 w-5" aria-hidden="true" />}
+        emptyTitle={statusFilter === 'All' ? t('no_purchases_found') : `No ${statusFilter.toLowerCase()} bills`}
+        emptyDescription={
+          statusFilter === 'All'
+            ? 'Record your first purchase from a farmer and the bill will appear here, ready to print or share.'
+            : 'Try a different status filter to see other bills.'
+        }
+        emptyAction={
+          statusFilter === 'All' ? (
+            <Link to="/purchases/new">
+              <Button>
+                <Plus className="h-4 w-4" /> Record a purchase
+              </Button>
+            </Link>
+          ) : undefined
+        }
+      />
+
     </div>
   );
 }
