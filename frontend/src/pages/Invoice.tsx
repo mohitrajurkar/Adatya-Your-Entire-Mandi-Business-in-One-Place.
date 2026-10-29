@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, numberToWordsINR } from '../lib/utils';
-import { generateBillPdfDoc, shareBillPdfToWhatsApp } from '../lib/pdfGenerator';
+import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName } from '../lib/pdfGenerator';
 import { format } from 'date-fns';
 import {
   Printer,
@@ -165,45 +165,22 @@ export default function Invoice() {
       const digits = rawMobile.replace(/\D/g, '');
       const cleanDigits = digits.length === 10 ? digits : digits.length > 10 ? digits.slice(-10) : '';
 
-      let pdfBlob: Blob | null = null;
-      const billEl = document.getElementById('printable-bill');
-
-      if (billEl) {
-        try {
-          const html2canvas = (await import('html2canvas')).default;
-          const { jsPDF } = await import('jspdf');
-
-          const canvas = await html2canvas(billEl, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-          });
-
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
-          const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-          });
-
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-          pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-          pdfBlob = pdf.output('blob');
-        } catch (canvasErr) {
-          console.warn('Canvas capture fallback:', canvasErr);
-        }
-      }
-
-      if (!pdfBlob) {
-        const doc = generateBillPdfDoc(data, activeBusiness);
-        pdfBlob = doc.output('blob');
-      }
+      // One bill, one PDF. This used to screenshot the page with html2canvas
+      // and only fall back to the real generator if that threw. It always
+      // threw: html2canvas cannot parse the oklch() colours the design tokens
+      // use, so every share silently produced the fallback document instead,
+      // which looks nothing like the bill on screen. That is why the copy
+      // arriving on WhatsApp never matched what the trader was looking at.
+      //
+      // Generating it properly also beats a screenshot on its own merits: the
+      // file is a few kilobytes rather than a megabyte of JPEG, the text stays
+      // selectable, and it does not depend on how the page happened to be
+      // scrolled or sized on the phone that sent it.
+      const doc = generateBillPdfDoc(data, activeBusiness);
+      const pdfBlob = doc.output('blob');
 
       // Share PDF directly to WhatsApp - NO TEXT
-      const result = await shareBillPdfToWhatsApp(pdfBlob, data.purchaseNumber, cleanDigits);
+      const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), cleanDigits);
 
       if (result.method === 'native-share') {
         setPdfToast(
@@ -430,7 +407,7 @@ export default function Invoice() {
         {/* ========================================================================= */}
         <div
           id="printable-bill"
-          className={`p-3.5 sm:p-10 shadow-2xl rounded-2xl print:rounded-none print:shadow-none print:p-0 print:m-0 border print:border-none mx-auto max-w-[850px] relative transition-all overflow-x-auto sm:overflow-x-visible ${
+          className={`p-1.5 sm:p-10 shadow-2xl rounded-2xl print:rounded-none print:shadow-none print:p-0 print:m-0 border print:border-none mx-auto max-w-[850px] relative transition-all overflow-x-auto sm:overflow-x-visible ${
             billStyle === 'traditional-patrika'
               ? 'bg-[#faf7f2] border-amber-900/30'
               : 'bg-white border-slate-300'
@@ -447,7 +424,7 @@ export default function Invoice() {
             }`}
           >
             <div
-              className={`p-6 sm:p-8 flex flex-col min-h-[920px] relative rounded-lg print:rounded-none ${
+              className={`p-2.5 sm:p-8 flex flex-col min-h-[640px] sm:min-h-[920px] relative rounded-lg print:rounded-none ${
                 billStyle === 'traditional-patrika'
                   ? 'border border-amber-900/40 bg-[#fffdfa]'
                   : billStyle === 'royal-framed'
@@ -473,8 +450,12 @@ export default function Invoice() {
                       referrerPolicy="no-referrer"
                       className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 filter drop-shadow-sm"
                     />
-                    <div>
-                      <h1 className="text-3xl sm:text-4xl font-serif font-black tracking-wider text-slate-950 uppercase leading-none">
+                    <div className="min-w-0">
+                      {/* A single long business name, "ADMINISTRATOR" say, has
+                          no space to wrap at, so without break-words it runs
+                          off the side of a phone screen. The tighter tracking
+                          and smaller size on mobile buy it room first. */}
+                      <h1 className="text-xl sm:text-4xl font-serif font-black tracking-normal sm:tracking-wider text-slate-950 uppercase leading-tight sm:leading-none break-words hyphens-auto">
                         {activeBusiness.businessName}
                       </h1>
                       <div className="text-xs sm:text-sm font-semibold text-slate-700 mt-1.5">
@@ -553,40 +534,45 @@ export default function Invoice() {
 
               {/* Items Procurement Table */}
               <div className="relative z-10 mb-6">
-                <table className={`w-full text-sm border-collapse border ${themeBorder}`}>
+                {/* Column widths and padding shrink on a phone so the whole
+                    bill fits the screen. A mandi trader reads this on a
+                    handset, and a Total Amount column sitting off the right
+                    edge behind a horizontal scrollbar is the one number they
+                    cannot afford to miss. */}
+                <table className={`w-full table-auto sm:table-fixed text-[11px] sm:text-sm border-collapse border ${themeBorder}`}>
                   <thead>
-                    <tr className={`${themeTableHead} text-white text-xs uppercase tracking-wider`}>
-                      <th className={`border ${themeBorder} py-2.5 px-3 text-center w-14 font-bold`}>Sr. No.</th>
-                      <th className={`border ${themeBorder} py-2.5 px-4 text-left font-bold`}>
+                    <tr className={`${themeTableHead} text-white text-[9px] sm:text-xs uppercase tracking-tight sm:tracking-wider`}>
+                      <th className={`border ${themeBorder} py-2 sm:py-2.5 px-0.5 sm:px-3 text-center w-auto sm:w-14 font-bold`}>{t('bill_col_sr')}</th>
+                      <th className={`border ${themeBorder} py-2 sm:py-2.5 px-1 sm:px-4 text-left font-bold`}>
                         {t('commodity_crop')}
                       </th>
-                      <th className={`border ${themeBorder} py-2.5 px-3 text-center w-28 font-bold`}>
-                        Quantity (Qtl)
+                      <th className={`border ${themeBorder} py-2 sm:py-2.5 px-0.5 sm:px-3 text-center w-auto sm:w-28 font-bold`}>
+                        {t('bill_col_quantity')}
                       </th>
-                      <th className={`border ${themeBorder} py-2.5 px-4 text-right w-32 font-bold`}>
-                        Rate / Qtl (₹)
+                      <th className={`border ${themeBorder} py-2 sm:py-2.5 px-1 sm:px-4 text-right w-auto sm:w-32 font-bold`}>
+                        {t('bill_col_rate')}
                       </th>
-                      <th className={`border ${themeBorder} py-2.5 px-4 text-right w-36 font-bold`}>
-                        Total Amount (₹)
+                      <th className={`border ${themeBorder} py-2 sm:py-2.5 px-1 sm:px-4 text-right w-auto sm:w-36 font-bold`}>
+                        {t('bill_col_total')}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
                     {data.items?.map((item: any, idx: number) => (
                       <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                        <td className={`border-x ${themeBorder} py-3 px-3 text-center font-semibold text-slate-700`}>
+                        <td className={`border-x ${themeBorder} py-2.5 sm:py-3 px-0.5 sm:px-3 text-center font-semibold text-slate-700`}>
                           {idx + 1}
                         </td>
-                        <td className={`border-x ${themeBorder} py-3 px-4 font-bold text-slate-900`}>
+                        <td className={`border-x ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 font-bold text-slate-900 break-words`}>
                           {item.commodityName}
                         </td>
-                        <td className={`border-x ${themeBorder} py-3 px-3 text-center font-bold text-slate-900`}>
-                          {Number(item.quantity).toFixed(2)} Qtl
+                        <td className={`border-x ${themeBorder} py-2.5 sm:py-3 px-0.5 sm:px-3 text-center font-bold text-slate-900 tabular-nums`}>
+                          {Number(item.quantity).toFixed(2)}
                         </td>
-                        <td className={`border-x ${themeBorder} py-3 px-4 text-right font-medium text-slate-800`}>
+                        <td className={`border-x ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 text-right font-medium text-slate-800 tabular-nums`}>
                           ₹{Number(item.rate).toLocaleString('en-IN')}
                         </td>
-                        <td className={`border-x ${themeBorder} py-3 px-4 text-right font-bold text-slate-950`}>
+                        <td className={`border-x ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 text-right font-bold text-slate-950 tabular-nums`}>
                           ₹{Number(item.amount).toLocaleString('en-IN')}
                         </td>
                       </tr>
@@ -605,16 +591,16 @@ export default function Invoice() {
                   </tbody>
                   <tfoot>
                     <tr className={`bg-slate-100 border-t-2 ${themeBorder} font-bold`}>
-                      <td colSpan={2} className={`border ${themeBorder} py-3 px-4 text-left uppercase text-xs tracking-wider text-slate-800`}>
+                      <td colSpan={2} className={`border ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 text-left uppercase text-[9px] sm:text-xs tracking-tight sm:tracking-wider text-slate-800`}>
                         {t('total_procurement_value')}
                       </td>
-                      <td className={`border ${themeBorder} py-3 px-3 text-center text-slate-900 font-bold`}>
-                        {data.items?.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0).toFixed(2)} Qtl
+                      <td className={`border ${themeBorder} py-2.5 sm:py-3 px-0.5 sm:px-3 text-center text-slate-900 font-bold tabular-nums`}>
+                        {data.items?.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0).toFixed(2)}
                       </td>
-                      <td className={`border ${themeBorder} py-3 px-4 text-right text-xs uppercase text-slate-600 font-medium`}>
-                        Gross Total
+                      <td className={`border ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 text-right text-[9px] sm:text-xs uppercase text-slate-600 font-medium`}>
+                        {t('bill_gross_total')}
                       </td>
-                      <td className={`border ${themeBorder} py-3 px-4 text-right text-slate-950 text-base font-black bg-slate-200/60`}>
+                      <td className={`border ${themeBorder} py-2.5 sm:py-3 px-1 sm:px-4 text-right text-slate-950 text-xs sm:text-base font-black bg-slate-200/60 tabular-nums`}>
                         {formatCurrency(data.totalAmount)}
                       </td>
                     </tr>

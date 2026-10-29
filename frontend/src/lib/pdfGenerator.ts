@@ -39,6 +39,52 @@ export interface BusinessProfileData {
 }
 
 /**
+ * Name the bill file after what it is about: the grain, the farmer and the
+ * date, in that order, so a trader scrolling a WhatsApp thread or a phone's
+ * Downloads folder can tell two bills apart without opening either.
+ *
+ * "Adatya_Bill_INV-719018.pdf" told them nothing useful, since the voucher
+ * number is the one thing a farmer never quotes.
+ *
+ * Kept deliberately short: WhatsApp and most file pickers truncate in the
+ * middle, so a long name hides exactly the part that distinguishes it. Each
+ * part is capped, several commodities collapse to "Cotton+2", and anything a
+ * filesystem would object to is stripped.
+ *
+ *   Cotton_MandarWararkar_30-10-2026.pdf
+ */
+export function buildBillFileName(data: BillPdfData): string {
+  const clean = (value: string, max: number) => {
+    const stripped = value
+      // Spaces out, so the name survives being pasted into a shell or a URL.
+      .replace(/\s+/g, '')
+      // Keep letters and digits from any script: a Marathi commodity name
+      // should stay readable rather than be reduced to nothing.
+      .replace(/[^\p{L}\p{N}]/gu, '');
+    return stripped.slice(0, max);
+  };
+
+  const items = data.items ?? [];
+  const firstCommodity =
+    items[0]?.customCommodityName?.trim() || items[0]?.commodityName?.trim() || '';
+  const grain = firstCommodity
+    ? clean(firstCommodity, 14) + (items.length > 1 ? `+${items.length - 1}` : '')
+    : 'Bill';
+
+  const farmer = clean(data.farmer?.name || data.farmerName || '', 18) || 'Farmer';
+
+  // The stored date is ISO (2026-10-30); show it the way an Indian trader
+  // reads one. Anything unparseable falls back to today rather than putting
+  // "Invalid Date" or "NaN" in a filename.
+  const parsed = new Date(data.date);
+  const d = isNaN(parsed.getTime()) ? new Date() : parsed;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+
+  return `${grain}_${farmer}_${date}.pdf`;
+}
+
+/**
  * Generate a standalone high-quality Mandi Bill PDF document
  */
 export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileData): jsPDF {
@@ -285,6 +331,47 @@ export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileD
 
   // 8. Signatures & Mandi Stamp Area
   const sigY = pageHeight - margin - 35;
+
+  // 7b. Payment status stamp.
+  //
+  // The on-screen bill carries this stamp, so the PDF carries the same one.
+  // A trader who looks at the bill in the app and then sends it on WhatsApp
+  // should not end up with two documents that say different things about
+  // whether the money has been paid.
+  //
+  // The rule matches PaidStamp.tsx exactly: the outstanding balance decides,
+  // not the status string, with a small tolerance so rounding cannot leave a
+  // settled bill looking unpaid.
+  const dueAmount = Number(data.remainingAmount || 0);
+  const billTotal = Number(data.totalAmount || 0);
+  const settledInFull = dueAmount <= 0.009;
+  const untouched = dueAmount >= billTotal - 0.009;
+
+  const stamp = settledInFull
+    ? { label: 'PAID', note: 'Amount Paid', rgb: [16, 133, 94] }
+    : untouched
+      ? { label: 'UNPAID', note: `Balance Due: Rs ${dueAmount.toLocaleString('en-IN')}`, rgb: [200, 40, 40] }
+      : { label: 'PART PAID', note: `Balance Due: Rs ${dueAmount.toLocaleString('en-IN')}`, rgb: [190, 110, 10] };
+
+  // Sits under the amount-in-words block on the left, but never low enough to
+  // collide with the signature line when a long item list pushes things down.
+  const stampWidth = 52;
+  const stampHeight = 16;
+  const stampX = margin + 6;
+  const stampY = Math.min(summaryY + 26, sigY - stampHeight - 6);
+
+  doc.setDrawColor(stamp.rgb[0], stamp.rgb[1], stamp.rgb[2]);
+  doc.setLineWidth(1);
+  doc.roundedRect(stampX, stampY, stampWidth, stampHeight, 1.5, 1.5);
+
+  doc.setTextColor(stamp.rgb[0], stamp.rgb[1], stamp.rgb[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(stamp.label, stampX + stampWidth / 2, stampY + 7.5, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.text(stamp.note, stampX + stampWidth / 2, stampY + 12.5, { align: 'center' });
   doc.setDrawColor(220, 225, 220);
   doc.setLineWidth(0.3);
   doc.line(margin + 6, sigY, pageWidth - margin - 6, sigY);
@@ -342,10 +429,9 @@ export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileD
  */
 export async function shareBillPdfToWhatsApp(
   pdfBlob: Blob,
-  purchaseNumber: string,
+  fileName: string,
   farmerMobile?: string
 ): Promise<{ success: boolean; method: 'native-share' | 'download' }> {
-  const fileName = `Adatya_Bill_${purchaseNumber}.pdf`;
   const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
   // Mobile Web Share API: Android Chrome & iOS Safari support sharing files directly

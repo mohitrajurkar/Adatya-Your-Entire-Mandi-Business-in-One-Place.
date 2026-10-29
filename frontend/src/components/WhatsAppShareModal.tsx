@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageSquare, Download, X, Smartphone, FileText, CheckCircle2, Loader2, Share2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { formatCurrency } from '../lib/utils';
-import { generateBillPdfDoc, shareBillPdfToWhatsApp } from '../lib/pdfGenerator';
+import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName } from '../lib/pdfGenerator';
 import { useLanguage } from '../context/LanguageContext';
 
 interface WhatsAppShareModalProps {
@@ -46,7 +46,7 @@ export default function WhatsAppShareModal({
       const pdfBlob = doc.output('blob');
 
       // 2. Share PDF directly via Web Share API or download & open WhatsApp with NO text
-      const result = await shareBillPdfToWhatsApp(pdfBlob, data.purchaseNumber, phoneNumber);
+      const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), phoneNumber);
 
       if (result.method === 'native-share') {
         setShareSuccess(
@@ -70,7 +70,7 @@ export default function WhatsAppShareModal({
   const handleDownloadOnly = () => {
     try {
       const doc = generateBillPdfDoc(data, profile);
-      doc.save(`Adatya_Bill_${data.purchaseNumber}.pdf`);
+      doc.save(buildBillFileName(data));
       setShareSuccess(
         t('bill_pdf_downloaded_successfully')
       );
@@ -116,7 +116,7 @@ export default function WhatsAppShareModal({
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-slate-900">
-                    Adatya_Bill_{data.purchaseNumber}.pdf
+                    {buildBillFileName(data)}
                   </h4>
                   <p className="text-xs text-slate-500">
                     {t('official_mandi_purchase_voucher')}

@@ -379,6 +379,15 @@ export const TRANSLATION_KEYS = [
   'theme_royal_mandi',
   'theme_standard_white',
   'official_brand_logo',
+  'stamp_part_paid',
+  'stamp_unpaid',
+  'stamp_balance_due',
+  'stamp_payment_pending',
+  'bill_col_sr',
+  'bill_col_quantity',
+  'bill_col_rate',
+  'bill_col_total',
+  'bill_gross_total',
 ] as const;
 
 export type TranslationKey = (typeof TRANSLATION_KEYS)[number];
