@@ -185,7 +185,7 @@ DB_URL=jdbc:postgresql://database:5432/adatya_db
 HIBERNATE_DDL_AUTO=update
 
 # Initial Admin Credentials (Seeded on first startup)
-DEFAULT_ADMIN_MOBILE=9356893989
+DEFAULT_ADMIN_MOBILE=YOUR_10_DIGIT_MOBILE
 DEFAULT_ADMIN_PASSWORD=YOUR_SECURE_ADMIN_PASSWORD_HERE
 
 # CORS Configuration (Include your domain or public IP)
