@@ -165,19 +165,66 @@ export default function Invoice() {
       const digits = rawMobile.replace(/\D/g, '');
       const cleanDigits = digits.length === 10 ? digits : digits.length > 10 ? digits.slice(-10) : '';
 
-      // One bill, one PDF. This used to screenshot the page with html2canvas
-      // and only fall back to the real generator if that threw. It always
-      // threw: html2canvas cannot parse the oklch() colours the design tokens
-      // use, so every share silently produced the fallback document instead,
-      // which looks nothing like the bill on screen. That is why the copy
-      // arriving on WhatsApp never matched what the trader was looking at.
+      // The farmer must receive exactly the bill the trader is looking at, so
+      // the PDF is made from the bill itself rather than redrawn beside it.
+      // Two renderings of one document drift apart, and this pair had: the
+      // generated copy carried a different layout entirely.
       //
-      // Generating it properly also beats a screenshot on its own merits: the
-      // file is a few kilobytes rather than a megabyte of JPEG, the text stays
-      // selectable, and it does not depend on how the page happened to be
-      // scrolled or sized on the phone that sent it.
-      const doc = generateBillPdfDoc(data, activeBusiness);
-      const pdfBlob = doc.output('blob');
+      // The original attempt at this used html2canvas, which cannot parse the
+      // oklch() colours the design tokens use and so threw on every share.
+      // html2canvas-pro understands them. If it still fails for any reason we
+      // fall back to the generated bill, since a bill that looks different
+      // beats no bill at all -- but the failure is reported rather than
+      // swallowed, which is how the original bug stayed hidden.
+      let pdfBlob: Blob | null = null;
+      const billEl = document.getElementById('printable-bill');
+
+      if (billEl) {
+        try {
+          const html2canvas = (await import('html2canvas-pro')).default;
+          const { jsPDF } = await import('jspdf');
+
+          // Render at a fixed document width rather than the phone's. Without
+          // this, a bill shared from a handset becomes a tall narrow strip
+          // shaped like the screen it was sent from instead of a page.
+          const canvas = await html2canvas(billEl, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            windowWidth: 900,
+            width: 900,
+          });
+
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          const pageW = pdf.internal.pageSize.getWidth();
+          const pageH = pdf.internal.pageSize.getHeight();
+          const imgH = (canvas.height * pageW) / canvas.width;
+
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, imgH);
+
+          // A long bill runs past one sheet; keep going rather than cropping
+          // the totals off the bottom.
+          let remaining = imgH - pageH;
+          let offset = pageH;
+          while (remaining > 0) {
+            pdf.addPage();
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, -offset, pageW, imgH);
+            remaining -= pageH;
+            offset += pageH;
+          }
+
+          pdfBlob = pdf.output('blob');
+        } catch (canvasErr) {
+          console.error('Bill capture failed, sending the generated copy instead:', canvasErr);
+          setPdfToast(t('bill_pdf_layout_fallback'));
+        }
+      }
+
+      if (!pdfBlob) {
+        const doc = generateBillPdfDoc(data, activeBusiness);
+        pdfBlob = doc.output('blob');
+      }
 
       // Share PDF directly to WhatsApp - NO TEXT
       const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), cleanDigits);

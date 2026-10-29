@@ -388,6 +388,7 @@ export const TRANSLATION_KEYS = [
   'bill_col_rate',
   'bill_col_total',
   'bill_gross_total',
+  'bill_pdf_layout_fallback',
 ] as const;
 
 export type TranslationKey = (typeof TRANSLATION_KEYS)[number];
