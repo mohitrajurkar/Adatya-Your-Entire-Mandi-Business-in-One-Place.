@@ -10,6 +10,14 @@ RUN npm ci
 
 # Copy frontend source code and compile Vite build
 COPY frontend/ ./
+
+# Node's default heap limit is derived from the machine's memory, and on a
+# small server (a 1 GB EC2 instance, say) it lands well below what Vite needs
+# to bundle this app, so the build dies with "JavaScript heap out of memory".
+# Raising it lets the build borrow swap and finish, slowly but reliably. It is
+# a ceiling, not a reservation, so a larger machine is unaffected.
+ARG NODE_HEAP_MB=2048
+ENV NODE_OPTIONS=--max-old-space-size=${NODE_HEAP_MB}
 RUN npm run build
 
 # ==========================================
