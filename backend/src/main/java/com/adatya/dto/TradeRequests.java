@@ -1,6 +1,7 @@
 package com.adatya.dto;
 
 import jakarta.validation.constraints.*;
+import com.adatya.validation.IsoDate;
 
 import java.math.BigDecimal;
 
@@ -64,7 +65,7 @@ public final class TradeRequests {
             @Size(max = 40)
             String paymentMode,
 
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in YYYY-MM-DD format")
+            @IsoDate(message = "Date must be a real date in YYYY-MM-DD format")
             String date,
 
             @Size(max = 2000)
@@ -100,7 +101,7 @@ public final class TradeRequests {
             @Size(max = 255)
             String reason,
 
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in YYYY-MM-DD format")
+            @IsoDate(message = "Date must be a real date in YYYY-MM-DD format")
             String date
     ) {
     }

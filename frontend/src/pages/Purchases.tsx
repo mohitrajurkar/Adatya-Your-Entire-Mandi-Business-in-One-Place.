@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDate } from '../lib/utils';
 import { useLanguage } from '../context/LanguageContext';
 import {
   Card,
@@ -149,7 +150,7 @@ export default function Purchases() {
       value: row => row.date ?? '',
       render: row => (
         <span className="text-ink-muted">
-          {row.date ? format(new Date(row.date), 'dd MMM yyyy') : '—'}
+          {formatDate(row.date)}
         </span>
       ),
       hideOnMobile: true,

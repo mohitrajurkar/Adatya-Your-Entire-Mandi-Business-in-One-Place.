@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, formatDate } from '../lib/utils';
 import {
   Users,
   ShoppingBag,
@@ -417,7 +417,7 @@ export default function Dashboard() {
                         )}
                       </div>
                       <div className="text-[11px] text-slate-400">
-                        {purchase.date ? format(new Date(purchase.date), 'dd MMM yyyy') : '-'}
+                        {formatDate(purchase.date, 'dd MMM yyyy', '-')}
                       </div>
                     </div>
 

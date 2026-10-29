@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatDate } from '../lib/utils';
 import { Plus, MapPin, Phone, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '../context/LanguageContext';
@@ -157,7 +158,7 @@ export default function Farmers() {
       value: row => row.createdAt ?? '',
       render: row => (
         <span className="text-ink-muted">
-          {row.createdAt ? format(new Date(row.createdAt), 'dd MMM yyyy') : '—'}
+          {formatDate(row.createdAt)}
         </span>
       ),
       hideOnMobile: true,

@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { format as formatDateFns } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -52,4 +53,39 @@ export function numberToWordsINR(num: number | null | undefined): string {
   if (remaining > 0) parts.push(convertLessThanThousand(remaining));
 
   return (parts.join(' ') + ' Rupees Only').trim();
+}
+
+/**
+ * Format a date for display without ever throwing.
+ *
+ * date-fns `format` raises "RangeError: Invalid time value" when handed an
+ * unparseable date, and a throw inside a table cell takes the whole page down
+ * with it. That is what a single malformed row did here: the Purchases list
+ * went blank, with nothing on screen to say why.
+ *
+ * The date column is free text rather than a real date type, so a bad value
+ * can always find its way in -- from an older release, an import, or a manual
+ * fix in the database. One broken row should cost the trader that one cell,
+ * not the entire page.
+ */
+export function formatDate(
+  value: string | Date | null | undefined,
+  pattern = 'dd MMM yyyy',
+  fallback = '—'
+): string {
+  if (!value) return fallback;
+
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (isNaN(parsed.getTime())) {
+    // Show whatever was stored rather than a dash: a trader who can see
+    // "30/10/2026" sitting in the date column can tell someone what is wrong,
+    // where a dash tells them nothing.
+    return typeof value === 'string' && value.trim() ? value : fallback;
+  }
+
+  try {
+    return formatDateFns(parsed, pattern);
+  } catch {
+    return fallback;
+  }
 }

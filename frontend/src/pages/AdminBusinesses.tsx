@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ConfirmDialog, useToast } from '../components/ui';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, formatDate } from '../lib/utils';
 import {
   Building2,
   Users,
@@ -341,7 +341,7 @@ export default function AdminBusinesses() {
                         </td>
 
                         <td className="py-4 px-4 text-xs text-slate-500 font-mono">
-                          {b.createdAt ? format(new Date(b.createdAt), 'dd MMM yyyy') : 'Recently'}
+                          {formatDate(b.createdAt, 'dd MMM yyyy', 'Recently')}
                         </td>
 
                         <td className="py-4 px-4 text-right font-mono font-bold text-emerald-700">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { formatCurrency, numberToWordsINR } from '../lib/utils';
+import { formatCurrency, numberToWordsINR, formatDate } from '../lib/utils';
 import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName } from '../lib/pdfGenerator';
 import { format } from 'date-fns';
 import {
@@ -594,7 +594,7 @@ export default function Invoice() {
                   </div>
                   <div className="text-xs text-slate-700 flex sm:justify-end items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    Date: <strong className="text-slate-900">{format(new Date(data.date), 'dd/MM/yyyy')}</strong>
+                    Date: <strong className="text-slate-900">{formatDate(data.date, 'dd/MM/yyyy')}</strong>
                   </div>
                   <div className="text-xs text-slate-600">
                     Status:{' '}

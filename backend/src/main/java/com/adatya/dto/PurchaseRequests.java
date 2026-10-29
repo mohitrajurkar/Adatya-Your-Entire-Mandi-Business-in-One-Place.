@@ -2,6 +2,7 @@ package com.adatya.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import com.adatya.validation.IsoDate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,7 +25,7 @@ public final class PurchaseRequests {
             Long farmerId,
 
             @NotBlank(message = "Date is required")
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in YYYY-MM-DD format")
+            @IsoDate(message = "Date must be a real date in YYYY-MM-DD format")
             String date,
 
             /** Optional. Generated server-side when absent. */
@@ -87,7 +88,7 @@ public final class PurchaseRequests {
             @Size(max = 40)
             String paymentMode,
 
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Payment date must be in YYYY-MM-DD format")
+            @IsoDate(message = "Payment date must be a real date in YYYY-MM-DD format")
             String paymentDate,
 
             @Size(max = 100)

@@ -37,6 +37,58 @@ jobs:
           path: backend/target/surefire-reports/
           if-no-files-found: ignore
 
+  # The suite above runs on H2 with Flyway switched off, building the schema
+  # from the entities. That cannot catch an entity the migrations never create,
+  # which is exactly how a clean deployment came to fail on a missing
+  # business_profile.mobile1. This job builds a database from the migrations
+  # alone, on the PostgreSQL the application actually uses, and starts the app
+  # against it with ddl-auto=validate. Any drift fails here instead of on a
+  # server.
+  migration-check:
+    name: Migrations match the entities
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: adatya_migration_check
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Start the app against a freshly migrated database
+        env:
+          MIGRATION_DB_URL: jdbc:postgresql://localhost:5432/adatya_migration_check
+          MIGRATION_DB_USER: postgres
+          MIGRATION_DB_PASSWORD: postgres
+        run: mvn -f backend/pom.xml -B clean test -Dtest=MigrationSchemaIT -DfailIfNoTests=false
+
+      - name: Publish migration check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-check-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
+
   frontend-check:
     name: Frontend typecheck
     runs-on: ubuntu-latest
@@ -62,7 +114,7 @@ jobs:
   # ---------------------------------------------------------------------------
   backend-build:
     name: Backend build
-    needs: backend-test
+    needs: [ backend-test, migration-check ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
