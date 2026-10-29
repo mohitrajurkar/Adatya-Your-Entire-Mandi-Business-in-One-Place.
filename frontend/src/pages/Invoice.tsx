@@ -180,43 +180,69 @@ export default function Invoice() {
       const billEl = document.getElementById('printable-bill');
 
       if (billEl) {
-        try {
-          const html2canvas = (await import('html2canvas-pro')).default;
-          const { jsPDF } = await import('jspdf');
+        const html2canvas = (await import('html2canvas-pro')).default;
+        const { jsPDF } = await import('jspdf');
 
-          // Render at a fixed document width rather than the phone's. Without
-          // this, a bill shared from a handset becomes a tall narrow strip
-          // shaped like the screen it was sent from instead of a page.
-          const canvas = await html2canvas(billEl, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            windowWidth: 900,
-            width: 900,
-          });
+        // A mandi trader's phone is usually a cheap one, and rendering a full
+        // page at 2x can exhaust its memory: the canvas comes back blank or
+        // the call throws outright. Rather than drop straight to the
+        // different-looking generated bill, step the resolution down and try
+        // again. Even the 1x render still looks like the bill, which is the
+        // whole point; it is only less crisp when zoomed in.
+        let lastErr: unknown = null;
 
-          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-          const pageW = pdf.internal.pageSize.getWidth();
-          const pageH = pdf.internal.pageSize.getHeight();
-          const imgH = (canvas.height * pageW) / canvas.width;
+        for (const scale of [2, 1.4, 1]) {
+          try {
+            // Render at a fixed document width rather than the phone's.
+            // Without this, a bill shared from a handset becomes a tall narrow
+            // strip shaped like the screen it was sent from, not a page.
+            const canvas = await html2canvas(billEl, {
+              scale,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+              windowWidth: 900,
+              width: 900,
+            });
 
-          pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, imgH);
+            // A device that runs out of memory mid-render hands back a canvas
+            // with no pixels instead of failing, so check before trusting it.
+            if (!canvas.width || !canvas.height) {
+              throw new Error(`empty canvas at scale ${scale}`);
+            }
 
-          // A long bill runs past one sheet; keep going rather than cropping
-          // the totals off the bottom.
-          let remaining = imgH - pageH;
-          let offset = pageH;
-          while (remaining > 0) {
-            pdf.addPage();
-            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, -offset, pageW, imgH);
-            remaining -= pageH;
-            offset += pageH;
+            const imgData = canvas.toDataURL('image/jpeg', 0.9);
+            if (imgData.length < 2000) {
+              throw new Error(`blank capture at scale ${scale}`);
+            }
+
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+            const imgH = (canvas.height * pageW) / canvas.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageW, imgH);
+
+            // A long bill runs past one sheet; keep going rather than cropping
+            // the totals off the bottom.
+            let remaining = imgH - pageH;
+            let offset = pageH;
+            while (remaining > 0) {
+              pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 0, -offset, pageW, imgH);
+              remaining -= pageH;
+              offset += pageH;
+            }
+
+            pdfBlob = pdf.output('blob');
+            break;
+          } catch (err) {
+            lastErr = err;
           }
+        }
 
-          pdfBlob = pdf.output('blob');
-        } catch (canvasErr) {
-          console.error('Bill capture failed, sending the generated copy instead:', canvasErr);
+        if (!pdfBlob) {
+          console.error('Bill capture failed at every resolution, sending the generated copy:', lastErr);
           setPdfToast(t('bill_pdf_layout_fallback'));
         }
       }
