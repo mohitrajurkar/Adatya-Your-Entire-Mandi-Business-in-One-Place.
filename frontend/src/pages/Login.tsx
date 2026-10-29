@@ -126,9 +126,7 @@ export default function Login() {
             <h1 className="text-2xl font-serif font-black text-slate-950 tracking-tight">
               Adatya
             </h1>
-            <p className="text-xs text-amber-600 font-bold uppercase tracking-wider flex items-center justify-center gap-1 mt-0.5">
-              Your ledger, your control.
-            </p>
+            <p className="text-xs text-amber-600 font-bold uppercase tracking-wider flex items-center justify-center gap-1 mt-0.5">{t('app_tagline')}</p>
             <p className="text-[11px] text-slate-500 mt-1">
               {t('mandi_procurement_invoicing_portal')}
             </p>

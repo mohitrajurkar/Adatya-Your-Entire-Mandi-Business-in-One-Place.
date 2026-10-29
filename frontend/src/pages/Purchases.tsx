@@ -125,7 +125,7 @@ export default function Purchases() {
   const columns: Column<any>[] = [
     {
       key: 'purchaseNumber',
-      header: 'Bill No.',
+      header: t('col_bill_no'),
       value: row => row.purchaseNumber ?? '',
       render: row => (
         <span className="font-semibold text-ink">{row.purchaseNumber}</span>
@@ -133,7 +133,7 @@ export default function Purchases() {
     },
     {
       key: 'farmer',
-      header: 'Farmer',
+      header: t('col_farmer'),
       value: row => `${row.farmerName ?? ''} ${row.farmerVillage ?? ''} ${row.farmerMobile ?? ''}`,
       render: row => (
         <div>
@@ -146,7 +146,7 @@ export default function Purchases() {
     },
     {
       key: 'date',
-      header: 'Date',
+      header: t('col_date'),
       value: row => row.date ?? '',
       render: row => (
         <span className="text-ink-muted">
@@ -157,14 +157,14 @@ export default function Purchases() {
     },
     {
       key: 'totalAmount',
-      header: 'Total',
+      header: t('col_total'),
       align: 'right',
       value: row => Number(row.totalAmount ?? 0),
       render: row => <MoneyText value={row.totalAmount} className="font-semibold text-ink" />,
     },
     {
       key: 'advancePaid',
-      header: 'Paid',
+      header: t('paid'),
       align: 'right',
       value: row => Number(row.advancePaid ?? 0),
       render: row => <MoneyText value={row.advancePaid} className="text-paid-fg" />,
@@ -172,7 +172,7 @@ export default function Purchases() {
     },
     {
       key: 'remainingAmount',
-      header: 'Due',
+      header: t('col_due'),
       align: 'right',
       value: row => Number(row.remainingAmount ?? 0),
       render: row => (
@@ -184,13 +184,13 @@ export default function Purchases() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('col_status'),
       value: row => row.status ?? '',
       render: row => <StatusBadge status={(row.status || 'Pending') as PaymentStatus} />,
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('col_actions'),
       align: 'right',
       sortable: false,
       render: row => (
@@ -199,7 +199,7 @@ export default function Purchases() {
             type="button"
             onClick={e => { e.stopPropagation(); handleDirectWhatsApp(row); }}
             disabled={sharingPurchaseId === row.id}
-            title="Share bill PDF on WhatsApp"
+            title={t('share_bill_pdf_on_whatsapp')}
             className="inline-flex items-center gap-1.5 rounded-control border border-brand-200 bg-brand-50 px-2.5 py-1.5 text-2xs font-semibold text-brand-800 transition-colors hover:bg-brand-100 disabled:opacity-60"
           >
             {sharingPurchaseId === row.id ? (
@@ -233,15 +233,12 @@ export default function Purchases() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-slate-950">Crop Purchases & Invoices</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Record farmer commodity purchases, track payments, and share official bills
-          </p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight text-slate-950">{t('crop_purchases_invoices')}</h1>
+          <p className="text-sm text-slate-500 mt-1">{t('purchases_page_subtitle')}</p>
         </div>
         <Link to="/purchases/new">
           <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm font-semibold border border-slate-700">
-            <Plus className="mr-2 h-4 w-4" /> New Purchase Entry
-          </Button>
+            <Plus className="mr-2 h-4 w-4" />{t('new_purchase_entry')}</Button>
         </Link>
       </div>
 
@@ -249,21 +246,21 @@ export default function Purchases() {
           dashboard. They were previously summed from the loaded rows. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Total Purchases</div>
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">{t('total_purchases')}</div>
           <MoneyText value={summary?.totalValue} className="mt-1 block text-2xl font-bold text-ink" />
           <div className="mt-0.5 text-2xs text-ink-subtle">
             {summary?.totalPurchases ?? purchases.length} transaction vouchers
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Amount Paid</div>
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">{t('amount_paid')}</div>
           <MoneyText value={summary?.totalPaid} className="mt-1 block text-2xl font-bold text-paid-fg" />
-          <div className="mt-0.5 text-2xs text-ink-subtle">Disbursed to farmers</div>
+          <div className="mt-0.5 text-2xs text-ink-subtle">{t('disbursed_to_farmers')}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">Pending Dues</div>
+          <div className="text-2xs font-semibold tracking-wider text-ink-subtle uppercase">{t('pending_dues')}</div>
           <MoneyText value={summary?.totalOutstanding} className="mt-1 block text-2xl font-bold text-due-fg" />
-          <div className="mt-0.5 text-2xs text-ink-subtle">Outstanding balances</div>
+          <div className="mt-0.5 text-2xs text-ink-subtle">{t('outstanding_balances')}</div>
         </Card>
       </div>
 
@@ -273,7 +270,7 @@ export default function Purchases() {
         rowKey={row => row.id}
         loading={loading}
         searchPlaceholder="Search bill number, farmer, village or mobile…"
-        caption="Crop purchase bills"
+        caption={t('crop_purchase_bills')}
         toolbar={
           <div className="flex items-center gap-1 rounded-control bg-surface-sunken p-1">
             {(['All', 'Paid', 'Partial', 'Pending'] as const).map(tab => (
@@ -305,8 +302,7 @@ export default function Purchases() {
           statusFilter === 'All' ? (
             <Link to="/purchases/new">
               <Button>
-                <Plus className="h-4 w-4" /> Record a purchase
-              </Button>
+                <Plus className="h-4 w-4" />{t('record_a_purchase')}</Button>
             </Link>
           ) : undefined
         }

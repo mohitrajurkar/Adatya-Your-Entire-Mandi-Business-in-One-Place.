@@ -112,7 +112,7 @@ export default function Farmers() {
   const columns: Column<Farmer>[] = [
     {
       key: 'name',
-      header: 'Farmer',
+      header: t('col_farmer'),
       value: row => row.name,
       render: row => (
         <div>
@@ -128,14 +128,14 @@ export default function Farmers() {
     },
     {
       key: 'village',
-      header: 'Village',
+      header: t('village'),
       value: row => row.village ?? '',
       render: row => <span className="text-ink-muted">{row.village || '—'}</span>,
       hideOnMobile: true,
     },
     {
       key: 'mobile',
-      header: 'Mobile',
+      header: t('mobile'),
       value: row => row.mobile ?? '',
       // A tap-to-call link is the single most used control on this page.
       render: row =>
@@ -154,7 +154,7 @@ export default function Farmers() {
     },
     {
       key: 'createdAt',
-      header: 'Joined',
+      header: t('col_joined'),
       value: row => row.createdAt ?? '',
       render: row => (
         <span className="text-ink-muted">
@@ -183,20 +183,17 @@ export default function Farmers() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Farmers</h1>
-          <p className="mt-0.5 text-sm text-ink-muted">
-            Manage registered farmers and their outstanding balances
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{t('farmers')}</h1>
+          <p className="mt-0.5 text-sm text-ink-muted">{t('farmers_page_subtitle')}</p>
         </div>
         <Button onClick={() => setIsAdding(!isAdding)}>
-          <Plus className="h-4 w-4" /> Add Farmer
-        </Button>
+          <Plus className="h-4 w-4" />{t('add_farmer')}</Button>
       </div>
 
       {isAdding && (
         <Card className="border-brand-200">
           <CardHeader>
-            <CardTitle>Register New Farmer</CardTitle>
+            <CardTitle>{t('register_new_farmer')}</CardTitle>
           </CardHeader>
           <CardContent>
             {formError && (
@@ -209,8 +206,7 @@ export default function Farmers() {
             )}
             <form onSubmit={handleAddFarmer} className="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
               <div className="space-y-1.5">
-                <label htmlFor="farmer-name" className="block text-2xs font-semibold tracking-wide text-ink uppercase">
-                  Full Name <span className="text-due-fg">*</span>
+                <label htmlFor="farmer-name" className="block text-2xs font-semibold tracking-wide text-ink uppercase">{t('full_name')}<span className="text-due-fg">*</span>
                 </label>
                 <Input
                   id="farmer-name"
@@ -222,8 +218,7 @@ export default function Farmers() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="farmer-village" className="block text-2xs font-semibold tracking-wide text-ink uppercase">
-                  Village <span className="text-due-fg">*</span>
+                <label htmlFor="farmer-village" className="block text-2xs font-semibold tracking-wide text-ink uppercase">{t('village')}<span className="text-due-fg">*</span>
                 </label>
                 <Input
                   id="farmer-village"
@@ -234,20 +229,17 @@ export default function Farmers() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="farmer-mobile" className="block text-2xs font-semibold tracking-wide text-ink uppercase">
-                  Mobile <span className="font-normal text-ink-subtle">(optional)</span>
+                <label htmlFor="farmer-mobile" className="block text-2xs font-semibold tracking-wide text-ink uppercase">{t('mobile')}<span className="font-normal text-ink-subtle">(optional)</span>
                 </label>
                 <MobileInput
                   id="farmer-mobile"
                   value={newFarmer.mobile}
                   onValueChange={v => setNewFarmer({ ...newFarmer, mobile: v })}
-                  placeholder="10-digit number"
+                  placeholder={t('ten_digit_number')}
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsAdding(false)}>
-                  Cancel
-                </Button>
+                <Button type="button" variant="outline" onClick={() => setIsAdding(false)}>{t('cancel')}</Button>
                 <Button type="submit" disabled={saving}>
                   {saving ? 'Saving…' : 'Save'}
                 </Button>
@@ -263,14 +255,13 @@ export default function Farmers() {
         rowKey={row => row.id}
         loading={loading}
         searchPlaceholder="Search by name, village or mobile…"
-        caption="Registered farmers and their outstanding balances"
+        caption={t('registered_farmers_and_balances')}
         emptyIcon={<Users className="h-5 w-5" aria-hidden="true" />}
         emptyTitle={t('no_farmers_found')}
         emptyDescription="Add the farmers you buy from, and their outstanding balances will build up here as you record purchases."
         emptyAction={
           <Button onClick={() => setIsAdding(true)}>
-            <Plus className="h-4 w-4" /> Add your first farmer
-          </Button>
+            <Plus className="h-4 w-4" />{t('add_your_first_farmer')}</Button>
         }
       />
     </div>

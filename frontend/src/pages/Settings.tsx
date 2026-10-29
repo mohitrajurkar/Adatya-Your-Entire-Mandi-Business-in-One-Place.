@@ -212,7 +212,7 @@ export default function Settings() {
       <div className="flex h-96 items-center justify-center">
         <div className="text-center space-y-2">
           <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-500">Loading settings...</p>
+          <p className="text-sm text-slate-500">{t('loading_settings')}</p>
         </div>
       </div>
     );
@@ -225,26 +225,24 @@ export default function Settings() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950 font-serif">Settings & Profile</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Manage business profile, signature, and theme options</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 font-serif">{t('settings_and_profile')}</h1>
+          <p className="text-xs text-slate-500 mt-0.5">{t('settings_page_subtitle')}</p>
         </div>
         <div className="flex items-center gap-2.5">
           <Link to="/profile">
             <Button variant="outline" size="sm" className="bg-white border-slate-300 text-slate-800 text-xs">
-              <User className="w-3.5 h-3.5 mr-1.5 text-emerald-700" /> Edit Profile
-            </Button>
+              <User className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />{t('edit_profile')}</Button>
           </Link>
           <Link to="/purchases">
             <Button variant="outline" size="sm" className="bg-white border-slate-300 text-slate-800 text-xs">
-              <Eye className="w-3.5 h-3.5 mr-1.5" /> Bills
-            </Button>
+              <Eye className="w-3.5 h-3.5 mr-1.5" />{t('bills')}</Button>
           </Link>
           <Button
             onClick={() => handleSaveProfile()}
             disabled={saving}
             className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('saving') : t('save_changes')}
           </Button>
         </div>
       </div>
@@ -352,9 +350,7 @@ export default function Settings() {
                 <Sparkles className="h-4 w-4 text-amber-600" />
                 {t('adatya_official_brand_logo')}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Original luxury emerald & gold emblem with transparent background, active across all invoices, bills, and navigation headers.
-              </p>
+              <p className="text-xs text-slate-500 mt-0.5">{t('logo_description')}</p>
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px] font-bold text-emerald-800 self-start sm:self-auto">
               <span>✓ Active Official Logo</span>
@@ -376,9 +372,7 @@ export default function Settings() {
                       className="w-full h-full object-contain filter drop-shadow-sm"
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-slate-600 mt-1.5 uppercase tracking-wider">
-                    Light Theme
-                  </span>
+                  <span className="text-[10px] font-bold text-slate-600 mt-1.5 uppercase tracking-wider">{t('light_theme')}</span>
                 </div>
 
                 {/* Dark / Royal Theme Mockup */}
@@ -391,23 +385,18 @@ export default function Settings() {
                       className="w-full h-full object-contain filter drop-shadow"
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-amber-400 mt-1.5 uppercase tracking-wider">
-                    Royal Theme
-                  </span>
+                  <span className="text-[10px] font-bold text-amber-400 mt-1.5 uppercase tracking-wider">{t('royal_theme')}</span>
                 </div>
               </div>
 
               {/* Details & Info */}
               <div className="space-y-2 text-center md:text-left">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-black uppercase tracking-wider">
-                  Official Luxury Mandi Emblem
-                </div>
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-black uppercase tracking-wider">{t('official_mandi_emblem')}</div>
                 <h4 className="text-base font-serif font-black text-slate-900">
                   {t(OFFICIAL_LOGO_DETAILS.labelKey)}
                 </h4>
                 <div className="pt-2 text-[11px] font-bold text-slate-500 flex items-center gap-1 justify-center md:justify-start">
-                  <span className="text-emerald-600 font-black">✓</span> Automatically embedded on every printed invoice, WhatsApp PDF bill, and voucher.
-                </div>
+                  <span className="text-emerald-600 font-black">✓</span>{t('logo_embedded_note')}</div>
               </div>
             </div>
           </div>
@@ -454,7 +443,7 @@ export default function Settings() {
                 <Input
                   value={formData.businessName}
                   onChange={e => handleInputChange('businessName', e.target.value)}
-                  placeholder="e.g. Shree Ganesh Agro Traders"
+                  placeholder={t('e_g_shree_ganesh_agro_traders')}
                   required
                 />
               </div>
@@ -466,7 +455,7 @@ export default function Settings() {
                 <Input
                   value={formData.proprietorName}
                   onChange={e => handleInputChange('proprietorName', e.target.value)}
-                  placeholder="e.g. Ramesh Patil"
+                  placeholder={t('eg_farmer_name')}
                   required
                 />
               </div>
@@ -479,7 +468,7 @@ export default function Settings() {
               <Input
                 value={formData.address}
                 onChange={e => handleInputChange('address', e.target.value)}
-                placeholder="e.g. APMC Yard, Latur - 413512"
+                placeholder={t('e_g_apmc_yard_latur_413512')}
                 required
               />
             </div>
@@ -487,23 +476,21 @@ export default function Settings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-500" /> Primary Mobile
-                </label>
+                  <Phone className="w-3.5 h-3.5 text-slate-500" />{t('primary_mobile')}</label>
                 <MobileInput
                   value={formData.mobile1}
                   onValueChange={v => handleInputChange('mobile1', v)}
-                  placeholder="10-digit mobile number"
+                  placeholder={t('k_10_digit_mobile_number')}
                   required
                 />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-500" /> Secondary Mobile
-                </label>
+                  <Phone className="w-3.5 h-3.5 text-slate-500" />{t('secondary_mobile')}</label>
                 <MobileInput
                   value={formData.mobile2}
                   onValueChange={v => handleInputChange('mobile2', v)}
-                  placeholder="Alternate mobile (optional)"
+                  placeholder={t('alternate_mobile_optional')}
                 />
               </div>
             </div>
@@ -514,7 +501,7 @@ export default function Settings() {
                 disabled={saving}
                 className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-5 shadow-xs"
               >
-                {saving ? 'Saving...' : 'Save Profile'}
+                {saving ? t('saving') : t('save_profile')}
               </Button>
             </div>
           </CardContent>

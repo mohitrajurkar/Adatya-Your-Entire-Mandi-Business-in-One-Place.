@@ -45,7 +45,7 @@ export default function Reports() {
     <div className="flex h-[400px] items-center justify-center">
       <div className="animate-pulse flex flex-col items-center">
         <div className="h-8 w-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-4"></div>
-        <p className="text-slate-500 font-medium">Loading reports...</p>
+        <p className="text-slate-500 font-medium">{t('loading_reports')}</p>
       </div>
     </div>
   );
@@ -77,19 +77,19 @@ export default function Reports() {
             <div className="bg-blue-100 p-2 rounded-lg mr-3">
               <TrendingUp className="h-5 w-5 text-blue-600" />
             </div>
-            <CardTitle className="text-lg">Financial Summary</CardTitle>
+            <CardTitle className="text-lg">{t('financial_summary')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <span className="text-slate-600 font-medium">Total Purchase Value</span>
+              <span className="text-slate-600 font-medium">{t('total_purchase_value')}</span>
               <span className="font-bold text-lg text-slate-900">{formatCurrency(stats.totalAmount)}</span>
             </div>
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <span className="text-slate-600 font-medium">Total Advance Paid</span>
+              <span className="text-slate-600 font-medium">{t('total_advance_paid')}</span>
               <span className="font-bold text-lg text-emerald-600">{formatCurrency(stats.totalAmount - stats.pendingPayments)}</span>
             </div>
             <div className="flex justify-between items-center pb-1">
-              <span className="text-slate-600 font-medium">Total Outstanding</span>
+              <span className="text-slate-600 font-medium">{t('total_outstanding')}</span>
               <span className="font-bold text-xl text-orange-600">{formatCurrency(stats.pendingPayments)}</span>
             </div>
           </CardContent>
@@ -100,15 +100,15 @@ export default function Reports() {
             <div className="bg-purple-100 p-2 rounded-lg mr-3">
               <Users className="h-5 w-5 text-purple-600" />
             </div>
-            <CardTitle className="text-lg">Operational Metrics</CardTitle>
+            <CardTitle className="text-lg">{t('operational_metrics')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <span className="text-slate-600 font-medium">Total Transactions</span>
+              <span className="text-slate-600 font-medium">{t('total_transactions')}</span>
               <span className="font-bold text-lg text-slate-900">{stats.totalPurchases}</span>
             </div>
             <div className="flex justify-between items-center pb-1">
-              <span className="text-slate-600 font-medium">Active Farmers</span>
+              <span className="text-slate-600 font-medium">{t('active_farmers')}</span>
               <span className="font-bold text-lg text-slate-900">{stats.activeFarmers}</span>
             </div>
           </CardContent>

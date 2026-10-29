@@ -391,9 +391,7 @@ export default function Inventory() {
               <h1 className="text-xl md:text-2xl font-serif font-black text-slate-900 leading-tight">
                 {t('grain_inventory_mandi_sales')}
               </h1>
-              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-100 text-amber-900 border border-amber-200">
-                Live Godown Stock
-              </span>
+              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-100 text-amber-900 border border-amber-200">{t('live_godown_stock')}</span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               {t('track_available_godown_stock_by_grain_record')}
@@ -710,7 +708,7 @@ export default function Inventory() {
           {filteredStock.length === 0 && (
             <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
               <Boxes className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">No commodities match your filter</p>
+              <p className="text-sm font-semibold text-slate-700">{t('no_commodities_match_filter')}</p>
             </div>
           )}
         </div>
@@ -811,14 +809,14 @@ export default function Inventory() {
                           <div className="flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => setViewingSaleSlip(sale)}
-                              title="View / Print Sale Slip"
+                              title={t('view_print_sale_slip')}
                               className="p-1.5 rounded-md text-slate-600 hover:text-emerald-800 hover:bg-emerald-50 transition-colors"
                             >
                               <FileText className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteSale(sale.id)}
-                              title="Delete sale (revert stock)"
+                              title={t('delete_sale_revert_stock')}
                               className="p-1.5 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1095,9 +1093,9 @@ export default function Inventory() {
                     className="w-full text-xs h-9 bg-white border border-slate-300 rounded-lg px-2"
                   >
                     <option value="Cash">{t('cash_2')}</option>
-                    <option value="Bank Transfer">Bank Transfer (RTGS/NEFT)</option>
+                    <option value="Bank Transfer">{t('bank_transfer_rtgs_neft')}</option>
                     <option value="UPI">UPI</option>
-                    <option value="Cheque">Cheque</option>
+                    <option value="Cheque">{t('cheque')}</option>
                   </select>
                 </div>
               </div>

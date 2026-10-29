@@ -136,9 +136,7 @@ export default function DashboardLayout() {
               <div className="font-serif font-black text-lg tracking-wide text-white leading-tight">
                 Adatya
               </div>
-              <p className="text-[10px] text-amber-300/90 font-medium tracking-normal truncate">
-                Your ledger, your control.
-              </p>
+              <p className="text-[10px] text-amber-300/90 font-medium tracking-normal truncate">{t('app_tagline')}</p>
             </div>
           </div>
           <button

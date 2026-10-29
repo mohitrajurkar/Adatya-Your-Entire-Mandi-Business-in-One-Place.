@@ -242,7 +242,7 @@ export default function Profile() {
             className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs h-9 px-4 shadow-md flex items-center gap-1.5"
           >
             <Save className="w-4 h-4 stroke-[2.5]" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('saving') : t('save_changes')}
           </Button>
         </div>
       </div>
@@ -269,9 +269,7 @@ export default function Profile() {
               <Building2 className="h-4 w-4 text-emerald-700" />
               {t('firm_broker_identity')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              This firm name appears on the dashboard, purchase vouchers, and farmer bills.
-            </CardDescription>
+            <CardDescription className="text-xs text-slate-500">{t('firm_name_note')}</CardDescription>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -312,7 +310,7 @@ export default function Profile() {
                 type="text"
                 value={profileData.tagline}
                 onChange={(e) => setProfileData({ ...profileData, tagline: e.target.value })}
-                placeholder="Authorised Agricultural Commodity Purchaser & Mandi Commission Agent"
+                placeholder={t('authorised_purchaser_tagline')}
                 className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
               />
             </div>
@@ -326,9 +324,7 @@ export default function Profile() {
               <MapPin className="h-4 w-4 text-emerald-700" />
               {t('mandi_yard_apmc_location')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Address and APMC yard printed at the bottom and header of the farmer bill.
-            </CardDescription>
+            <CardDescription className="text-xs text-slate-500">{t('address_bill_note')}</CardDescription>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
             <div className="space-y-1.5">
@@ -382,9 +378,7 @@ export default function Profile() {
               <Phone className="h-4 w-4 text-emerald-700" />
               {t('contact_payment_details')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Numbers used for WhatsApp bill sending and UPI payment receipt.
-            </CardDescription>
+            <CardDescription className="text-xs text-slate-500">{t('mobiles_usage_note')}</CardDescription>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -437,9 +431,7 @@ export default function Profile() {
               <Lock className="h-4 w-4 text-emerald-700" />
               {t('security_password')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Leave empty if you do not wish to change your password.
-            </CardDescription>
+            <CardDescription className="text-xs text-slate-500">{t('leave_empty_to_keep_password')}</CardDescription>
           </CardHeader>
           <CardContent className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -451,7 +443,7 @@ export default function Profile() {
                   type="password"
                   value={profileData.currentPassword}
                   onChange={(e) => setProfileData({ ...profileData, currentPassword: e.target.value })}
-                  placeholder="Required only when changing your password"
+                  placeholder={t('required_only_when_changing_password')}
                   autoComplete="current-password"
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
@@ -466,7 +458,7 @@ export default function Profile() {
                     type={showPassword ? 'text' : 'password'}
                     value={profileData.newPassword}
                     onChange={(e) => setProfileData({ ...profileData, newPassword: e.target.value })}
-                    placeholder="Min 8 chars, letter + number"
+                    placeholder={t('password_rule_hint')}
                     className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300 pr-9"
                   />
                   <button
@@ -487,7 +479,7 @@ export default function Profile() {
                   type={showPassword ? 'text' : 'password'}
                   value={profileData.confirmPassword}
                   onChange={(e) => setProfileData({ ...profileData, confirmPassword: e.target.value })}
-                  placeholder="Repeat new password"
+                  placeholder={t('repeat_new_password')}
                   className="h-9.5 text-xs font-medium bg-slate-50 border-slate-300"
                 />
               </div>
@@ -503,7 +495,7 @@ export default function Profile() {
             className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-6 shadow-md flex items-center gap-2"
           >
             <Save className="w-4 h-4 stroke-[2.5]" />
-            {saving ? 'Saving Profile...' : 'Save Profile Changes'}
+            {saving ? 'Saving Profile...' : t('save_profile_changes')}
           </Button>
         </div>
       </form>
@@ -516,14 +508,11 @@ export default function Profile() {
               <LogOut className="h-4 w-4 text-rose-600" />
               {t('account_session_sign_out')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500 mt-0.5">
-              Securely sign out of your Adatya account on this device.
-            </CardDescription>
+            <CardDescription className="text-xs text-slate-500 mt-0.5">{t('sign_out_note')}</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="text-xs text-slate-600">
-            Current Active Session: <strong className="text-slate-900 font-bold">{profileData.proprietorName || profileData.businessName}</strong> ({profileData.mobile1})
+          <div className="text-xs text-slate-600">{t('current_active_session')}<strong className="text-slate-900 font-bold">{profileData.proprietorName || profileData.businessName}</strong> ({profileData.mobile1})
           </div>
           <Button
             type="button"
@@ -543,9 +532,7 @@ export default function Profile() {
             <Trash2 className="h-4 w-4 text-red-600" />
             {t('danger_zone_delete_account')}
           </CardTitle>
-          <CardDescription className="text-xs text-red-700/80 mt-0.5 font-medium">
-            This will permanently delete your account, all farmers, purchases, mandi sales, inventory, and business data. This action cannot be undone.
-          </CardDescription>
+          <CardDescription className="text-xs text-red-700/80 mt-0.5 font-medium">{t('delete_account_warning')}</CardDescription>
         </CardHeader>
         <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="text-xs text-slate-600 leading-relaxed">
@@ -602,7 +589,7 @@ export default function Profile() {
               {t('permanently_delete_account')}
             </h3>
             <p className="text-xs text-center text-slate-600 mt-2 leading-relaxed">
-              This will <strong className="text-red-700">permanently erase</strong> all your farmers, purchases, mandi sales, inventory, and account data from the database. <strong>This cannot be undone.</strong>
+              This will <strong className="text-red-700">permanently erase</strong> all your farmers, purchases, mandi sales, inventory, and account data from the database. <strong>{t('cannot_be_undone')}</strong>
             </p>
 
             <div className="mt-5 space-y-3">
@@ -612,7 +599,7 @@ export default function Profile() {
                   type="password"
                   value={deletePassword}
                   onChange={e => setDeletePassword(e.target.value)}
-                  placeholder="Enter your account password"
+                  placeholder={t('enter_account_password')}
                   className="h-10 text-xs font-medium border-red-300 focus:ring-red-400"
                 />
               </div>
@@ -624,7 +611,7 @@ export default function Profile() {
                   type="text"
                   value={deleteConfirmText}
                   onChange={e => setDeleteConfirmText(e.target.value.toUpperCase())}
-                  placeholder="Type DELETE here"
+                  placeholder={t('type_delete_here')}
                   className="h-10 text-xs font-black tracking-widest border-red-300 focus:ring-red-400"
                 />
               </div>
@@ -638,9 +625,7 @@ export default function Profile() {
             <div className="grid grid-cols-2 gap-3 mt-5">
               <button type="button"
                 onClick={() => { setIsDeleteModalOpen(false); setDeleteError(''); }}
-                className="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors">
-                Cancel
-              </button>
+                className="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors">{t('cancel')}</button>
               <button type="button"
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount || deleteConfirmText !== 'DELETE' || !deletePassword}

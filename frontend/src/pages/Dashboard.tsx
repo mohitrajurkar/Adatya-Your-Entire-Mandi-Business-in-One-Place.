@@ -72,7 +72,7 @@ export default function Dashboard() {
       <div className="flex h-96 items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-9 h-9 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-medium text-slate-500">Loading procurement metrics...</p>
+          <p className="text-sm font-medium text-slate-500">{t('loading_procurement_metrics')}</p>
         </div>
       </div>
     );
@@ -126,16 +126,16 @@ export default function Dashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400">Adatya Mandi Desk</span>
             {isSuperAdmin && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-400 text-slate-950 border border-amber-300">
-                Super Admin
-              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-400 text-slate-950 border border-amber-300">{t('super_admin')}</span>
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-tight text-white truncate" title={activeBusinessName}>
             {activeBusinessName}
           </h1>
           <p className="text-xs text-slate-300">
-            Welcome, <span className="font-semibold text-amber-200">{activeProprietor}</span> · Real-time crop procurement & farmer ledger
+            {t('welcome_comma')}{' '}
+            <span className="font-semibold text-amber-200">{activeProprietor}</span>
+            {' · '}{t('dashboard_tagline')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
@@ -332,8 +332,8 @@ export default function Dashboard() {
           <Card className="h-full border-slate-200 bg-white shadow-xs">
             <CardHeader className="border-b border-slate-100 pb-3 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-bold text-slate-900">Procurement Value Trends</CardTitle>
-                <p className="text-xs text-slate-500">Live purchase volume by date</p>
+                <CardTitle className="text-base font-bold text-slate-900">{t('procurement_value_trends')}</CardTitle>
+                <p className="text-xs text-slate-500">{t('live_purchase_volume_by_date')}</p>
               </div>
               <TrendingUp className="h-4 w-4 text-slate-700" />
             </CardHeader>
@@ -376,11 +376,10 @@ export default function Dashboard() {
           <Card className="h-full border-slate-200 bg-white shadow-xs flex flex-col">
             <CardHeader className="border-b border-slate-100 pb-3 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-bold text-slate-900">Recent Purchase Slips</CardTitle>
-                <p className="text-xs text-slate-500">Latest farmer transactions</p>
+                <CardTitle className="text-base font-bold text-slate-900">{t('recent_purchase_slips')}</CardTitle>
+                <p className="text-xs text-slate-500">{t('latest_farmer_transactions')}</p>
               </div>
-              <Link to="/purchases" className="text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center">
-                View all <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              <Link to="/purchases" className="text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center">{t('view_all')}<ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Link>
             </CardHeader>
             <CardContent className="flex-1 p-0 overflow-y-auto max-h-[340px]">
@@ -429,7 +428,7 @@ export default function Dashboard() {
                             Due {formatCurrency(purchase.remainingAmount)}
                           </div>
                         ) : (
-                          <div className="text-[10px] font-semibold text-emerald-600">Paid</div>
+                          <div className="text-[10px] font-semibold text-emerald-600">{t('paid')}</div>
                         )}
                       </div>
 
@@ -437,7 +436,7 @@ export default function Dashboard() {
                         <button
                           type="button"
                           onClick={() => handleOpenWhatsApp(purchase)}
-                          title="Share on WhatsApp"
+                          title={t('share_on_whatsapp')}
                           className="p-1 rounded text-emerald-700 hover:bg-emerald-50"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
@@ -445,7 +444,7 @@ export default function Dashboard() {
                         <Link to={`/invoice/${purchase.id}`}>
                           <button
                             type="button"
-                            title="View Invoice"
+                            title={t('view_invoice')}
                             className="p-1 rounded text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -457,9 +456,7 @@ export default function Dashboard() {
                 ))}
 
                 {(!stats.recentPurchases || stats.recentPurchases.length === 0) && (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    No purchase vouchers recorded yet
-                  </div>
+                  <div className="p-8 text-center text-xs text-slate-400">{t('no_vouchers_recorded_yet')}</div>
                 )}
               </div>
             </CardContent>

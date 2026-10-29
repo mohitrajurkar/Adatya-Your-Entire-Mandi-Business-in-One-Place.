@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import type { TranslationKey } from '../../locales/keys';
 import { cn } from '../../lib/utils';
 
 /* ==========================================================================
@@ -110,6 +112,20 @@ export function StatusBadge({
   label?: string;
   className?: string;
 }) {
+  // A status arrives from the API as an English word ('Partial', 'low_stock').
+  // Rendering it straight through left English badges sitting in a Marathi
+  // page, so translate it here: every caller gets it right without having to
+  // remember, and an explicit label still wins when one is passed.
+  const { t } = useLanguage();
+  const STATUS_LABELS: Record<string, TranslationKey> = {
+    Paid: 'paid',
+    Partial: 'partial',
+    Pending: 'status_pending',
+    in_stock: 'in_stock',
+    low_stock: 'low_stock',
+    out_of_stock: 'out_of_stock',
+  };
+
   const style =
     status in PAYMENT_STYLES
       ? PAYMENT_STYLES[status as PaymentStatus]
@@ -123,7 +139,7 @@ export function StatusBadge({
         className
       )}
     >
-      {label ?? status}
+      {label ?? (STATUS_LABELS[status] ? t(STATUS_LABELS[status]) : status)}
     </span>
   );
 }
