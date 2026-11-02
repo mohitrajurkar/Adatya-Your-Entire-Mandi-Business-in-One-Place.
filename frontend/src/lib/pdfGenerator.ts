@@ -36,6 +36,7 @@ export interface BusinessProfileData {
   gstin?: string;
   tagline?: string;
   signatureName?: string;
+  logoData?: string;
 }
 
 /**

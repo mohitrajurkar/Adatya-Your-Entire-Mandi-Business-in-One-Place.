@@ -86,6 +86,9 @@ public class ProfileController {
         if (payload.getSignatureData() != null) target.setSignatureData(payload.getSignatureData());
         if (payload.getSignatureType() != null) target.setSignatureType(payload.getSignatureType());
         if (payload.getSignatureName() != null) target.setSignatureName(payload.getSignatureName());
+        if (payload.getLogoData() != null) {
+            target.setLogoData(payload.getLogoData().isBlank() ? null : payload.getLogoData());
+        }
         if (payload.getTagline() != null) target.setTagline(payload.getTagline());
         target.setUpdatedAt(LocalDateTime.now());
 

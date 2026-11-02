@@ -151,6 +151,7 @@ export default function Invoice() {
     mandiLicense: profile?.mandiLicense || '',
     gstin: profile?.gstin || '',
     upiId: profile?.upiId || '',
+    logoData: profile?.logoData || null,
     signatureData: profile?.signatureData || null,
     signatureName: profile?.signatureName || user?.name || 'Authorized Signatory',
     tagline: profile?.tagline || 'Your ledger, your control.',
@@ -466,8 +467,8 @@ export default function Invoice() {
                   {/* Logo & Business Name */}
                   <div className="flex items-center gap-4 text-center sm:text-left">
                     <img
-                      src={OFFICIAL_LOGO_SRC}
-                      alt="Adatya Logo"
+                      src={activeBusiness.logoData || OFFICIAL_LOGO_SRC}
+                      alt="Business Logo"
                       referrerPolicy="no-referrer"
                       className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 filter drop-shadow-sm"
                     />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MobileInput } from '../components/ui';
 import { useLanguage } from '../context/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -20,7 +20,9 @@ import {
   Download,
   Upload,
   ShieldCheck,
-  HardDrive
+  HardDrive,
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
 import SignaturePad from '../components/SignaturePad';
 import { Link } from 'react-router-dom';
@@ -49,10 +51,12 @@ export default function Settings() {
     address: '',
     mobile1: '',
     mobile2: '',
+    logoData: null as string | null,
     signatureData: null as string | null,
     signatureType: 'upload',
     signatureName: '',
   });
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   const [backupStats, setBackupStats] = useState<any>(null);
   const [backupLoading, setBackupLoading] = useState(false);
@@ -147,6 +151,7 @@ export default function Settings() {
             address: data.address || '',
             mobile1: data.mobile1 || '',
             mobile2: data.mobile2 || '',
+            logoData: data.logoData || null,
             signatureData: data.signatureData || null,
             signatureType: 'upload',
             signatureName: data.signatureName || '',
@@ -159,6 +164,32 @@ export default function Settings() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please choose an image file (PNG, JPG or WEBP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const result = event.target?.result as string;
+      const updated = { ...formData, logoData: result };
+      setFormData(updated);
+      await handleSaveProfile(undefined, updated);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = async () => {
+    const updated = { ...formData, logoData: '' };
+    setFormData(updated);
+    if (logoInputRef.current) logoInputRef.current.value = '';
+    await handleSaveProfile(undefined, updated);
   };
 
   const handleSaveProfile = async (e?: React.FormEvent, overrideData?: typeof formData) => {
@@ -345,62 +376,86 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* SECTION: OFFICIAL BRAND LOGO (अधिकृत मूळ लोगो - Transparent & Royal Theme Compatible) */}
+      {/* SECTION: BUSINESS BRAND LOGO (CUSTOM LOGO UPLOAD OR DEFAULT OFFICIAL LOGO) */}
       <Card className="border border-slate-200/90 shadow-xs bg-white rounded-2xl">
         <CardHeader className="bg-slate-50/70 border-b border-slate-100 py-3.5 px-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-600" />
-                {t('adatya_official_brand_logo')}
+                Business Logo on Bills (व्यवसाय लोगो)
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">{t('logo_description')}</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Upload your own business logo to display at the top of your purchase bills and delivery challans, or keep the default official Adatya logo.
+              </p>
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px] font-bold text-emerald-800 self-start sm:self-auto">
-              <span>✓ Active Official Logo</span>
+              <span>{formData.logoData ? '✓ Custom Logo Active' : '✓ Default Adatya Logo Active'}</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-6">
+          {/* Hidden File Input for Custom Logo */}
+          <input
+            type="file"
+            ref={logoInputRef}
+            onChange={handleLogoUpload}
+            accept="image/png,image/jpeg,image/webp,image/jpg"
+            className="hidden"
+          />
+
           <div className="max-w-2xl bg-slate-50/70 border border-slate-200 rounded-2xl p-5">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              {/* Dual Theme Mockups: Light Mode & Dark Mode */}
-              <div className="flex items-center gap-3 shrink-0">
-                {/* Light Theme Mockup */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-2xl bg-white border-2 border-slate-200 p-2 flex items-center justify-center shadow-xs">
-                    <img
-                      src={OFFICIAL_LOGO_SRC}
-                      alt="Adatya Logo on Light"
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-contain filter drop-shadow-sm"
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-600 mt-1.5 uppercase tracking-wider">{t('light_theme')}</span>
+              {/* Logo Preview Box */}
+              <div className="flex flex-col items-center shrink-0">
+                <div className="w-24 h-24 rounded-2xl bg-white border-2 border-slate-200 p-2 flex items-center justify-center shadow-xs">
+                  <img
+                    src={formData.logoData || OFFICIAL_LOGO_SRC}
+                    alt="Active Logo"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-contain filter drop-shadow-sm"
+                  />
                 </div>
-
-                {/* Dark / Royal Theme Mockup */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-2xl bg-[#04251a] border-2 border-emerald-900/60 p-2 flex items-center justify-center shadow-sm">
-                    <img
-                      src={OFFICIAL_LOGO_SRC}
-                      alt="Adatya Logo on Dark Royal"
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-contain filter drop-shadow"
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-amber-400 mt-1.5 uppercase tracking-wider">{t('royal_theme')}</span>
-                </div>
+                <span className="text-[10px] font-bold text-slate-600 mt-1.5 uppercase tracking-wider">
+                  {formData.logoData ? 'Custom Business Logo' : 'Default Official Logo'}
+                </span>
               </div>
 
-              {/* Details & Info */}
-              <div className="space-y-2 text-center md:text-left">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-black uppercase tracking-wider">{t('official_mandi_emblem')}</div>
-                <h4 className="text-base font-serif font-black text-slate-900">
-                  {t(OFFICIAL_LOGO_DETAILS.labelKey)}
-                </h4>
-                <div className="pt-2 text-[11px] font-bold text-slate-500 flex items-center gap-1 justify-center md:justify-start">
-                  <span className="text-emerald-600 font-black">✓</span>{t('logo_embedded_note')}</div>
+              {/* Action Buttons & Info */}
+              <div className="space-y-3 text-center md:text-left flex-1">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {formData.logoData ? 'Your Custom Logo is currently displayed on all bills' : 'Display your company brand logo on all printed and WhatsApp bills'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Recommended: Square or transparent PNG/JPG image (approx 200x200 px).
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs h-8 px-3 shadow-xs font-semibold"
+                  >
+                    <Upload className="w-3.5 h-3.5 mr-1.5" />
+                    {formData.logoData ? 'Replace Custom Logo' : 'Upload Business Logo'}
+                  </Button>
+
+                  {formData.logoData && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRemoveLogo}
+                      className="text-xs h-8 px-3 text-rose-600 hover:text-rose-700 border-rose-200 hover:bg-rose-50 font-semibold"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />
+                      Use Default Logo
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

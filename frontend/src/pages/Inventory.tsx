@@ -1283,7 +1283,7 @@ export default function Inventory() {
               <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3">
                 <div className="flex items-center gap-3">
                   <img
-                    src={OFFICIAL_LOGO_SRC}
+                    src={businessProfile?.logoData || OFFICIAL_LOGO_SRC}
                     alt="Logo"
                     referrerPolicy="no-referrer"
                     className="w-12 h-12 object-contain filter drop-shadow-xs"

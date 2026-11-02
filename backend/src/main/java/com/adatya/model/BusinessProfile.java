@@ -45,6 +45,9 @@ public class BusinessProfile {
     @Column(name = "signature_name")
     private String signatureName = "";
 
+    @Column(name = "logo_data", columnDefinition = "TEXT")
+    private String logoData;
+
     private String tagline = "Agricultural Procurement & Mandi Commission Ledger";
 
     /**
@@ -97,6 +100,9 @@ public class BusinessProfile {
 
     public String getSignatureName() { return signatureName; }
     public void setSignatureName(String signatureName) { this.signatureName = signatureName; }
+
+    public String getLogoData() { return logoData; }
+    public void setLogoData(String logoData) { this.logoData = logoData; }
 
     public String getTagline() { return tagline; }
     public void setTagline(String tagline) { this.tagline = tagline; }
