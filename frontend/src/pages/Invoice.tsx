@@ -696,10 +696,13 @@ export default function Invoice() {
                 </div>
               </div>
 
-              {/* Bottom Mandi Text in Marathi as explicitly requested */}
-              <div className="mt-8 pt-4 border-t border-slate-300 text-center">
-                <p className="font-serif font-bold text-sm text-slate-900 tracking-wide">
+              {/* Bottom Mandi Text & Platform Promotion Footer */}
+              <div className="mt-6 pt-3 border-t border-slate-300 text-center space-y-1">
+                <p className="font-serif font-bold text-xs sm:text-sm text-slate-900 tracking-wide">
                   {t('agricultural_produce_market_committee')}
+                </p>
+                <p className="text-[10px] sm:text-[11px] text-slate-600 font-semibold tracking-wide">
+                  Powered by Adatya — Smart Mandi Platform · <a href="https://adatya.duckdns.org/" target="_blank" rel="noopener noreferrer" className="text-emerald-800 underline hover:text-emerald-950 font-bold">https://adatya.duckdns.org/</a>
                 </p>
               </div>
 

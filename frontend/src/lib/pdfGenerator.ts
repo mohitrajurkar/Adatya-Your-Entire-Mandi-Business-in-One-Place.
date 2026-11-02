@@ -410,9 +410,9 @@ export function generateBillPdfDoc(data: BillPdfData, profile?: BusinessProfileD
   // 9. Bottom Footer
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.setTextColor(140, 150, 140);
+  doc.setTextColor(100, 110, 100);
   doc.text(
-    `Adatya Mandi Ledger · ${bName} · Your ledger, your control.`,
+    `Powered by Adatya — Smart Mandi Platform · https://adatya.duckdns.org/`,
     pageWidth / 2,
     pageHeight - margin - 4,
     { align: 'center' }
