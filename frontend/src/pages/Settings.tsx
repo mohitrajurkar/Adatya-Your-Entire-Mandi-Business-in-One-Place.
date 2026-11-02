@@ -161,26 +161,19 @@ export default function Settings() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveSignature = (sigData: string, type: string, name: string) => {
-    setFormData(prev => ({
-      ...prev,
-      signatureData: sigData,
-      signatureType: 'upload',
-      signatureName: name
-    }));
-  };
-
-  const handleSaveProfile = async (e?: React.FormEvent) => {
+  const handleSaveProfile = async (e?: React.FormEvent, overrideData?: typeof formData) => {
     if (e) e.preventDefault();
     setSaving(true);
     setSaveSuccess(false);
     setErrorMessage(null);
 
+    const payload = overrideData || formData;
+
     try {
       const res = await apiFetch(`/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         setSaveSuccess(true);
@@ -189,9 +182,9 @@ export default function Settings() {
           const userStr = localStorage.getItem('user');
           if (userStr) {
             const u = JSON.parse(userStr);
-            u.businessName = formData.businessName;
-            u.name = formData.proprietorName;
-            u.apmcLocation = formData.address;
+            u.businessName = payload.businessName;
+            u.name = payload.proprietorName;
+            u.apmcLocation = payload.address;
             localStorage.setItem('user', JSON.stringify(u));
           }
         } catch {}
@@ -205,6 +198,17 @@ export default function Settings() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSaveSignature = async (sigData: string, type: string, name: string) => {
+    const updated = {
+      ...formData,
+      signatureData: sigData || '',
+      signatureType: 'upload',
+      signatureName: name
+    };
+    setFormData(updated);
+    await handleSaveProfile(undefined, updated);
   };
 
   if (loading) {
@@ -417,9 +421,6 @@ export default function Settings() {
             initialName={formData.signatureName}
             onSave={(sigData, type, name) => {
               handleSaveSignature(sigData, type, name);
-              setTimeout(() => {
-                handleSaveProfile();
-              }, 50);
             }}
           />
         </CardContent>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { formatCurrency, numberToWordsINR, formatDate } from '../lib/utils';
-import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName } from '../lib/pdfGenerator';
+import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName, buildBillImageFileName, shareBillImageToWhatsApp } from '../lib/pdfGenerator';
 import { format } from 'date-fns';
 import {
   Printer,
@@ -165,37 +165,14 @@ export default function Invoice() {
       const digits = rawMobile.replace(/\D/g, '');
       const cleanDigits = digits.length === 10 ? digits : digits.length > 10 ? digits.slice(-10) : '';
 
-      // The farmer must receive exactly the bill the trader is looking at, so
-      // the PDF is made from the bill itself rather than redrawn beside it.
-      // Two renderings of one document drift apart, and this pair had: the
-      // generated copy carried a different layout entirely.
-      //
-      // The original attempt at this used html2canvas, which cannot parse the
-      // oklch() colours the design tokens use and so threw on every share.
-      // html2canvas-pro understands them. If it still fails for any reason we
-      // fall back to the generated bill, since a bill that looks different
-      // beats no bill at all -- but the failure is reported rather than
-      // swallowed, which is how the original bug stayed hidden.
-      let pdfBlob: Blob | null = null;
+      let imageBlob: Blob | null = null;
       const billEl = document.getElementById('printable-bill');
 
       if (billEl) {
         const html2canvas = (await import('html2canvas-pro')).default;
-        const { jsPDF } = await import('jspdf');
 
-        // A mandi trader's phone is usually a cheap one, and rendering a full
-        // page at 2x can exhaust its memory: the canvas comes back blank or
-        // the call throws outright. Rather than drop straight to the
-        // different-looking generated bill, step the resolution down and try
-        // again. Even the 1x render still looks like the bill, which is the
-        // whole point; it is only less crisp when zoomed in.
-        let lastErr: unknown = null;
-
-        for (const scale of [2, 1.4, 1]) {
+        for (const scale of [2, 1.5, 1]) {
           try {
-            // Render at a fixed document width rather than the phone's.
-            // Without this, a bill shared from a handset becomes a tall narrow
-            // strip shaped like the screen it was sent from, not a page.
             const canvas = await html2canvas(billEl, {
               scale,
               useCORS: true,
@@ -205,68 +182,39 @@ export default function Invoice() {
               width: 900,
             });
 
-            // A device that runs out of memory mid-render hands back a canvas
-            // with no pixels instead of failing, so check before trusting it.
             if (!canvas.width || !canvas.height) {
               throw new Error(`empty canvas at scale ${scale}`);
             }
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.9);
-            if (imgData.length < 2000) {
-              throw new Error(`blank capture at scale ${scale}`);
+            imageBlob = await new Promise<Blob | null>((resolve) => {
+              canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
+            });
+
+            if (imageBlob && imageBlob.size > 2000) {
+              break;
             }
-
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pageW = pdf.internal.pageSize.getWidth();
-            const pageH = pdf.internal.pageSize.getHeight();
-            const imgH = (canvas.height * pageW) / canvas.width;
-
-            pdf.addImage(imgData, 'JPEG', 0, 0, pageW, imgH);
-
-            // A long bill runs past one sheet; keep going rather than cropping
-            // the totals off the bottom.
-            let remaining = imgH - pageH;
-            let offset = pageH;
-            while (remaining > 0) {
-              pdf.addPage();
-              pdf.addImage(imgData, 'JPEG', 0, -offset, pageW, imgH);
-              remaining -= pageH;
-              offset += pageH;
-            }
-
-            pdfBlob = pdf.output('blob');
-            break;
           } catch (err) {
-            lastErr = err;
+            console.warn(`Capture error at scale ${scale}`, err);
           }
         }
+      }
 
-        if (!pdfBlob) {
-          console.error('Bill capture failed at every resolution, sending the generated copy:', lastErr);
-          setPdfToast(t('bill_pdf_layout_fallback'));
+      if (imageBlob) {
+        const fileName = buildBillImageFileName(data);
+        const result = await shareBillImageToWhatsApp(imageBlob, fileName, cleanDigits);
+
+        if (result.method === 'native-share') {
+          setPdfToast('Bill photocopy shared directly on WhatsApp!');
+        } else {
+          setPdfToast('Bill photo downloaded & WhatsApp opened!');
         }
-      }
-
-      if (!pdfBlob) {
-        const doc = generateBillPdfDoc(data, activeBusiness);
-        pdfBlob = doc.output('blob');
-      }
-
-      // Share PDF directly to WhatsApp - NO TEXT
-      const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), cleanDigits);
-
-      if (result.method === 'native-share') {
-        setPdfToast(
-          t('bill_pdf_shared_directly_on_whatsapp')
-        );
+        setTimeout(() => setPdfToast(null), 5000);
       } else {
-        setPdfToast(
-          t('bill_pdf_downloaded_whatsapp_opened_attach_p_2')
-        );
+        // Fallback to modal if canvas failed
+        setShowWhatsAppModal(true);
       }
-      setTimeout(() => setPdfToast(null), 5000);
     } catch (err) {
-      console.error('PDF error:', err);
+      console.error('Share error:', err);
       setShowWhatsAppModal(true);
     } finally {
       setIsGeneratingPdf(false);
@@ -396,18 +344,18 @@ export default function Invoice() {
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
 
-            {/* WhatsApp Send PDF Button */}
+            {/* WhatsApp Send Photocopy Image Button */}
             <Button
               onClick={handleSendPdfOnWhatsApp}
               disabled={isGeneratingPdf}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 text-xs px-3.5 shadow-sm"
               size="sm"
-              title="Send bill PDF copy directly on WhatsApp"
+              title="Send bill photocopy (photo) directly on WhatsApp"
             >
               <MessageSquare className="h-4 w-4" />
               {isGeneratingPdf
-                ? (t('generating_pdf'))
-                : (t('send_pdf_on_whatsapp'))}
+                ? 'Preparing Photo...'
+                : 'Share on WhatsApp'}
             </Button>
 
             {/* Pay Balance Button */}
@@ -480,7 +428,7 @@ export default function Invoice() {
         {/* ========================================================================= */}
         <div
           id="printable-bill"
-          className={`p-1.5 sm:p-10 shadow-2xl rounded-2xl print:rounded-none print:shadow-none print:p-0 print:m-0 border print:border-none mx-auto max-w-[850px] relative transition-all overflow-x-auto sm:overflow-x-visible ${
+          className={`p-1 sm:p-6 md:p-8 shadow-2xl rounded-2xl print:rounded-none print:shadow-none print:p-0 print:m-0 border print:border-none mx-auto w-full max-w-[850px] relative transition-all overflow-x-auto sm:overflow-x-visible ${
             billStyle === 'traditional-patrika'
               ? 'bg-[#faf7f2] border-amber-900/30'
               : 'bg-white border-slate-300'
@@ -497,7 +445,7 @@ export default function Invoice() {
             }`}
           >
             <div
-              className={`p-2.5 sm:p-8 flex flex-col min-h-[640px] sm:min-h-[920px] relative rounded-lg print:rounded-none ${
+              className={`p-3 sm:p-6 md:p-8 flex flex-col min-h-[500px] sm:min-h-[850px] relative rounded-lg print:rounded-none w-full ${
                 billStyle === 'traditional-patrika'
                   ? 'border border-amber-900/40 bg-[#fffdfa]'
                   : billStyle === 'royal-framed'
@@ -528,7 +476,7 @@ export default function Invoice() {
                           no space to wrap at, so without break-words it runs
                           off the side of a phone screen. The tighter tracking
                           and smaller size on mobile buy it room first. */}
-                      <h1 className="text-xl sm:text-4xl font-serif font-black tracking-normal sm:tracking-wider text-slate-950 uppercase leading-tight sm:leading-none break-words hyphens-auto">
+                      <h1 className="text-xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight text-slate-950 uppercase leading-snug break-normal">
                         {activeBusiness.businessName}
                       </h1>
                       <div className="text-xs sm:text-sm font-semibold text-slate-700 mt-1.5">
@@ -651,14 +599,14 @@ export default function Invoice() {
                       </tr>
                     ))}
 
-                    {/* Filler rows for consistent classy voucher height */}
-                    {Array.from({ length: Math.max(0, 3 - (data.items?.length || 0)) }).map((_, i) => (
-                      <tr key={`fill-${i}`} className="opacity-0 select-none">
-                        <td className={`border-x ${themeBorder} py-2`}>.</td>
-                        <td className={`border-x ${themeBorder} py-2`}>.</td>
-                        <td className={`border-x ${themeBorder} py-2`}>.</td>
-                        <td className={`border-x ${themeBorder} py-2`}>.</td>
-                        <td className={`border-x ${themeBorder} py-2`}>.</td>
+                    {/* Filler rows for consistent voucher height (desktop only) */}
+                    {Array.from({ length: Math.max(0, 2 - (data.items?.length || 0)) }).map((_, i) => (
+                      <tr key={`fill-${i}`} className="opacity-0 select-none hidden sm:table-row">
+                        <td className="py-1">.</td>
+                        <td className="py-1">.</td>
+                        <td className="py-1">.</td>
+                        <td className="py-1">.</td>
+                        <td className="py-1">.</td>
                       </tr>
                     ))}
                   </tbody>
@@ -706,7 +654,7 @@ export default function Invoice() {
               </div>
 
               {/* Bottom Section: Clean Paid Stamp & Authorized Signatory */}
-              <div className={`relative z-10 mt-auto pt-8 border-t-2 ${themeBorder} flex flex-col sm:flex-row justify-between items-end gap-6`}>
+              <div className={`relative z-10 mt-auto pt-6 border-t-2 ${themeBorder} flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6`}>
                 
                 {/* Left Column: Simple Red Paid Stamp (No Due) */}
                 <div className="flex flex-col items-center sm:items-start justify-center min-w-[160px]">

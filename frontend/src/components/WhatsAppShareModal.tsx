@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { MessageSquare, Download, X, Smartphone, FileText, CheckCircle2, Loader2, Share2 } from 'lucide-react';
+import { MessageSquare, Download, X, Smartphone, Image as ImageIcon, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { formatCurrency } from '../lib/utils';
-import { generateBillPdfDoc, shareBillPdfToWhatsApp, buildBillFileName } from '../lib/pdfGenerator';
+import {
+  generateBillPdfDoc,
+  shareBillPdfToWhatsApp,
+  buildBillFileName,
+  shareBillImageToWhatsApp,
+  buildBillImageFileName
+} from '../lib/pdfGenerator';
 import { useLanguage } from '../context/LanguageContext';
 
 interface WhatsAppShareModalProps {
@@ -36,30 +42,25 @@ export default function WhatsAppShareModal({
   const farmerName = data.farmer?.name || data.farmerName || 'Farmer';
   const farmerVillage = data.farmer?.village || data.farmerVillage || '';
 
-  const handleSharePdf = async () => {
+  const handleShareImage = async () => {
     setIsSharing(true);
     setShareSuccess(null);
 
     try {
-      let pdfBlob: Blob | null = null;
+      let imageBlob: Blob | null = null;
 
-      // If the printable bill is rendered on screen (Invoice page), capture it
-      // exactly as the user sees it — same layout, same theme, same stamp.
+      // 1. If printable bill is in the DOM, capture it directly as a high-res JPEG
       const billEl = document.getElementById('printable-bill');
       if (billEl) {
         const html2canvas = (await import('html2canvas-pro')).default;
-        const { jsPDF } = await import('jspdf');
 
-        let lastErr: unknown = null;
-        for (const scale of [2, 1.4, 1]) {
+        for (const scale of [2, 1.5, 1]) {
           try {
             const canvas = await html2canvas(billEl, {
               scale,
               useCORS: true,
               logging: false,
               backgroundColor: '#ffffff',
-              // Render at a fixed document width so the bill looks like a page,
-              // not a narrow strip shaped like the phone screen it was sent from.
               windowWidth: 900,
               width: 900,
             });
@@ -68,79 +69,79 @@ export default function WhatsAppShareModal({
               throw new Error(`empty canvas at scale ${scale}`);
             }
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.9);
-            if (imgData.length < 2000) {
-              throw new Error(`blank capture at scale ${scale}`);
+            imageBlob = await new Promise<Blob | null>((resolve) => {
+              canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
+            });
+
+            if (imageBlob && imageBlob.size > 2000) {
+              break;
             }
-
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pageW = pdf.internal.pageSize.getWidth();
-            const pageH = pdf.internal.pageSize.getHeight();
-            const imgH = (canvas.height * pageW) / canvas.width;
-
-            pdf.addImage(imgData, 'JPEG', 0, 0, pageW, imgH);
-
-            // A long bill runs past one sheet; keep paginating rather than
-            // cropping the totals off the bottom.
-            let remaining = imgH - pageH;
-            let offset = pageH;
-            while (remaining > 0) {
-              pdf.addPage();
-              pdf.addImage(imgData, 'JPEG', 0, -offset, pageW, imgH);
-              remaining -= pageH;
-              offset += pageH;
-            }
-
-            pdfBlob = pdf.output('blob');
-            break;
           } catch (err) {
-            lastErr = err;
+            console.warn(`Capture error at scale ${scale}`, err);
           }
         }
+      }
 
-        if (!pdfBlob) {
-          console.error('Bill screen-capture failed at every resolution, falling back to generated copy:', lastErr);
+      // 2. If canvas image exists, share as JPEG photocopy
+      if (imageBlob) {
+        const fileName = buildBillImageFileName(data);
+        const result = await shareBillImageToWhatsApp(imageBlob, fileName, phoneNumber);
+
+        if (result.method === 'native-share') {
+          setShareSuccess('Bill photo ready to share on WhatsApp!');
+        } else {
+          setShareSuccess('Bill photo downloaded & WhatsApp opened!');
         }
-      }
-
-      // Fallback: generate a clean programmatic PDF when the bill is not
-      // rendered on screen (e.g. sharing from the Dashboard overview).
-      if (!pdfBlob) {
-        const doc = generateBillPdfDoc(data, profile);
-        pdfBlob = doc.output('blob');
-      }
-
-      // 2. Share PDF directly via Web Share API or download & open WhatsApp with NO text
-      const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), phoneNumber);
-
-      if (result.method === 'native-share') {
-        setShareSuccess(
-          t('bill_pdf_ready_to_share_on_whatsapp')
-        );
       } else {
-        setShareSuccess(
-          t('bill_pdf_downloaded_whatsapp_opened_attach_p')
-        );
+        // Fallback to PDF if image capture wasn't possible (e.g. from Dashboard without bill DOM)
+        const doc = generateBillPdfDoc(data, profile);
+        const pdfBlob = doc.output('blob');
+        const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), phoneNumber);
+
+        if (result.method === 'native-share') {
+          setShareSuccess('Bill ready to share on WhatsApp!');
+        } else {
+          setShareSuccess('Bill downloaded & WhatsApp opened!');
+        }
       }
 
       setTimeout(() => {
         setIsSharing(false);
       }, 1500);
     } catch (err) {
-      console.error('Share PDF error:', err);
+      console.error('Share image error:', err);
       setIsSharing(false);
     }
   };
 
-  const handleDownloadOnly = () => {
+  const handleDownloadOnly = async () => {
     try {
-      const doc = generateBillPdfDoc(data, profile);
-      doc.save(buildBillFileName(data));
-      setShareSuccess(
-        t('bill_pdf_downloaded_successfully')
-      );
+      const billEl = document.getElementById('printable-bill');
+      if (billEl) {
+        const html2canvas = (await import('html2canvas-pro')).default;
+        const canvas = await html2canvas(billEl, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: 900,
+          width: 900,
+        });
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = buildBillImageFileName(data);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setShareSuccess('Bill photo downloaded successfully!');
+      } else {
+        const doc = generateBillPdfDoc(data, profile);
+        doc.save(buildBillFileName(data));
+        setShareSuccess(t('bill_pdf_downloaded_successfully'));
+      }
     } catch (err) {
-      console.error('Download PDF error:', err);
+      console.error('Download error:', err);
     }
   };
 
@@ -155,10 +156,10 @@ export default function WhatsAppShareModal({
             </div>
             <div>
               <h3 className="font-serif font-black text-base leading-tight text-amber-300">
-                {t('share_bill_pdf_on_whatsapp')}
+                Share Bill Photocopy on WhatsApp
               </h3>
               <p className="text-xs text-emerald-200">
-                {t('shares_official_pdf_document_directly_no_tex')}
+                Shares exact on-screen bill photo (.jpeg) directly into WhatsApp
               </p>
             </div>
           </div>
@@ -172,24 +173,24 @@ export default function WhatsAppShareModal({
 
         {/* Content */}
         <div className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Bill PDF Preview Card */}
+          {/* Bill Preview Card */}
           <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-slate-50 to-amber-50/40 border border-emerald-200/80 space-y-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-emerald-800 text-amber-300 flex items-center justify-center shadow-xs">
-                  <FileText className="w-6 h-6" />
+                  <ImageIcon className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-slate-900">
-                    {buildBillFileName(data)}
+                    {buildBillImageFileName(data)}
                   </h4>
                   <p className="text-xs text-slate-500">
-                    {t('official_mandi_purchase_voucher')}
+                    Exact Bill Photocopy / Voucher Image
                   </p>
                 </div>
               </div>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
-                PDF
+                JPEG Photo
               </span>
             </div>
 
@@ -237,7 +238,7 @@ export default function WhatsAppShareModal({
 
           {/* Guarantee Note */}
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-[11px] text-slate-600">
-            💡 <strong>Note:</strong> Shares the exact bill you see on screen as a <strong>.pdf</strong> — same layout, theme, and stamp.
+            📸 <strong>Photocopy:</strong> Shares the exact bill you see on screen as a clear <strong>.jpeg</strong> photo with your signature and paid stamp without sending clutter text.
           </div>
         </div>
 
@@ -251,24 +252,24 @@ export default function WhatsAppShareModal({
             className="text-xs font-semibold border-slate-300 hover:bg-white"
           >
             <Download className="w-3.5 h-3.5 mr-1 text-slate-600" />
-            {t('download_pdf')}
+            Download Photo
           </Button>
 
           <Button
             type="button"
-            onClick={handleSharePdf}
+            onClick={handleShareImage}
             disabled={isSharing}
             className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5"
           >
             {isSharing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {t('sharing_pdf')}
+                Preparing Photo...
               </>
             ) : (
               <>
                 <MessageSquare className="w-4 h-4 fill-white" />
-                {t('share_pdf_on_whatsapp')}
+                Share Photo on WhatsApp
               </>
             )}
           </Button>

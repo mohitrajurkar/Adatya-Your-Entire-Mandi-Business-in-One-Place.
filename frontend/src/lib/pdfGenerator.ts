@@ -475,3 +475,81 @@ export async function shareBillPdfToWhatsApp(
 
   return { success: true, method: 'download' };
 }
+
+
+/**
+ * Returns a clean filename for bill JPEG image / photocopy.
+ */
+
+/**
+ * Returns a clean filename for bill JPEG image / photocopy.
+ */
+export function buildBillImageFileName(data: BillPdfData): string {
+  const clean = (value: string, max: number) => {
+    return value.replace(/\s+/g, '').replace(/[^\p{L}\p{N}]/gu, '').slice(0, max);
+  };
+
+  const items = data.items ?? [];
+  const firstCommodity = items[0]?.customCommodityName?.trim() || items[0]?.commodityName?.trim() || '';
+  const grain = firstCommodity ? clean(firstCommodity, 14) + (items.length > 1 ? `+${items.length - 1}` : '') : 'Bill';
+  const farmer = clean(data.farmer?.name || data.farmerName || '', 18) || 'Farmer';
+
+  const parsed = new Date(data.date);
+  const d = isNaN(parsed.getTime()) ? new Date() : parsed;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+
+  return `${grain}_${farmer}_${date}.jpeg`;
+}
+
+/**
+ * Share a JPEG photocopy / photo of the bill directly to WhatsApp:
+ * - NO TEXT is shared.
+ * - On Mobile (Android & iOS): uses Web Share API to pass the .jpeg image directly into WhatsApp chat.
+ * - On Desktop/Restricted: downloads the .jpeg image directly and opens WhatsApp with the recipient contact.
+ */
+export async function shareBillImageToWhatsApp(
+  imageBlob: Blob,
+  fileName: string,
+  farmerMobile?: string
+): Promise<{ success: boolean; method: 'native-share' | 'download' }> {
+  const imageFile = new File([imageBlob], fileName, { type: 'image/jpeg' });
+
+  // Mobile Web Share API: share JPEG image directly
+  if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [imageFile] })) {
+    try {
+      await navigator.share({
+        files: [imageFile],
+        title: fileName,
+      });
+      return { success: true, method: 'native-share' };
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        return { success: true, method: 'native-share' };
+      }
+      console.warn('Native image share failed, switching to download fallback:', e);
+    }
+  }
+
+  // Fallback: Download JPEG image and open WhatsApp with recipient phone number
+  const url = URL.createObjectURL(imageBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+  const rawMobile = farmerMobile || '';
+  const digits = rawMobile.replace(/\D/g, '');
+  const cleanDigits = digits.length === 10 ? digits : digits.length > 10 ? digits.slice(-10) : '';
+
+  if (cleanDigits) {
+    window.open(`https://wa.me/91${cleanDigits}`, '_blank');
+  } else {
+    window.open('https://web.whatsapp.com', '_blank');
+  }
+
+  return { success: true, method: 'download' };
+}
