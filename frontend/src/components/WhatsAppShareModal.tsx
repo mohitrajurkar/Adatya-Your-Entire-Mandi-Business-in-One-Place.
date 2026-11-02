@@ -41,9 +41,74 @@ export default function WhatsAppShareModal({
     setShareSuccess(null);
 
     try {
-      // 1. Generate clean official PDF document of the bill
-      const doc = generateBillPdfDoc(data, profile);
-      const pdfBlob = doc.output('blob');
+      let pdfBlob: Blob | null = null;
+
+      // If the printable bill is rendered on screen (Invoice page), capture it
+      // exactly as the user sees it — same layout, same theme, same stamp.
+      const billEl = document.getElementById('printable-bill');
+      if (billEl) {
+        const html2canvas = (await import('html2canvas-pro')).default;
+        const { jsPDF } = await import('jspdf');
+
+        let lastErr: unknown = null;
+        for (const scale of [2, 1.4, 1]) {
+          try {
+            const canvas = await html2canvas(billEl, {
+              scale,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+              // Render at a fixed document width so the bill looks like a page,
+              // not a narrow strip shaped like the phone screen it was sent from.
+              windowWidth: 900,
+              width: 900,
+            });
+
+            if (!canvas.width || !canvas.height) {
+              throw new Error(`empty canvas at scale ${scale}`);
+            }
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.9);
+            if (imgData.length < 2000) {
+              throw new Error(`blank capture at scale ${scale}`);
+            }
+
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+            const imgH = (canvas.height * pageW) / canvas.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageW, imgH);
+
+            // A long bill runs past one sheet; keep paginating rather than
+            // cropping the totals off the bottom.
+            let remaining = imgH - pageH;
+            let offset = pageH;
+            while (remaining > 0) {
+              pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 0, -offset, pageW, imgH);
+              remaining -= pageH;
+              offset += pageH;
+            }
+
+            pdfBlob = pdf.output('blob');
+            break;
+          } catch (err) {
+            lastErr = err;
+          }
+        }
+
+        if (!pdfBlob) {
+          console.error('Bill screen-capture failed at every resolution, falling back to generated copy:', lastErr);
+        }
+      }
+
+      // Fallback: generate a clean programmatic PDF when the bill is not
+      // rendered on screen (e.g. sharing from the Dashboard overview).
+      if (!pdfBlob) {
+        const doc = generateBillPdfDoc(data, profile);
+        pdfBlob = doc.output('blob');
+      }
 
       // 2. Share PDF directly via Web Share API or download & open WhatsApp with NO text
       const result = await shareBillPdfToWhatsApp(pdfBlob, buildBillFileName(data), phoneNumber);
@@ -172,7 +237,7 @@ export default function WhatsAppShareModal({
 
           {/* Guarantee Note */}
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-[11px] text-slate-600">
-            💡 <strong>Note:</strong> Shares the complete printable <strong>.pdf</strong> voucher directly with rates, bags, advance, and signature without sending clutter text.
+            💡 <strong>Note:</strong> Shares the exact bill you see on screen as a <strong>.pdf</strong> — same layout, theme, and stamp.
           </div>
         </div>
 

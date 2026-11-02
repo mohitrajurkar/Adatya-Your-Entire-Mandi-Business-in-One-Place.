@@ -568,9 +568,9 @@ export default function Invoice() {
                   <div className="text-[11px] uppercase font-bold tracking-wider text-slate-500">
                     {t('customer_farmer_details')}
                   </div>
-                  <div className="font-bold text-base text-slate-950 flex items-center gap-1.5">
-                    <User className="w-4 h-4 text-slate-700 shrink-0" />
-                    {data.farmer?.name}
+                  <div className="font-bold text-base text-slate-950 flex items-start gap-1.5">
+                    <User className="w-4 h-4 text-slate-700 shrink-0 mt-0.5" />
+                    <span className="break-words min-w-0">{data.farmer?.name}</span>
                   </div>
                   <div className="text-xs text-slate-700 flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
